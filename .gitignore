@@ -1,2 +1,5 @@
 .DS_Store
 *.zip
+
+# Кэш QuestieDB для tools/ru/names.py
+tools/ru/.cache/
