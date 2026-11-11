@@ -43,8 +43,8 @@ Data/ClassQuests.lua, quest givers and turn-ins for the quest icons on the world
 Data/QuestPins.lua, mobs that drop quest items for the quest marks on nameplates in Data/QuestDrops.lua,
 vendors, mobs and objects for the reagents of the profession recipes in Data/ReagentSources.lua,
 special quest chains with their givers and rewards for the Armory in Data/SpecialQuests.lua,
-the German, French and Spanish names of quests, NPCs, objects and items and the quest objectives in
-Locales/Names_deDE.lua, Names_frFR.lua and Names_esES.lua
+the German, French, Spanish and Russian names of quests, NPCs, objects and items and the quest objectives in
+Locales/Names_deDE.lua, Names_frFR.lua, Names_esES.lua and Names_ruRU.lua
 from its l10n translations)
 were generated
 from the QuestieDB Forever data, which is derived from Questie.

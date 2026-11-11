@@ -12,7 +12,7 @@ All-in-one companion addon for **WoW Forever**. No other addons required.
 - **Map Landmarks** – dungeon and raid entrances, flight masters, zeppelins, ships, the Deeprun Tram and Library Books on the world map; click an entrance to open that dungeon
 - **Quality of Life** – optional helpers in groups with a search (an info bar at the top of the screen, guild members with OneForAll on the world map, auto repair, sell junk with your own junk list, hide the chat, quest XP on the experience bar, item compare with Shift, minimap button collector, square minimap, sparkle on herbs and ore, brighter class colors, low spell ranks on your action bars, popups and alerts and more); a welcome setup switches them on page by page
 - **Look** – one gold modern style that can be made see-through, and a logo in five colors
-- **Languages** – English, German, French and Spanish (Settings > General > Language); in a German, French or Spanish game client quest, NPC, item and zone names come in that language too
+- **Languages** – English, German, French, Spanish and Russian (Settings > General > Language); in a German, French, Spanish or Russian game client quest, NPC, item and zone names come in that language too
 
 ## Download
 
