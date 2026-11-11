@@ -1,6 +1,7 @@
 ## Interface: 16001
 ## Title: OneForAll
 ## Notes: All-in-one WoW Forever companion: dungeons, quests, loot, item sets and reputation rewards, Library Books, professions, talent planning, hunter pets and quality of life helpers.
+## Notes-ruRU: Помощник для WoW Forever: подземелья, задания, добыча, комплекты и награды за репутацию, книги библиотеки, профессии, таланты, питомцы охотника и полезные мелочи. Русский перевод.
 ## Author: Smoergi
 ## X-License: GPL-3.0-or-later
 ## Version: 6.2.5
