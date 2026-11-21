@@ -252,7 +252,7 @@ def data_strings():
 # --- сборка ---------------------------------------------------------------------------------
 
 def resolve(key, cands, de_value):
-    pairs = [(r, d) for r, d in cands.get(key, []) if r]
+    pairs = [(r, d) for r, d in cands.get(key, []) if r and r != "Неизвестно"]
     if not pairs:
         return None, "нет в QuestieDB"
     if de_value is not None:
@@ -277,7 +277,7 @@ def main():
     de = names_file(LOCALES / "Names_deDE.lua")
     ru_path = LOCALES / "Names_ruRU.lua"
     old = names_file(ru_path)
-    from_data = {s for s in data_strings() if s in cands}
+    from_data = {s for s in data_strings() if s and s in cands}
     keys = set(de) | set(old) | from_data
     print(f"Ключей: из Names_deDE {len(de)}, из старого Names_ruRU {len(old)}, "
           f"из данных аддона {len(from_data)}; всего {len(keys)}")
