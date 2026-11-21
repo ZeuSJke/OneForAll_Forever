@@ -71,6 +71,41 @@ local function upMark(parent, size, point, x, y, up, lighter)
   return t
 end
 
+-- Our own item lists (6.2.10, user 16.11.: Dungeons & Raids boss loot and quest rewards): a green arrow at the top
+-- left of the item icon (a texture; the arrow goes on its parent row). Items whose data is not there yet are asked for
+-- once; GET_ITEM_INFO_RECEIVED is only registered while something waits.
+local waiting, waitFrame = {}, nil -- [itemID] = { icon, ... }
+function GM.IconArrow(icon, id)
+  local row = icon and id and icon:GetParent()
+  if not row then return end
+  local up, lighter = isUpgrade(id)
+  if not up and on() and C_Item and C_Item.IsItemDataCachedByID and not C_Item.IsItemDataCachedByID(id) then
+    if not waitFrame then
+      waitFrame = CreateFrame("Frame")
+      waitFrame:SetScript("OnEvent", function(self, _, got, ok)
+        local list = got and waiting[got]
+        if not list then return end
+        waiting[got] = nil
+        if ok then for _, ic in ipairs(list) do if ic:IsVisible() then GM.IconArrow(ic, got) end end end
+        if not next(waiting) then self:UnregisterEvent("GET_ITEM_INFO_RECEIVED") end
+      end)
+    end
+    local list = waiting[id]
+    if not list then list = {}; waiting[id] = list; if C_Item.RequestLoadItemDataByID then C_Item.RequestLoadItemDataByID(id) end end
+    local have; for _, ic in ipairs(list) do if ic == icon then have = true end end
+    if not have then list[#list + 1] = icon end
+    waitFrame:RegisterEvent("GET_ITEM_INFO_RECEIVED")
+  end
+  if not (up or row.ofaUp) then return end
+  if not row.ofaUp then
+    local t = row:CreateTexture(nil, "OVERLAY", nil, 7); t:SetSize(16, 16); t:SetPoint("TOPLEFT", icon, "TOPLEFT", -5, 5)
+    row.ofaUp = t
+  end
+  local t = row.ofaUp
+  if up and t.ofaFile ~= arrowFile(lighter) then t.ofaFile = arrowFile(lighter); FLT.SetTex(t, ASSET .. t.ofaFile) end
+  t:SetShown(up and true or false)
+end
+
 
 -- Loot roll window --------------------------------------------------------------
 local function iconOf(frame)

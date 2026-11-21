@@ -45,6 +45,7 @@ FLT.DUNGEON_REGISTRY["Scarlet Monastery: Armory"] = {
                 {7717, "Ravager", "Two-Hand, Axe", 3},
                 {7719, "Raging Berserker's Helm", "Head, Mail", 3},
                 {7718, "Herod's Shoulder", "Shoulder, Mail", 3},
+                {274295, "Band of Crimson Light", "Finger", 3},
             },
         },
     },

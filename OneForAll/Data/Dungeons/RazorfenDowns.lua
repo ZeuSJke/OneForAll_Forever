@@ -37,7 +37,9 @@ FLT.DUNGEON_REGISTRY["Razorfen Downs"] = {
             pickup = "Belnistrasz, inside Razorfen Downs",
             objective = "Escort Belnistrasz to the Quilboar's idol in Razorfen Downs.  Protect Belnistrasz while he performs the ritual to shut down the idol.",
             turnin = "Belnistrasz, inside Razorfen Downs",
-            rewardItems = {{10710, "Dragonclaw Ring", 3}},
+            rewardItems = {
+                {10710, "Dragonclaw Ring", 2},
+            },
             note = "Escort quest: Belnistrasz must survive his ritual at the idol. Everyone in the group needs Scourge of the Downs done first.",
         },
         {
@@ -50,8 +52,14 @@ FLT.DUNGEON_REGISTRY["Razorfen Downs"] = {
             pickup = "Andrew Brownell, Undercity (74.0, 33.3)",
             objective = "Andrew Brownell wants you to kill Amnennar the Coldbringer and return his skull.",
             turnin = "Andrew Brownell, Undercity",
-            rewardItems = {{10823, "Vanquisher's Sword", 3}, {10824, "Amberglow Talisman", 3}},
             rewardChoice = true,
+            rewardItems = {
+                {10824, "Amberglow Talisman", 3},
+                {270081, "Purified Ring", 3},
+            },
+            rewardAlso = {
+                {10823, "Vanquisher's Sword", 3},
+            },
         },
         {
             id = 3636,
@@ -63,8 +71,14 @@ FLT.DUNGEON_REGISTRY["Razorfen Downs"] = {
             pickup = "Archbishop Benedictus, Stormwind City (50.3, 45.5)",
             objective = "Archbishop Bendictus wants you to slay Amnennar the Coldbringer in Razorfen Downs.",
             turnin = "Archbishop Benedictus, Stormwind City",
-            rewardItems = {{10823, "Vanquisher's Sword", 3}, {10824, "Amberglow Talisman", 3}},
             rewardChoice = true,
+            rewardItems = {
+                {10824, "Amberglow Talisman", 3},
+                {270081, "Purified Ring", 3},
+            },
+            rewardAlso = {
+                {10823, "Vanquisher's Sword", 3},
+            },
         },
         {
             id = 6521,
@@ -80,6 +94,42 @@ FLT.DUNGEON_REGISTRY["Razorfen Downs"] = {
             rewardChoice = true,
             rewardSummary = "20s",
             note = "Ambassador Malcin waits outside the entrance of Razorfen Downs. The quest also appears under Razorfen Kraul, where the Small Scroll that starts it drops.",
+        },
+        {
+            level = 45,
+            id = 93604,
+            name = "Agamaggan's Blood",
+            requires = 45,
+            faction = "Both",
+            pickup = "Kog'thug the Brave, Shen'dralas (72.7, 31.2)",
+            objective = "Venture to Razorfen Downs and acquire Virulent Blood of Agamaggan, then return it to Kog'thug the Brave at Bristleback Retreat in the Desolace. Kog'thug felt it worth reminding that the Blood of Agamaggan inside Razorfen Kraul would not be sufficient.",
+            turnin = "Kog'thug the Brave, Shen'dralas",
+            rewardItems = {
+            },
+        },
+        {
+            level = 41,
+            id = 96773,
+            name = "The Coldbringer's Eye",
+            requires = 34,
+            faction = "Alliance",
+            pickup = "Archmage Lan'dalock, Alterac Mountains (15.3, 73.9)",
+            objective = "Recover The Coldbringer's Eye from Razorfen Downs.",
+            turnin = "Archmage Lan'dalock, Alterac Mountains",
+            rewardItems = {
+            },
+        },
+        {
+            level = 41,
+            id = 97196,
+            name = "The Coldbringer's Eye",
+            requires = 34,
+            faction = "Horde",
+            pickup = "Sutara Plainstalker, Mulgore (34.6, 23.0)",
+            objective = "Recover The Coldbringer's Eye from Razorfen Downs.",
+            turnin = "Sutara Plainstalker, Mulgore",
+            rewardItems = {
+            },
         },
     },
     bosses = {
@@ -110,6 +160,7 @@ FLT.DUNGEON_REGISTRY["Razorfen Downs"] = {
             loot = {
                 {10772, "Glutton's Cleaver", "One-Hand, Axe", 3},
                 {10774, "Fleshhide Shoulders", "Shoulder, Leather", 3},
+                {274385, "Abomination Chain", "Neck", 3},
             },
         },
         {
@@ -130,6 +181,7 @@ FLT.DUNGEON_REGISTRY["Razorfen Downs"] = {
             loot = {
                 {10760, "Swine Fists", "Hands, Leather", 2},
                 {10766, "Plaguerot Sprig", "Ranged, Wand", 3},
+                {274380, "Decaying Flesh Bands", "Wrist, Cloth", 3},
             },
         },
         {
@@ -142,6 +194,7 @@ FLT.DUNGEON_REGISTRY["Razorfen Downs"] = {
                 {10763, "Icemetal Barbute", "Head, Plate", 3},
                 {10764, "Deathchill Armor", "Chest, Mail", 3},
                 {10765, "Bonefingers", "Hands, Leather", 3},
+                {274381, "Coldbringer Spine", "Two-Hand, Staff", 3},
             },
         },
     },

@@ -193,7 +193,7 @@ FLT.DUNGEON_REGISTRY["Gnomeregan"] = {
             rewardItems = {
                 {9173, "Goblin Transponder", 1},
             },
-            note = "Needs Chief Engineer Scooty (from Sovik in Orgrimmar). With the Goblin Transponder you can use the teleporter in Gnomeregan to get back to Booty Bay.",
+            note = "Needs Chief Engineer Scooty (from Sovik in Orgrimmar). With the Goblin Transponder you can use Scooty's teleporter in Booty Bay to get to Gnomeregan.",
         },
         {
             level = 30,
@@ -231,6 +231,18 @@ FLT.DUNGEON_REGISTRY["Gnomeregan"] = {
             turnin = "Nogg, Orgrimmar",
             rewardItems = {
                 {9588, "Nogg's Gold Ring", 3},
+            },
+        },
+        {
+            level = 40,
+            id = 80325,
+            name = "The Mad King",
+            requires = 40,
+            faction = "Horde",
+            pickup = "Thermaplugg's Engineering Notes, dropped by Mekgineer Thermaplugg",
+            objective = "Bring Thermaplugg's Engineering Notes to Nogg at the Valley of Honor in Orgrimmar.",
+            turnin = "Nogg, Orgrimmar",
+            rewardItems = {
             },
         },
     },

@@ -389,6 +389,7 @@ local function Nine(owner, anchor, tex, c, out, layer, sub)
   function o:SetShown(v) for _, t in ipairs(self.pieces) do t:SetShown(v) end end
   function o:SetAlpha(a) for _, t in ipairs(self.pieces) do t:SetAlpha(a) end end
   function o:SetDesaturated(v) for _, t in ipairs(self.pieces) do FLT.Desat(t, v) end end
+  function o:SetVertexColor(r, g, b) for _, t in ipairs(self.pieces) do t:SetVertexColor(r, g, b) end end
   return o
 end
 
@@ -410,6 +411,11 @@ local function Plate(b, h)
   end
   function p:SetEnabledLook(on)
     normal:SetDesaturated(not on); normal:SetAlpha(on and 1 or 0.6); hover:SetShown(on and true or false)
+  end
+  -- a coloured plate (6.2.12-beta17, user 18.11.: "Open guide ... den Button gruen hinterlegen"): nil = the normal one
+  function p:SetTint(r, g, b)
+    r, g, b = r or 1, g or 1, b or 1
+    normal:SetVertexColor(r, g, b); active:SetVertexColor(r, g, b); hover:SetVertexColor(r, g, b)
   end
   return p
 end
@@ -473,10 +479,16 @@ local function GoldButton(parent, text, w, h, icon, fontSize, plain)
   end
   function b:SetLook(enabled)
     plate:SetEnabledLook(enabled)
-    if enabled then label:SetTextColor(FLT.SkinC(0.95, 0.82, 0.50)) else label:SetTextColor(FLT.SkinC(0.5, 0.5, 0.5)) end
+    if b.wantGreen then b:SetGreen(enabled) end -- (first: SetGreen(false) sets the gold text, grey comes after it)
+    if enabled then if not b.green then label:SetTextColor(FLT.SkinC(0.95, 0.82, 0.50)) end else label:SetTextColor(FLT.SkinC(0.5, 0.5, 0.5)) end
     if b.icon then FLT.Desat(b.icon, not enabled); b.icon:SetAlpha(enabled and 1 or 0.5) end
   end
   function b:SetLabel(t) label:SetText(t); fit(); place(0, 0) end
+  -- b:SetGreen(on): a green plate for the one button that should catch the eye (6.2.12-beta17); off while disabled
+  function b:SetGreen(on)
+    b.green = on and true or nil
+    if on then plate:SetTint(0.45, 1, 0.5); label:SetTextColor(0.85, 1, 0.85) else plate:SetTint(); label:SetTextColor(FLT.SkinC(0.95, 0.82, 0.50)) end
+  end
   -- the gold chevron of the "< Dungeons" button as a page arrow (Welcome setup, user 31.10.): dir "prev" / "next" / nil
   function b:SetArrow(dir)
     if not b.icon then b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetSize(h - 10, h - 10); FLT.SetTex(b.icon, ASSET_ROOT .. "icon_back") end
@@ -1073,7 +1085,8 @@ end
 -- With secureMacro the Yes button runs that macro (e.g. "/reload", which an
 -- addon may not call directly) through a secure button; onYes runs first.
 local confirmFrame
-function UI.Confirm(text, onYes, yesLabel, secureMacro)
+-- altLabel / onAlt: an optional third button between Yes and Cancel (6.2.10: "Clear list" / "Keep and add" / Cancel)
+function UI.Confirm(text, onYes, yesLabel, secureMacro, altLabel, onAlt)
   if not confirmFrame then
     local f = CreateFrame("Frame", "OneForAllConfirm", UIParent)
     f:SetSize(380, 130); f:SetPoint("CENTER", 0, 80); f:SetFrameStrata("FULLSCREEN_DIALOG"); f:EnableMouse(true)
@@ -1092,6 +1105,18 @@ function UI.Confirm(text, onYes, yesLabel, secureMacro)
   end
   local f = confirmFrame
   f.text:SetText(text); f.yes:SetLabel(yesLabel or L["Yes"])
+  if altLabel and not f.alt then f.alt = GoldButton(f, "", 110, 26, nil, 13); f.alt:SetPoint("BOTTOM", 0, 18) end
+  f.yes:ClearAllPoints(); f.no:ClearAllPoints()
+  if altLabel then
+    f:SetWidth(400)
+    f.alt:SetLabel(altLabel); f.alt:Show()
+    f.alt:SetScript("OnClick", function() f:Hide(); if onAlt then onAlt() end end)
+    f.yes:SetPoint("RIGHT", f.alt, "LEFT", -8, 0); f.no:SetPoint("LEFT", f.alt, "RIGHT", 8, 0)
+  else
+    f:SetWidth(380)
+    if f.alt then f.alt:Hide() end
+    f.yes:SetPoint("BOTTOMRIGHT", f, "BOTTOM", -8, 18); f.no:SetPoint("BOTTOMLEFT", f, "BOTTOM", 8, 18)
+  end
   f:SetHeight(math.max(120, (f.text:GetStringHeight() or 14) + 84))
   f.yes:SetScript("OnClick", function() f:Hide(); if onYes then onYes() end end)
   local combat = InCombatLockdown and InCombatLockdown()
@@ -1280,6 +1305,96 @@ function UI.OpenDropDown(owner, options, current, onPick, width)
   ddCatcher:Show(); ddMenu:Show()
 end
 function UI.CloseDropDown() if ddMenu then ddMenu:Hide() end end
+
+-- Cascading menu (6.2.10, user 16.11.: Gear Planner filter - "Armor type" / "Weapon type" open a list to the right, "Two-Hand"
+-- toggles all two-handers and opens its own list on mouseover). build() returns the items, built again after each click
+-- so the checks stay right: { key, label, checked (nil = no box), part (some of the children checked), children = {...} }.
+-- onPick(key) runs for a click on an item with a key; the menus stay open (a click outside closes them).
+local cascade = { menus = {}, path = {} }
+local function cascadeMenu(level)
+  local m = cascade.menus[level]
+  if m then return m end
+  m = CreateFrame("Frame", nil, UIParent); m:SetFrameStrata("FULLSCREEN_DIALOG"); m:SetFrameLevel(20 + level * 5)
+  m:EnableMouse(true); m:Hide(); UI.FramedPanel(m); m.rows = {}; m.level = level
+  cascade.menus[level] = m
+  return m
+end
+local function cascadeClose(from)
+  for l = from, #cascade.menus do cascade.menus[l]:Hide(); cascade.path[l] = nil end
+end
+local cascadeShow
+local function cascadeRow(m, i)
+  local r = m.rows[i]
+  if r then return r end
+  r = CreateFrame("Button", nil, m); r:SetHeight(22)
+  local hi = r:CreateTexture(nil, "HIGHLIGHT"); hi:SetAllPoints(); hi:SetColorTexture(FLT.SkinC(0.90, 0.66, 0.22, 0.18))
+  r.text = FLT.NewFS(r, nil, "OVERLAY", "GameFontHighlight"); r.text:SetPoint("LEFT", 22, 0)
+  r.check = r:CreateTexture(nil, "OVERLAY"); r.check:SetSize(14, 14); r.check:SetPoint("LEFT", 5, 0)
+  r.check:SetTexture("Interface\\Buttons\\UI-CheckBox-Check"); FLT.SkinBlizz(r)
+  r.arrow = r:CreateTexture(nil, "OVERLAY"); r.arrow:SetSize(12, 12); r.arrow:SetPoint("RIGHT", -6, 0)
+  r.arrow:SetTexture("Interface\\ChatFrame\\ChatFrameExpandArrow")
+  r:SetScript("OnEnter", function(self)
+    if self.item and self.item.children then cascade.path[m.level] = self.index; cascadeShow(m.level + 1, self.item.children, self)
+    else cascadeClose(m.level + 1) end
+  end)
+  r:SetScript("OnClick", function(self)
+    local it = self.item
+    if not (it and it.key) then return end
+    cascade.onPick(it.key)
+    -- built again: the same path stays open with the new checks
+    local open, path = 0, {}
+    for l, menu in ipairs(cascade.menus) do if menu:IsShown() then open = l; path[l] = cascade.path[l] end end
+    local items = cascade.build()
+    for level = 1, open do
+      if not items then break end
+      local anchor = level == 1 and cascade.owner or (cascade.menus[level - 1].rows[path[level - 1]])
+      cascadeShow(level, items, anchor)
+      cascade.path[level] = path[level]
+      items = path[level] and items[path[level]] and items[path[level]].children
+    end
+  end)
+  m.rows[i] = r
+  return r
+end
+cascadeShow = function(level, items, anchor)
+  local m = cascadeMenu(level)
+  cascadeClose(level + 1)
+  local w = cascade.width or 170
+  for _, r in ipairs(m.rows) do r:Hide() end
+  for i, it in ipairs(items) do
+    local r = cascadeRow(m, i)
+    r.item, r.index = it, i
+    r:ClearAllPoints(); r:SetPoint("TOPLEFT", 4, -4 - (i - 1) * 22)
+    r.text:SetText(it.label)
+    local need = (r.text:GetStringWidth() or 0) + 22 + (it.children and 24 or 10) + 8
+    if need > w then w = math.ceil(need) end
+    r.check:SetShown(it.checked or it.part or false)
+    r.check:SetAlpha(it.checked and 1 or 0.35) -- a faint check: only some of the types below are on
+    r.arrow:SetShown(it.children and true or false)
+    r.text:SetTextColor(it.checked and 1 or 0.92, it.checked and 0.82 or 0.90, it.checked and 0.2 or 0.84)
+    r:Show()
+  end
+  for i = 1, #items do m.rows[i]:SetWidth(w - 8) end
+  m:SetSize(w, #items * 22 + 8)
+  m:ClearAllPoints()
+  if level == 1 then m:SetPoint("TOPRIGHT", anchor, "BOTTOMRIGHT", 0, -2)
+  else m:SetPoint("TOPLEFT", anchor, "TOPRIGHT", 6, 4) end
+  m.anchor = anchor
+  m:Show()
+end
+function UI.OpenCascadeMenu(owner, build, onPick, width)
+  if not cascade.catcher then
+    local c = CreateFrame("Button", nil, UIParent); c:SetAllPoints(UIParent)
+    c:SetFrameStrata("FULLSCREEN_DIALOG"); c:SetFrameLevel(1); c:RegisterForClicks("AnyUp"); c:Hide()
+    c:SetScript("OnClick", function() cascadeClose(1); c:Hide() end)
+    cascade.catcher = c
+  end
+  if cascade.menus[1] and cascade.menus[1]:IsShown() and cascade.owner == owner then cascadeClose(1); cascade.catcher:Hide(); return end
+  if ddMenu then ddMenu:Hide() end
+  cascade.owner, cascade.build, cascade.onPick, cascade.width = owner, build, onPick, width
+  cascade.catcher:Show()
+  cascadeShow(1, build(), owner)
+end
 function UI.DropDownShown() return ddMenu ~= nil and ddMenu:IsShown() end
 
 UI.GoldButton = GoldButton

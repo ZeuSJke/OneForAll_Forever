@@ -23,7 +23,7 @@ local PAGES = {
   { N"Interface", {
     { N"Farther camera zoom", N"Lets you zoom the camera out further.", "cameraZoom", rec = true },
     { N"Move Blizzard windows", N"Drag windows like the character window anywhere.", "moveWindows", rec = true },
-    { N"Resize Blizzard windows", N"Drag a window with the right mouse button to change its size.", "resizeWindows" }, -- user 01.11.
+    { N"Resize Blizzard windows", N"Hold Ctrl and drag a window with the right mouse button to change its size.", "resizeWindows" }, -- user 01.11.
     { N"Chat font size", N"The same font size for every chat window.", kind = "font" },
     { N"Logo color", N"The color of the OneForAll minimap button.", kind = "logo" },
     { N"Collect minimap buttons", N"Puts the minimap buttons of other addons into one bar.", "mmCollect", rec = true },
@@ -114,14 +114,14 @@ local function switchRow(parent, it, y)
   return function() cb:SetChecked(it.get()) end
 end
 
--- the five logo colors as pictures (user 27.10.)
-local LOGOS = { { "teal", N"Turquoise" }, { "red", N"Red" }, { "blue", N"Blue" }, { "green", N"Green" }, { "violet", N"Violet" }, { "bronze", N"Bronze" } }
+-- the logo colors as pictures (user 27.10.; black 6.2.11)
+local LOGOS = { { "teal", N"Turquoise" }, { "red", N"Red" }, { "blue", N"Blue" }, { "green", N"Green" }, { "violet", N"Violet" }, { "bronze", N"Bronze" }, { "black", N"Black" } }
 local function logoRow(parent, it, y)
   local l = FLT.NewFS(parent, nil, "OVERLAY", "GameFontHighlight"); l:SetPoint("TOPLEFT", 48, y - 1); l:SetText(L[it[1]])
   local d = FLT.NewFS(parent, nil, "OVERLAY", "GameFontDisableSmall"); d:SetPoint("TOPLEFT", l, "BOTTOMLEFT", 0, -2); d:SetText(L[it[2]])
   local marks = {}
   for i, c in ipairs(LOGOS) do
-    local b = CreateFrame("Button", nil, parent); b:SetSize(30, 30); b:SetPoint("TOPLEFT", 330 + (i - 1) * 40, y + 2)
+    local b = CreateFrame("Button", nil, parent); b:SetSize(30, 30); b:SetPoint("TOPLEFT", 330 + (i - 1) * 36, y + 2) -- 7 logos fit in 600
     local t = b:CreateTexture(nil, "ARTWORK"); t:SetAllPoints(); t:SetTexture(UI.ASSET_ROOT .. "logo_round_" .. (c[1] == "bronze" and "teal" or c[1]))
     if FLT.TintLogo then FLT.TintLogo(t, c[1]) end
     local sel = b:CreateTexture(nil, "OVERLAY"); sel:SetPoint("TOPLEFT", -4, 4); sel:SetPoint("BOTTOMRIGHT", 4, -4)

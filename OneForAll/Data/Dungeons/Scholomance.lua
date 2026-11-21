@@ -77,8 +77,14 @@ FLT.DUNGEON_REGISTRY["Scholomance"] = {
             pickup = "Eva Sarkhoff, Western Plaguelands (70.2, 73.7)",
             objective = "Return to the Scholomance with the Blood of Innocents. Find the porch and place the Blood of Innocents in the brazier. Kirtonos will come to feast upon your soul.  Fight valiantly, do not give an inch! Destroy Kirtonos and return to Eva Sarkhoff. ",
             turnin = "Eva Sarkhoff, Western Plaguelands",
-            rewardItems = {{13544, "Spectral Essence", 2}, {15805, "Penelope's Rose", 3}, {15806, "Mirah's Song", 3}},
             rewardChoice = true,
+            rewardItems = {
+                {15805, "Penelope's Rose", 3},
+                {15806, "Mirah's Song", 3},
+            },
+            rewardAlso = {
+                {13544, "Spectral Essence", 2},
+            },
             note = "Place the Blood of Innocents in the brazier on the porch to summon Kirtonos.",
         },
         {
@@ -90,8 +96,15 @@ FLT.DUNGEON_REGISTRY["Scholomance"] = {
             pickup = "Magistrate Marduke, Western Plaguelands (70.6, 74.1)",
             objective = "Find Ras Frostwhisper in the Scholomance. When you have found him, use the Soulbound Keepsake on his undead visage. Should you succeed in reverting him to a mortal, strike him down and recover the Human Head of Ras Frostwhisper. Take the head back to Magistrate Marduke.",
             turnin = "Magistrate Marduke, Western Plaguelands",
-            rewardItems = {{13982, "Warblade of Caer Darrow", 3}, {13984, "Darrowspike", 3}, {13986, "Crown of Caer Darrow", 3}, {14002, "Darrowshire Strongguard", 3}},
             rewardChoice = true,
+            rewardItems = {
+                {13982, "Warblade of Caer Darrow", 3},
+                {13986, "Crown of Caer Darrow", 3},
+                {13984, "Darrowspike", 3},
+            },
+            rewardAlso = {
+                {14002, "Darrowshire Strongguard", 3},
+            },
         },
         {
             id = 4771,
@@ -174,6 +187,19 @@ FLT.DUNGEON_REGISTRY["Scholomance"] = {
             pickup = "Sagorne Creststrider, Orgrimmar (38.7, 35.9)",
             objective = "Bring Darkreaver's Head to Sagorne Creststrider in the Valley of Wisdom, Orgrimmar.",
             turnin = "Sagorne Creststrider, Orgrimmar",
+            rewardItems = {
+                {18807, "Helm of Latent Power", 3},
+            },
+        },
+        {
+            level = 60,
+            id = 5531,
+            name = "Betina Bigglezink",
+            requires = 57,
+            faction = "Both",
+            pickup = "Leonid Barthalomew the Revered, Eastern Plaguelands (71.9, 48.3)",
+            objective = "Bring the Frozen Eggs to Betina Bigglezink.",
+            turnin = "Betina Bigglezink, Eastern Plaguelands",
             rewardItems = {
             },
         },
@@ -464,9 +490,6 @@ FLT.DUNGEON_REGISTRY["Scholomance"] = {
             npcID = 14695,
             description = "Summoned with a brazier from the Tier 0.5 set quests.",
             loot = {
-                {23132, "Lord Blackwood's Blade", "One-Hand, Sword", 3},
-                {23139, "Lord Blackwood's Buckler", "Off Hand, Shield", 3},
-                {23156, "Blackwood's Thigh", "Held In Off-Hand", 3},
             },
         },
         {

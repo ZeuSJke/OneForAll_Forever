@@ -14,12 +14,14 @@ General sources
 - Boss and trash loot: foreverchanges.pro dungeon pages and wowtbc.gg loot
   tables; item names, slots and qualities from the Wowhead tooltip API
   (Forever data, Classic data as fallback).
+  New WoW Forever drops of all dungeons (November 2026): Wowhead Forever zone and NPC pages ("Dropped by").
 - Boss portraits (display IDs), level ranges and the boss levels of the Forever dungeons: foreverchanges.pro.
   Hall of Thanes boss levels (16, 2026-10-22): wowforeverguides.com and wow4ever.quest ("level 16"),
   foreverchanges.pro had none yet.
 - Boss and entrance positions on the maps of Hall of Thanes, Ruins of Lordaeron, Excavation Site and City of
   Dalaran: the boss pins of the foreverchanges.pro dungeon maps, converted to our map layout (approximate).
-- Classic drop chances: foreverchanges.pro (Wowhead Classic data).
+- Classic drop chances: foreverchanges.pro (Wowhead Classic data). Drop chances measured in WoW Forever: Wowhead Forever
+  boss pages (drop count / kills, bosses with 100+ kills; marked in Data/DungeonDropChance.lua, November 2026).
 
 
 4.4.0 dungeons (Stockade, Gnomeregan, SM Graveyard, Excavation Site, City of Dalaran), checked 30 September 2026
@@ -221,6 +223,14 @@ Generated with tools/armory-gen/armory.py:
   positions): Forever Simple World Map 0.30.2 by Tarolg (MIT, used with the author's
   agreement; see THIRD_PARTY_LICENSES.txt), extracted with
   tools/dungeon-maps/fwm_maps.lua. The pictures are the client's minimap images.
+- 2026-11-20 (OneForAll 6.2.13): maps of The Drowned City, Blackmaw Hold, Alcaz
+  Prison, Shaper's Terrace and Krol'dok Stronghold from Forever Simple World Map
+  0.79.3 (All Rights Reserved, used with Tarolg's agreement), with
+  tools/dungeon-maps/fwm_add.lua.
+- 2026-11-20 (OneForAll 6.2.13): entrances of Alcaz Prison, The Drowned City and
+  Krol'dok Stronghold and the order of the six Atal'ai statues in the Sunken
+  Temple: positions read off another addon's map pictures in the user's
+  screenshots and fitted onto our maps (Data/DungeonMapExtras.lua; approximate).
 
 2026-11-08 New Forever dungeons after launch (OneForAll 6.2.1)
 ===============================================================================
@@ -246,3 +256,10 @@ Dungeon quests completed (6.2.4, 2026-11-10)
   objective from the Wowhead tooltip API (Forever).
 - City of Dalaran chains: An Alarming Request (Alliance) and Prison Break In, Key to the City, Dalaran Patrols,
   Blood in the Streets (Horde) end at the Image of Archmage Modera, who gives the dungeon quests (QuestieDB).
+- New Forever dungeons (13.11.2026): boss names as shown in game, NPC IDs, portraits (display IDs the client knows),
+  creature types, boss loot with item IDs and - for bosses with 100+ recorded kills - Forever drop chances from the
+  Wowhead Forever NPC pages; NPC IDs also from QuestieDB Forever. Boss levels of these dungeons are not published
+  anywhere yet: OneForAll learns them when you target a boss. More dungeon quests from QuestieDB Forever.
+- The Drowned City boss levels (13.11.2026): from players' screenshots, as the values are not published on Wowhead,
+  wowtbc.gg or foreverchanges.pro; a level learned in game by targeting the boss replaces them. "Pyromancer" Braxton,
+  the trash items and Krol'dok Warplate Legplates: IDs and "Dropped by" from the Wowhead Forever tooltip API.

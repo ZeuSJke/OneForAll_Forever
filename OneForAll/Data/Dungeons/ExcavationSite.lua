@@ -50,6 +50,8 @@ FLT.DUNGEON_REGISTRY["Excavation Site: Wetlands"] = {
             rewardItems = {
                 {1710, "Greater Healing Potion", 1},
                 {3827, "Mana Potion", 1},
+            },
+            rewardAlso = {
                 {2459, "Swiftness Potion", 1},
                 {280766, "Satchel of Potions", 2},
             },
@@ -196,6 +198,8 @@ FLT.DUNGEON_REGISTRY["Excavation Site: Wetlands"] = {
             rewardItems = {
                 {271740, "Knife-Polishing Rag", 2},
                 {271732, "Dirt-Heavy Bracers", 2},
+            },
+            rewardAlso = {
                 {271745, "Bloody Map", 1},
             },
             rewardSummary = "6,950 XP · pick one of the first 2 items, the rest is always included",
@@ -214,6 +218,8 @@ FLT.DUNGEON_REGISTRY["Excavation Site: Wetlands"] = {
             rewardItems = {
                 {280766, "Satchel of Potions", 2},
                 {280805, "Serrated Raptor Claw", 2},
+            },
+            rewardAlso = {
                 {250185, "Recipe: Twice-Spiced Raptor Slice", 1},
                 {250077, "Twice-Spiced Raptor Slice", 1},
             },

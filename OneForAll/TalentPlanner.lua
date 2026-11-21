@@ -949,7 +949,9 @@ function FLT:CreateTalentPlannerPanel(parent)
       local ni=n.info
       local entryID,_,sid,name,icon=entryDetails(configID,ni,st.entries[n.id])
       st.entries[n.id]=entryID or st.entries[n.id]
-      b.name=name; b.entryID=entryID; b.spellID=sid; b.maxRanks=ni.maxRanks or p.maxRanks or 1
+      -- the reference ranks win (6.2.7, Discord 13.11.: the client's "Improved Serpent Sting" node says 5 ranks, the talent in
+      -- the game - Improved Stings - has 3); the client's only for talents our data does not know
+      b.name=name; b.entryID=entryID; b.spellID=sid; b.maxRanks=(not p.clientOnly and p.maxRanks) or ni.maxRanks or p.maxRanks or 1
       currentMeta[n.id]={id=n.id,tree=p.tree,row=p.row,col=p.col,node=n,button=b,maxRanks=b.maxRanks,name=name,entryID=entryID,key=p.key,req=p.req,clientOnly=p.clientOnly}
       perTree[p.tree]=perTree[p.tree]+(st.ranks[n.id] or 0)
       FLT.SetTex(b.icon, icon)

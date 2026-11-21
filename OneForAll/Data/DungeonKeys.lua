@@ -147,6 +147,23 @@ FLT.DUNGEON_KEYS = {
       },
     },
   },
+  -- Krol'dok Stronghold (6.2.12-beta25, tester Deaders 19.11.: "City of Dalaran has a separate button next to quests for the key.
+  -- Krol'dok does not, it's listed as a regular quest"): the Krol'dok Compound Key from Key Ingredients - optional (the entrance
+  -- is a cave west of the fortress gates, no key needed; warcrafttavern.com / magicgameworld.com). Quests, givers and positions
+  -- from QuestieDB Forever (94973 / 94974 Horde, 94980 / 94981 Alliance); the Krol'dok Mould drops from Tunk inside.
+  ["Krol'dok Stronghold"] = {
+    {
+      item = 267089,
+      name = "Krol'dok Compound Key",
+      summary = "Not needed to enter. Tunk drops the Krol'dok Mould inside the dungeon; a smith in Farholde Keep (Alliance) or Rog'mar (Horde) turns it into the key for 4 Thick Leather and 12 Iron Bars.",
+      steps = {
+        { quest = 94980, name = "Krol'dok Moulding", level = 41, requires = 38, faction = "Alliance", pickup = "Krol'dok Mould, dropped by Tunk inside Krol'dok Stronghold", objective = "Find someone in Farholde Keep who may know about the mould.", turnin = "Alphonse Dumas, Riverglades (64.4, 82.0)", map = {mapID=2548, x=64.4, y=82.0} },
+        { quest = 94981, name = "Key Ingredients", level = 41, requires = 38, faction = "Alliance", pickup = "Alphonse Dumas, Riverglades (64.4, 82.0)", objective = "Bring 4 Thick Leather and 12 Iron Bars to Alphonse Dumas.", turnin = "Alphonse Dumas, Riverglades", map = {mapID=2548, x=64.4, y=82.0} },
+        { quest = 94973, name = "Krol'dok Moulding", level = 41, requires = 38, faction = "Horde", pickup = "Krol'dok Mould, dropped by Tunk inside Krol'dok Stronghold", objective = "Find someone in Rog'mar who may know about the mould.", turnin = "Kreza Darkthorn, Riverglades (59.9, 46.0)", map = {mapID=2548, x=59.9, y=46.0} },
+        { quest = 94974, name = "Key Ingredients", level = 41, requires = 38, faction = "Horde", pickup = "Kreza Darkthorn, Riverglades (59.9, 46.0)", objective = "Bring 4 Thick Leather and 12 Iron Bar to Kreza Darkthorn.", turnin = "Kreza Darkthorn, Riverglades", map = {mapID=2548, x=59.9, y=46.0} },
+      },
+    },
+  },
   -- City of Dalaran (6.2.4, user 10.11.): quests, givers, items and spawns from QuestieDB Forever (Heart of Disruption
   -- gives item 277507 Dalaran Sewer Key on accepting, Key to the City needs item 279469 Grimy Key); names of the items
   -- from the Wowhead tooltip API; the footlocker at the Lordamere Internment Camp: 16.3, 89.3 (the user in the game, 10.11.).

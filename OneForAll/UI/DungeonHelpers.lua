@@ -19,39 +19,89 @@ local function logEntryMatches(wantedID, wantedTitle, entryID, entryTitle)
   return wantedTitle ~= nil and entryTitle == wantedTitle
 end
 
-local function getQuestLogInfo(q)
-  if not q then return false, false end
-  local wantedID = tonumber(q.id)
-  local wantedTitle = q.name
+-- The quest log is read once per frame and kept (6.2.12-beta6, Discord 18.11.: "script ran too long" in getQuestLogInfo when
+-- the Dungeons page was built - every quest of every dungeon walked the whole log again). Read again on the next frame
+-- or after QUEST_LOG_UPDATE; without GetTime (tests) it is read every time like before.
+local logT, byId, byTitle, byTitleNoId = nil, {}, {}, {}
+local wipe = wipe or function(t) for k in pairs(t) do t[k] = nil end end
+local function remember(id, title, done)
+  if id and id ~= 0 then if byId[id] == nil then byId[id] = done end
+  elseif title and byTitleNoId[title] == nil then byTitleNoId[title] = done end
+  if title and byTitle[title] == nil then byTitle[title] = done end
+end
+local function readLog()
+  local now = GetTime and GetTime()
+  if now and logT == now then return end
+  logT = now; wipe(byId); wipe(byTitle); wipe(byTitleNoId)
   if C_QuestLog and C_QuestLog.GetNumQuestLogEntries and C_QuestLog.GetInfo then
     local n = C_QuestLog.GetNumQuestLogEntries() or 0
     for i=1,n do
       local info = C_QuestLog.GetInfo(i)
-      if info and not info.isHeader and logEntryMatches(wantedID, wantedTitle, info.questID, info.title) then
+      if info and not info.isHeader then
         -- Forever's log entries carry no isComplete: ask C_QuestLog.IsComplete like the XP bar (QoL.lua) does (beta39)
         local done = info.isComplete or (C_QuestLog.IsComplete and info.questID and C_QuestLog.IsComplete(info.questID))
-        return true, done and true or false
+        remember(info.questID, info.title, done and true or false)
       end
     end
   elseif GetNumQuestLogEntries and GetQuestLogTitle then
     local n = GetNumQuestLogEntries() or 0
     for i=1,n do
       local qtitle, _, _, isHeader, _, isComplete, _, questID = GetQuestLogTitle(i)
-      if not isHeader and logEntryMatches(wantedID, wantedTitle, questID, qtitle) then
-        return true, (isComplete and isComplete > 0) and true or false
-      end
+      if not isHeader then remember(questID, qtitle, (isComplete and isComplete > 0) and true or false) end
     end
   end
-  return false, false
+end
+if CreateFrame then
+  local ev = CreateFrame("Frame")
+  if ev.RegisterEvent then
+    for _, e in ipairs({ "QUEST_LOG_UPDATE", "QUEST_ACCEPTED", "QUEST_REMOVED", "QUEST_TURNED_IN" }) do ev:RegisterEvent(e) end
+    ev:SetScript("OnEvent", function() logT = nil end)
+  end
 end
 
+-- Matches a quest to the log (same rules as before 6.2.12: the quest ID is authoritative, see logEntryMatches - an entry
+-- with an ID answers only for that ID, the title only where an ID is missing)
+local function getQuestLogInfo(q)
+  if not q then return false, false end
+  readLog()
+  local wantedID = tonumber(q.id)
+  local done
+  if wantedID then
+    done = byId[wantedID]
+    if done == nil and q.name then done = byTitleNoId[q.name] end
+  elseif q.name then
+    done = byTitle[q.name]
+  end
+  if done == nil then return false, false end
+  return true, done
+end
+
+-- race masks (6.2.6, Discord cralic 12.11.: "Compendium of the Fallen" showed as available for Undead): bit (raceID-1)
+local function raceOK(q)
+  if not q.races or not UnitRace then return true end
+  local _, _, id = UnitRace("player")
+  id = tonumber(id)
+  if not id or id < 1 then return true end
+  return math.floor(q.races / 2 ^ (id - 1)) % 2 == 1
+end
+local RACE_EN = { "Human", "Orc", "Dwarf", "Night Elf", "Undead", "Tauren", "Gnome", "Troll" }
+local function raceNames(mask)
+  local out = {}
+  for id = 1, 11 do
+    if math.floor(mask / 2 ^ (id - 1)) % 2 == 1 then
+      local info = type(C_CreatureInfo) == "table" and C_CreatureInfo.GetRaceInfo and C_CreatureInfo.GetRaceInfo(id)
+      out[#out + 1] = (info and info.raceName) or RACE_EN[id] or tostring(id)
+    end
+  end
+  return table.concat(out, ", ")
+end
 local function dungeonQuestEligible(q)
   local faction = UnitFactionGroup and UnitFactionGroup("player") or nil
   local classToken
   if UnitClass then local _, token = UnitClass("player"); classToken = token end
   local sideOK = (not q.side or q.side == "Both" or q.side == "Neutral" or not faction or q.side == faction)
   local classOK = (not q.class or not classToken or q.class == classToken)
-  return sideOK and classOK
+  return sideOK and classOK and raceOK(q)
 end
 
 local QUEST_STATUS_LABELS = {
@@ -74,7 +124,16 @@ local function getChainProgress(q)
   for i = #steps, 1, -1 do
     local step = steps[i]
     if step.id and not (FLT.IsQuestDone and FLT:IsQuestDone(step.id)) and getQuestLogInfo({ id = step.id }) then
-      return i, total
+      return i, total, true
+    end
+  end
+  -- No step in the log, but earlier steps done: the chain is started, the next open step can be taken (6.2.8, user 14.11.:
+  -- "wieso steht da unavailable??? ich kann sie doch annehmen") -> its position, not "Unavailable"
+  for i = 1, #steps do
+    local step = steps[i]
+    if step.id and not step.optional and not (FLT.IsQuestDone and FLT:IsQuestDone(step.id)) then
+      if i > 1 then return i, total, false end
+      break
     end
   end
   return nil, total
@@ -103,19 +162,36 @@ local function getDungeonQuestStatus(d, q)
   local required = tonumber(q.required or q.level)
   if playerLevel and required and playerLevel < required then return "unavailable" end
 
-  -- If we have a verified prerequisite chain, keep the quest unavailable until
-  -- the prior required steps are completed. Optional lead-ins never block.
-  -- Unknown prerequisites are not guessed here.
+  -- A chain not started yet is no reason for "Unavailable": its first step can be taken (6.2.8, user 14.11.: "unavailable
+  -- nur wenn ich sie aufgrund irgendwelcher gruende nicht annehmen kann.. level, rasse, etc."). The row shows "Chain" and
+  -- the quest pane the chain with its steps.
+  return "available"
+end
+
+-- Why getDungeonQuestStatus says "unavailable" (6.2.6, user 11.11.: "so schreiben, dass man weiss wieso"), in the same
+-- order: "side", faction | "class", class token | "race", race names | "level", required, player level | "step", the first open required
+-- chain step. nil when the reason is not known.
+local function getUnavailableReason(q)
+  if not q then return nil end
+  local faction = UnitFactionGroup and UnitFactionGroup("player") or nil
+  if q.side and q.side ~= "Both" and q.side ~= "Neutral" and faction and q.side ~= faction then return "side", q.side end
+  if q.class and UnitClass then
+    local _, token = UnitClass("player")
+    if token and q.class ~= token then return "class", q.class end
+  end
+  if not raceOK(q) then return "race", raceNames(q.races) end
+  local playerLevel = UnitLevel and tonumber(UnitLevel("player")) or nil
+  local required = tonumber(q.required or q.level)
+  if playerLevel and required and playerLevel < required then return "level", required, playerLevel end
   local chain = q.id and FLT.QUEST_PREREQ_CHAINS and FLT.QUEST_PREREQ_CHAINS[q.id]
   if chain then
     for _, step in ipairs(chain) do
       if step.id and step.id ~= q.id and not step.optional and FLT.IsQuestDone and not FLT:IsQuestDone(step.id) then
-        return "unavailable"
+        return "step", step
       end
     end
   end
-
-  return "available"
+  return nil
 end
 
 local function dungeonSideColor(side)
@@ -426,7 +502,12 @@ local function openQuestInLog(id, name)
     end
   end
   if not index then if FLT.Msg then FLT.Msg(name and string.format(L["%s is not in your quest log."], name) or L["This quest is not in your quest log."]) end return false end
-  if QuestLog_SetSelection and QuestLogFrame and ShowUIPanel then
+  -- with a controller the quest log is not opened from our code (6.2.10, Discord kaanu 11.11.: ShowUIPanel tainted the
+  -- panel handling - closing it with the pad hit ADDON_ACTION_FORBIDDEN until /reload): only selected, the player opens it
+  if FLT.PadActive and FLT.PadActive() and SelectQuestLogEntry then
+    SelectQuestLogEntry(index)
+    if FLT.Msg then FLT.Msg(L["Open your quest log - the quest is selected there."]) end
+  elseif QuestLog_SetSelection and QuestLogFrame and ShowUIPanel then
     ShowUIPanel(QuestLogFrame); QuestLog_SetSelection(index)
     if QuestLog_Update then pcall(QuestLog_Update) end
   elseif QuestMapFrame_OpenToQuestDetails and id then
@@ -456,6 +537,7 @@ end
 H.questLogButton = questLogButton
 H.QUEST_STATUS_LABELS = QUEST_STATUS_LABELS
 H.getDungeonQuestStatus = getDungeonQuestStatus
+H.getUnavailableReason = getUnavailableReason
 H.getQuestLogInfo = getQuestLogInfo
 H.getChainProgress = getChainProgress
 H.dungeonSideColor = dungeonSideColor

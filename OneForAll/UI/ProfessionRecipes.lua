@@ -70,6 +70,7 @@ local function profDB(prof)
   return p
 end
 FLT.GetProfessionState = profDB
+FLT.ReadSkillLines = function() if FLT._readSkillLines then FLT._readSkillLines() end end
 
 -- Favourite recipes (account wide): OneForAllDB.recipeFavorites[prof][spell]
 local function favDB(prof, create)
@@ -95,14 +96,20 @@ local function profFromName(name, skillLine)
   return nil
 end
 
--- calls fn(prof, rank, maxRank) for every profession the character has; returns true if a list was readable
+-- calls fn(prof, rank, maxRank) for every profession the character has; returns true if a list was readable, and as
+-- second value true when that list is surely complete (6.2.12-beta16: then a saved profession missing there was unlearned)
 local function eachOwnProfession(fn)
-  local any = false
+  local any, full = false, false
   -- Old skill list API
   if GetNumSkillLines and GetSkillLineInfo then
     any = true
-    for i = 1, GetNumSkillLines() or 0 do
-      local name, isHeader, _, rank, _, _, maxRank = GetSkillLineInfo(i)
+    local n = GetNumSkillLines() or 0
+    -- complete only with lines at all (early after login there are none), no folded header (its lines are not listed)
+    -- and every profession name known in the client's language
+    full = n > 0 and (not FLT.ProfKeyReady or FLT.ProfKeyReady())
+    for i = 1, n do
+      local name, isHeader, isExpanded, rank, _, _, maxRank = GetSkillLineInfo(i)
+      if isHeader and not isExpanded then full = false end
       local prof = not isHeader and profFromName(name)
       if prof and rank then fn(prof, rank, maxRank) end
     end
@@ -110,21 +117,36 @@ local function eachOwnProfession(fn)
   -- Modern profession API (profession book)
   if GetProfessions and GetProfessionInfo then
     any = true
-    local list = {GetProfessions()}
+    local list, found = {GetProfessions()}, false
     for k = 1, 6 do
       local idx = list[k]
       if idx then
         local ok, name, _, rank, maxRank, _, _, skillLine = pcall(GetProfessionInfo, idx)
         local prof = ok and profFromName(name, skillLine)
-        if prof and rank then fn(prof, rank, maxRank) end
+        if prof and rank then fn(prof, rank, maxRank); found = true end
       end
     end
+    -- the profession book lists all of them at once (6.2.13-beta15, Discord gullols 21.11.: a changed profession stayed - the
+    -- old skill list alone was never "complete" on the Forever client); only with at least one profession found (early
+    -- after login the list can be empty) and the names known
+    if found and (not FLT.ProfKeyReady or FLT.ProfKeyReady()) then full = true end
   end
-  return any
+  return any, full
 end
 local function readSkillLines()
-  eachOwnProfession(function(prof, rank, maxRank) local p = profDB(prof); p.skill = rank; p.maxSkill = maxRank end)
+  local seen = {}
+  local _, full = eachOwnProfession(function(prof, rank, maxRank) local p = profDB(prof); p.skill = rank; p.maxSkill = maxRank; seen[prof] = true end)
+  -- an unlearned profession is forgotten (6.2.12-beta16, user 18.11.: "wenn man eine verlernt bleibt die fuer immer im OFA
+  -- gelernt"): only when the skill list is surely complete, and only professions with recipes (the only ones saved here);
+  -- learned again, its recipes come back with the next look into the profession window
+  if full and type(OneForAllCharDB) == "table" and type(OneForAllCharDB.professions) == "table" then
+    local recipes = FLT.PROFESSION_RECIPES or {}
+    for prof in pairs(OneForAllCharDB.professions) do
+      if not seen[prof] and recipes[prof] then OneForAllCharDB.professions[prof] = nil end
+    end
+  end
 end
+FLT._readSkillLines = readSkillLines
 
 local browser -- set when created; refreshed after scans
 -- the browser holds the secure craft buttons (RecipeBar): resizing it in combat is blocked (ADDON_ACTION_BLOCKED
@@ -190,6 +212,80 @@ local function foreignTradeSkill()
     return true
   end
   return call(IsTradeSkillLinked) or call(IsTradeSkillGuild) or false
+end
+
+-- Reagents as the server has them (user 13.11.2026: Green Silk Pack needs 5 Bolts of Silk Cloth in the game, 4 in the
+-- client files and on wowtbc.gg - a server-side change): read from the open profession window and, when they differ from
+-- the data, saved account wide (OneForAllDB.recipeReagents[spell] = {{item, count, name}, ...}) and laid over the data
+-- (Crafting List, Skill-Up Helper, Profit all read r.r). Compared first, a new table only when something differs.
+local function applyReagentFixes()
+  local db = type(OneForAllDB) == "table" and OneForAllDB.recipeReagents
+  if type(db) ~= "table" then return end
+  for _, recipes in pairs(FLT.PROFESSION_RECIPES or {}) do
+    for _, r in ipairs(recipes) do local l = db[r.s]; if type(l) == "table" and #l > 0 then r.r = l end end
+  end
+end
+local function hasReagent(r, id, count)
+  for _, g in ipairs(r.r or {}) do if g[1] == id then return g[2] == count, g[3] end end
+  return false
+end
+-- n reagents, get(src, k) -> item ID, count, name; returns true when the recipe changed
+local function takeReagents(r, n, get, src)
+  if not n or n == 0 then return false end
+  local same = n == #(r.r or {})
+  for k = 1, n do
+    local id, count = get(src, k)
+    if not (id and count and count > 0) then return false end -- not loaded yet: the next scan reads it
+    if same and not hasReagent(r, id, count) then same = false end
+  end
+  if same then return false end
+  local list = {}
+  for k = 1, n do
+    local id, count, name = get(src, k)
+    local _, oldName = hasReagent(r, id, count)
+    list[k] = { id, count, name or oldName }
+  end
+  r.r = list
+  if type(OneForAllDB) == "table" then
+    OneForAllDB.recipeReagents = OneForAllDB.recipeReagents or {}
+    OneForAllDB.recipeReagents[r.s] = list
+  end
+  return true
+end
+local function oldReagent(i, k)
+  local l2 = GetTradeSkillReagentItemLink(i, k)
+  local name, _, count = GetTradeSkillReagentInfo(i, k)
+  return l2 and tonumber(l2:match("item:(%d+)")), count, name
+end
+local basic = {} -- the basic reagent slots of one recipe (reused)
+local function newReagent(_, k) return basic[k].reagents[1].itemID, basic[k].quantityRequired end
+local function readReagents(recipeBySpell, knownNew)
+  local changed = false
+  -- old trade skill window
+  if GetNumTradeSkills and GetTradeSkillRecipeLink and GetTradeSkillNumReagents and GetTradeSkillReagentInfo and GetTradeSkillReagentItemLink then
+    for i = 1, GetNumTradeSkills() or 0 do
+      local link = GetTradeSkillRecipeLink(i)
+      local r = link and recipeBySpell[tonumber(link:match("enchant:(%d+)") or link:match("spell:(%d+)") or 0)]
+      if r and takeReagents(r, GetTradeSkillNumReagents(i), oldReagent, i) then changed = true end
+    end
+  end
+  -- new profession window (Enchanting on Forever): only the basic reagent slots
+  local T = C_TradeSkillUI
+  if T and T.GetRecipeSchematic and knownNew then
+    for _, id in ipairs(knownNew) do
+      local r = recipeBySpell[id]
+      local ok, sc = pcall(T.GetRecipeSchematic, id, false)
+      local slots = ok and type(sc) == "table" and sc.reagentSlotSchematics
+      if r and type(slots) == "table" then
+        wipe(basic)
+        for _, sl in ipairs(slots) do
+          if (sl.reagentType == nil or sl.reagentType == 1) and sl.reagents and sl.reagents[1] then basic[#basic + 1] = sl end
+        end
+        if takeReagents(r, #basic, newReagent) then changed = true end
+      end
+    end
+  end
+  return changed
 end
 
 local function scanTradeSkill()
@@ -314,6 +410,7 @@ local function scanTradeSkill()
   -- also drop implausible entries stored by older versions
   for s in pairs(p.known) do local r = recipeBySpell[s]; if r and not plausible(r) then p.known[s] = nil end end
   p.scanned = true
+  readReagents(recipeBySpell, fullList and known)
   lastScan = {prof = prof, count = #known, matched = n, skill = rank, stats = stats}
   readSkillLines()
   if FLT.OnProfessionScan then FLT.OnProfessionScan() end
@@ -352,7 +449,9 @@ do
                       "NEW_RECIPE_LEARNED", "SKILL_LINES_CHANGED", "PLAYER_LOGIN"}) do pcall(ev.RegisterEvent, ev, e) end
   ev:SetScript("OnEvent", function(_, event)
     if event == "SKILL_LINES_CHANGED" or event == "PLAYER_LOGIN" then
+      if event == "PLAYER_LOGIN" then applyReagentFixes() end
       readSkillLines(); cleanAllProfessions(); refreshBrowser(true)
+      if FLT.SkillUp and FLT.SkillUp.OnSkill then FLT.SkillUp.OnSkill() end -- the Skill-Up guide ticks its steps
     else
       scanSoon()
     end
@@ -456,7 +555,8 @@ local function canMake(r)
   if not r.r or #r.r == 0 or not GetItemCount then return 0 end
   local n
   for _, rg in ipairs(r.r) do
-    local k = math.floor((GetItemCount(rg[1]) or 0) / math.max(1, rg[2] or 1))
+    local have = FLT.CraftList and FLT.CraftList.InBags and FLT.CraftList.InBags(rg[1]) or GetItemCount(rg[1]) or 0
+    local k = math.floor(have / math.max(1, rg[2] or 1))
     if not n or k < n then n = k end
   end
   return n or 0
@@ -569,6 +669,19 @@ function UI.CreateRecipeBrowser(parent)
   scanHint:SetPoint("LEFT", f, "LEFT", 344, 0) -- the detail column (the list is 336 wide)
   scanHint:SetJustifyH("RIGHT"); scanHint:SetWordWrap(false)
 
+  -- the Crafting List window (5.7.3, UI/CraftList.lua; stays open when OneForAll closes) - its button lives here since
+  -- 6.2.6-beta28 (user 12.11.: out of the sub-tab row, "in All Recipes und Favorites ... da ist er besser aufgehoben")
+  do
+    local b = UI.GoldButton(f, L["Crafting List"], 130, 22, nil, 12); b:SetPoint("TOPRIGHT", f, "TOPRIGHT", -14, -52)
+    b:SetScript("OnClick", function() if FLT.CraftList then FLT.CraftList.Toggle() end end)
+    b:SetScript("OnEnter", function(self)
+      GameTooltip:SetOwner(self, "ANCHOR_TOP"); GameTooltip:AddLine(L["Crafting List"], 1, 0.82, 0)
+      GameTooltip:AddLine(L["Plan what to craft: the materials you have in your bags, bank and on your other characters, and what is still missing. Add recipes with \"+ List\". Also /ofa craft."], 1, 1, 1, true)
+      GameTooltip:Show()
+    end)
+    b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+  end
+
   -- filters + search
   local filters = {}
   local box = FLT.SkinBlizz(CreateFrame("EditBox", nil, f, "InputBoxTemplate"))
@@ -607,7 +720,6 @@ function UI.CreateRecipeBrowser(parent)
     end, 180)
   end)
   paintFunnel()
-  do local m = UI.NewMark(f, L["New in this version."]); m:SetPoint("LEFT", funnel, "RIGHT", 2, 0) end -- 6.2.x (TODO.md "Neu-Markierungen")
   box:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
   box:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 
@@ -1265,14 +1377,17 @@ function UI.CreateRecipeBrowser(parent)
 
   -- Opens the browser on one recipe (used by the dungeon loot list).
   function f:SelectRecipe(name, spell)
-    f:ShowProfession(name, "all")
+    -- an old search or recipe filter would hide the recipe: clear both first (user 11.11.)
     search = ""
     box:SetText(""); box:ClearFocus()
-    local list = recipesFor(prof)
-    for idx, r in ipairs(list) do
+    if knowFilter() and type(OneForAllDB) == "table" then OneForAllDB.recipeKnowFilter = nil; paintFunnel() end
+    f:ShowProfession(name, "all")
+    for _, r in ipairs(recipesFor(prof)) do
       if r.s == spell then
         selected = r
         f:Refresh()
+        local idx = 1
+        for i, v in ipairs(f.visible or {}) do if v == r then idx = i; break end end
         local function scrollTo()
           local range = lsf:GetVerticalScrollRange() or 0
           lsf:SetVerticalScroll(math.max(0, math.min(range, (idx - 1) * 29 - 120)))

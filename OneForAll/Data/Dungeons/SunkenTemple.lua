@@ -29,7 +29,9 @@ FLT.DUNGEON_REGISTRY["The Temple of Atal'Hakkar"] = {
             pickup = "Brohann Caskbelly, Stormwind City (69.5, 40.4)",
             objective = "Gather 10 Atal'ai Tablets for Brohann Caskbelly in Stormwind.",
             turnin = "Brohann Caskbelly, Stormwind City",
-            rewardItems = {{1490, "Guardian Talisman", 2}},
+            rewardItems = {
+                {1490, "Guardian Talisman", 2},
+            },
         },
         {
             id = 1446,
@@ -40,8 +42,12 @@ FLT.DUNGEON_REGISTRY["The Temple of Atal'Hakkar"] = {
             pickup = "Atal'ai Exile, The Hinterlands (33.8, 75.2)",
             objective = "The Atal'ai Exile in The Hinterlands wants the Head of Jammal'an.",
             turnin = "Atal'ai Exile, The Hinterlands",
-            rewardItems = {{11123, "Rainstrider Leggings", 3}, {11124, "Helm of Exile", 3}},
             rewardChoice = true,
+            rewardItems = {
+                {11123, "Rainstrider Leggings", 3},
+                {11124, "Helm of Exile", 3},
+                {270115, "Leggings of Freedom and Sorrow", 3},
+            },
             note = "Jammal'an the Prophet is in the troll hall, after the six balcony minibosses.",
         },
         {
@@ -63,7 +69,9 @@ FLT.DUNGEON_REGISTRY["The Temple of Atal'Hakkar"] = {
             pickup = "Marvon Rivetseeker, Tanaris (52.7, 45.9)",
             objective = "Travel into the Sunken Temple and discover the secret hidden in the circle of statues.",
             turnin = "Idol of Hakkar, inside the Sunken Temple",
-            rewardItems = {{10773, "Hakkari Urn", 2}},
+            rewardItems = {
+                {10773, "Hakkari Urn", 2},
+            },
             note = "Kill the troll minibosses on the balcony around the circle of statues; then the statues can be activated in order.",
         },
         {
@@ -75,8 +83,13 @@ FLT.DUNGEON_REGISTRY["The Temple of Atal'Hakkar"] = {
             pickup = "Yeh'kinya, Tanaris (67.0, 22.4)",
             objective = "Bring the Filled Egg of Hakkar to Yeh'kinya in Tanaris.",
             turnin = "Yeh'kinya, Tanaris",
-            rewardItems = {{10749, "Avenguard Helm", 3}, {10750, "Lifeforce Dirk", 3}, {10751, "Gemburst Circlet", 3}},
             rewardChoice = true,
+            rewardItems = {
+                {10749, "Avenguard Helm", 3},
+                {10750, "Lifeforce Dirk", 3},
+                {10751, "Gemburst Circlet", 3},
+                {270117, "Shapeshifter's Helm", 3},
+            },
             note = "Fill the Egg of Hakkar with the blood of Hakkar's minions while fighting the Avatar of Hakkar.",
         },
         {
@@ -264,6 +277,8 @@ FLT.DUNGEON_REGISTRY["The Temple of Atal'Hakkar"] = {
                 {20504, "Lightforged Blade", 3},
                 {20505, "Chivalrous Signet", 3},
                 {20512, "Sanctified Orb", 3},
+            },
+            rewardAlso = {
                 {20620, "Holy Mightstone", 1},
             },
         },

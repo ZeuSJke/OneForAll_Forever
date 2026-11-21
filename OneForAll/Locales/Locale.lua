@@ -17,7 +17,8 @@ FLT.LOCALES = FLT.LOCALES or {} -- [code] = function returning the table, put th
 
 -- the languages OneForAll speaks, in the order of the drop-down, each in its own language
 FLT.LANGUAGES = { { key = "enUS", label = "English" }, { key = "deDE", label = "Deutsch" },
-  { key = "frFR", label = "Français" }, { key = "esES", label = "Español" }, -- frFR / esES: beta37
+  { key = "frFR", label = "Français" }, { key = "esES", label = "Español" },
+  { key = "ptBR", label = "Português (Brasil)" }, -- frFR / esES: beta37; ptBR: 6.2.8, translation by ValadaresX (GitHub PR #71)
   { key = "ruRU", label = "Русский" } }
 
 -- the client's language as one of ours: a Mexican Spanish client uses esES, a British English one enUS
@@ -61,10 +62,18 @@ end
 -- a dungeon / raid name (FLT.DUNGEON_REGISTRY key) in the client's language: the instance's name from the game
 -- (GetRealZoneText of the instance map ID in Data/DungeonMaps.lua) when ClientTexts; else the name itself
 local dungeonCache = {}
+-- wings that share one instance map: the game's name has no wing (Discord rinhord 16.11.: every Scarlet Monastery wing
+-- was "Scharlachrotes Kloster"), so these come from our translations
+local N = function(s) return s end
+local WINGS = {}
+for _, n in ipairs({ N"Scarlet Monastery: Graveyard", N"Scarlet Monastery: Library", N"Scarlet Monastery: Armory",
+  N"Scarlet Monastery: Cathedral", N"Dire Maul: East", N"Dire Maul: North", N"Dire Maul: West",
+  N"Lower Blackrock Spire", N"Upper Blackrock Spire" }) do WINGS[n] = true end
 function FLT.DungeonName(name)
   if not names or type(name) ~= "string" then return name end
   local c = dungeonCache[name]
   if c then return c end
+  if WINGS[name] and active and active[name] then dungeonCache[name] = active[name]; return active[name] end
   local m = FLT.DUNGEON_MAPS and FLT.DUNGEON_MAPS[name]
   local id = type(m) == "table" and m.map
   local ok, n = false, nil

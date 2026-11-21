@@ -101,9 +101,9 @@ local function me()
   local inv = db("craftInv")
   local c = inv[key]
   if not c then
-    -- 6.2.5: take over the entry under the old "Name-Realm" key (bank as last seen), then drop that key
-    local oldK = (UnitName("player") or "?") .. "-" .. (GetRealmName and GetRealmName() or "")
-    c = type(inv[oldK]) == "table" and inv[oldK] or { bags = {}, bank = {} }
+    -- 6.2.6-beta16: a new entry; the old "Name-Realm" entry is NOT taken over any more - characters share a first
+    -- name on Forever ("Smörgi Smörglshofer" / "Smörgi Banklshofer"), so it could be another character's bags and bank
+    c = { bags = {}, bank = {} }
     FLT.CharSave(inv, c)
   end
   c.faction = UnitFactionGroup and UnitFactionGroup("player") or c.faction
@@ -119,18 +119,38 @@ local function scan(c, field, bags)
     end
   end
 end
-local BAGS, BANK = { 0, 1, 2, 3, 4 }, { -1, 5, 6, 7, 8, 9, 10, 11 }
+-- bag IDs (6.2.6-beta17): Forever has the reagent bag (Enum.BagIndex.ReagentBag = 5), so the bank bags start at 6 and
+-- there is a reagent bank (-3). The old fixed list {-1, 5 ... 11} counted the reagent bag as "bank" and missed it in the
+-- bags (user 12.11.: 60 Soul Dust in the reagent bag were "bank").
+local BAGS, BANK = { 0, 1, 2, 3, 4 }, { -1 }
+do
+  local BI = type(Enum) == "table" and type(Enum.BagIndex) == "table" and Enum.BagIndex or nil
+  local reagent = BI and BI.ReagentBag
+  if reagent then BAGS[#BAGS + 1] = reagent end
+  local first = BI and BI.BankBag_1 or ((reagent or 4) + 1)
+  for i = 0, (tonumber(NUM_BANKBAGSLOTS) or 7) - 1 do BANK[#BANK + 1] = first + i end
+  if BI and BI.Reagentbank then BANK[#BANK + 1] = BI.Reagentbank end
+end
 
 -- what I have of an item: total and the places (for the tooltip). This character: bags live, bank as last seen.
 local places = {} -- reused
-local function stock(id)
-  wipe(places)
-  local c, key = me(), charKey()
-  local bags = GetItemCount and GetItemCount(id) or (c and c.bags[id]) or 0
-  local bank = c and c.bank[id] or 0
-  local total = bags + bank
-  if bags > 0 then places[#places + 1] = L["Bags"] .. " " .. bags end
-  if bank > 0 then places[#places + 1] = L["Bank"] .. " " .. bank end
+-- exactly what is in the bags incl. the reagent bag (6.2.6-beta16/17: the 60 Soul Dust were in the reagent bag, which the
+-- old bank list also counted as bank - so they counted twice)
+function CL.InBags(id)
+  if not ((C_Container and C_Container.GetContainerNumSlots) or GetContainerNumSlots) then return GetItemCount and GetItemCount(id) or 0 end
+  local n = 0
+  for _, bag in ipairs(BAGS) do
+    for slot = 1, numSlots(bag) do
+      local i, k = slotItem(bag, slot)
+      if i == id then n = n + (k or 1) end
+    end
+  end
+  return n
+end
+-- this character's bank as last seen (6.2.7-beta2, user 13.11.: Profit's shopping list should look at the bank too)
+function CL.InBank(id) local c = me(); return c and c.bank[id] or 0 end
+-- the other characters of this realm and faction that have the item: fn(inv, key, entry, bags, bank)
+local function forAlts(c, id, fn)
   local inv = db("craftInv")
   local realm = GetRealmName and GetRealmName() or ""
   local fac = c and c.faction
@@ -138,17 +158,43 @@ local function stock(id)
     local _, r = FLT.CharOf(k, o)
     if not FLT.IsMyChar(k) and r == realm and type(o) == "table" and (not fac or not o.faction or o.faction == fac) then
       local b, k2 = o.bags and o.bags[id] or 0, o.bank and o.bank[id] or 0
-      if b + k2 > 0 then
-        total = total + b + k2
-        local parts = {}
-        if b > 0 then parts[#parts + 1] = string.format(L["%d bags"], b) end
-        if k2 > 0 then parts[#parts + 1] = string.format(L["%d bank"], k2) end
-        places[#places + 1] = FLT.CharLabel(inv, k, o) .. ": " .. table.concat(parts, ", ")
-      end
+      if b + k2 > 0 then fn(inv, k, o, b, k2) end
     end
   end
+end
+local function stock(id, noAlts)
+  wipe(places)
+  local c = me()
+  local bags = CL.InBags(id)
+  local bank = c and c.bank[id] or 0
+  local total = bags + bank
+  if bags > 0 then places[#places + 1] = L["Bags"] .. " " .. bags end
+  if bank > 0 then places[#places + 1] = L["Bank"] .. " " .. bank end
+  if noAlts then return total end
+  forAlts(c, id, function(inv, k, o, b, k2)
+    total = total + b + k2
+    local parts = {}
+    if b > 0 then parts[#parts + 1] = string.format(L["%d bags"], b) end
+    if k2 > 0 then parts[#parts + 1] = string.format(L["%d bank"], k2) end
+    places[#places + 1] = FLT.CharLabel(inv, k, o) .. ": " .. table.concat(parts, ", ")
+  end)
   return total
 end
+-- 6.2.7-beta4 (user 13.11.: "neben dem item einen hinweis (X in Bank) oder (X on Twink XY)"): where else an item lies,
+-- short - "12 in bank, 5 on Smörgi Banklshofer"; nil when only in the bags / nowhere. Callers show it only while the bags
+-- hold less than needed, so it goes away once the materials are fetched (the bank is read again while it is open).
+local ew = {} -- reused
+function CL.Elsewhere(id)
+  index(); wipe(ew)
+  local c = me()
+  local bank = c and c.bank[id] or 0
+  if bank > 0 then ew[#ew + 1] = string.format(L["%d in bank"], bank) end
+  forAlts(c, id, function(inv, k, o, b, k2) ew[#ew + 1] = string.format(L["%d on %s"], b + k2, FLT.CharLabel(inv, k, o)) end)
+  return #ew > 0 and table.concat(ew, ", ") or nil
+end
+-- for the Skill-Up Helper (SkillUp.lua): total of an item over bags, bank and the other characters, and the places
+-- (a table reused by the next call); noAlts (6.2.7, Discord 13.11.: "a toggle"): without the other characters
+function CL.Stock(id, noAlts) index(); local n = stock(id, noAlts); return n, places end
 
 -- Materials -------------------------------------------------------------------------
 -- rows: { id, need, have, depth, maker = {r, prof}, who, craft = n (crafted), miss = n (to get), mode }
@@ -223,12 +269,23 @@ end
 
 -- List ------------------------------------------------------------------------------
 local refresh -- the window, below
-local function changed() dirty = true; if refresh then refresh() end end
+local askedOnce -- CL.AddAsk, below
+local function changed() dirty = true; if #list() == 0 then askedOnce = false end; if refresh then refresh() end end
 function CL.Add(prof, spell, n)
   n = math.max(1, math.floor(tonumber(n) or 1))
   for _, e in ipairs(list()) do if e.s == spell then e.n = e.n + n; changed(); return end end
   local l = list(); l[#l + 1] = { prof = prof, s = spell, n = n }
   changed()
+end
+-- adding while the list already has recipes: ask whether to clear it first (6.2.10, user 15.11.: "dass das addon fragt ob
+-- man zuvor die crafting list leeren moechte, falls bereits etwas drin ist"). once = the recipe bar's "+ List": asked
+-- only once until the list is empty again, so a list of several recipes can be built without a question each time
+askedOnce = false
+function CL.AddAsk(addFn, once)
+  if #list() == 0 or (once and askedOnce) or not UI.Confirm then askedOnce = once and true or askedOnce; addFn(); return end
+  UI.Confirm(L["The Crafting List already has recipes on it. Clear it first?"],
+    function() wipe(list()); changed(); askedOnce = true; addFn() end, L["Clear list"], nil,
+    L["Keep and add"], function() askedOnce = true; addFn() end)
 end
 function CL.Count(spell) for _, e in ipairs(list()) do if e.s == spell then return e.n end end return 0 end
 -- one craft of a planned recipe is done: one less on the list, gone at 0 (6.1.5, user 05.11.: had to click "-")
@@ -313,6 +370,33 @@ local function newRow()
   -- small "Craft" (user 24.10.): only the look; the secure button "overlay" is laid over it on mouse-over
   b.craftBtn = UI.GoldButton(b, L["Craft"], 46, 20, nil, 11)
   b.craftBtn:SetScript("OnEnter", function(self) if CL._hoverCraft then CL._hoverCraft(self) end end)
+  -- "Buy" at an open merchant who sells it (6.2.7, user 13.11.: "haendler oeffnen, button Buy erscheint")
+  b.buyBtn = UI.GoldButton(b, L["Buy"], 46, 20, nil, 11); b.buyBtn:SetPoint("RIGHT", b.c3, "LEFT", -6, 0)
+  b.buyBtn:SetScript("OnClick", function(self) if self.id and CL.BuyFromMerchant then self:Disable(); CL.BuyFromMerchant(self.id) end end)
+  b.buyBtn:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_TOP"); GameTooltip:SetText(L["Buy"])
+    if self.cost then GameTooltip:AddLine(string.format(L["Buys what is missing from this merchant: %s"], self.cost), 1, 1, 1, true) end
+    GameTooltip:Show()
+  end)
+  b.buyBtn:SetScript("OnLeave", function() GameTooltip:Hide() end)
+  -- map button: the nearest vendor who sells it (6.2.10, user 15.11.: "bei simple wood und fine thread, also alle vendor
+  -- mats, waere ein map button gut mit dem vendor am naehesten der das verkauft"); worked out on mouse-over / click
+  b.mapBtn = UI.GoldButton(b, "", 18, 18, UI.ASSET_ROOT .. "icon_map"); b.mapBtn:SetPoint("RIGHT", b.c3, "LEFT", -4, 0)
+  b.mapBtn:SetScript("OnClick", function(self)
+    local v = CL.NearestVendor(self.id)
+    if v and FLT.ShowOnMap then FLT:ShowOnMap({ mapID = v[3], x = v[4], y = v[5], name = v[1] }) end
+  end)
+  b.mapBtn:SetScript("OnEnter", function(self)
+    local v = CL.NearestVendor(self.id)
+    GameTooltip:SetOwner(self, "ANCHOR_TOP")
+    if v then
+      local info = C_Map and C_Map.GetMapInfo and C_Map.GetMapInfo(v[3])
+      GameTooltip:SetText(L["Nearest vendor"], GOLD[1], GOLD[2], GOLD[3])
+      GameTooltip:AddLine((FLT.NM and FLT.NM(v[1]) or v[1]) .. (info and info.name and (", " .. info.name) or ""), 1, 1, 1)
+    else GameTooltip:SetText(L["Sold by vendors"]) end
+    GameTooltip:Show()
+  end)
+  b.mapBtn:SetScript("OnLeave", function() GameTooltip:Hide() end)
   b.count = FLT.NewFS(b, nil, "OVERLAY", "GameFontHighlight"); b.count:SetPoint("LEFT", b.minus, "RIGHT", 2, 0); b.count:SetPoint("RIGHT", b.plus, "LEFT", -2, 0)
   b:SetScript("OnEnter", rowTooltip); b:SetScript("OnLeave", function() GameTooltip:Hide() end)
   -- Shift-click: item link into the chat or the auction house search, Ctrl-click: dressing room (user 26.10.)
@@ -327,7 +411,7 @@ local function acquire()
   local b = pool[used]
   if not b then b = newRow(); pool[used] = b end
   b:ClearAllPoints(); b:Show()
-  for _, k in ipairs({ "mode", "minus", "plus", "del", "count", "c2", "c3", "tag", "craftBtn", "ok" }) do b[k]:Hide() end
+  for _, k in ipairs({ "mode", "minus", "plus", "del", "count", "c2", "c3", "tag", "craftBtn", "ok", "buyBtn", "mapBtn" }) do b[k]:Hide() end
   b.data = nil
   return b
 end
@@ -363,6 +447,7 @@ end
 
 refresh = function()
   if not (frame and frame:IsShown()) then return end
+  if frame.atr then frame.atr:SetShown(FLT.SkillUp and FLT.SkillUp.HasAuctionator and FLT.SkillUp.HasAuctionator() or false) end
   compute()
   for i = 1, used do pool[i]:Hide() end
   used = 0
@@ -407,6 +492,13 @@ refresh = function()
       b.craftBtn:ClearAllPoints(); b.craftBtn:SetPoint("RIGHT", b.c2, "LEFT", -2, 0); b.craftBtn:SetLabel(L["Craft"]); b.craftBtn:SetWidth(46); b.craftBtn:Show()
       b.craftBtn.target = { prof = row.maker.prof, r = row.maker.r, n = math.ceil(row.craft / (row.maker.r.c or 1)) }
     end
+    local where = CL.InBags(row.id) < row.need and CL.Elsewhere(row.id) -- 6.2.7-beta4: "(12 in bank)"
+    if where then
+      b.tag:SetText("|cffffd060(" .. where .. ")|r"); b.tag:ClearAllPoints()
+      local anchor = (row.craft and b.craftBtn:IsShown() and b.craftBtn) or (row.craft and b.c2) or b.c3
+      b.tag:SetPoint("RIGHT", anchor, "LEFT", -4, 0); b.tag:Show()
+      b.name:SetPoint("RIGHT", b.tag, "LEFT", -4, 0)
+    end
     local col = row.have >= row.need and "|cff59ff73" or (row.craft and "|cff9fd0ff" or "|cffff6060")
     b.c3:SetText(col .. row.have .. "|r / " .. row.need); b.c3:Show()
     if row.craft then b.c2:SetText("|cff9fd0ff" .. string.format(L["craft %s"], row.craft) .. "|r"); b.c2:Show() end
@@ -436,10 +528,55 @@ refresh = function()
     b.icon:SetTexture(GetItemIcon and GetItemIcon(id) or "Interface\\Icons\\INV_Misc_QuestionMark")
     local name, q = itemName(id)
     b.name:SetText(name); b.name:SetTextColor(qcolor(q)); b.name:SetPoint("RIGHT", b.c3, "LEFT", -50, 0)
-    if FLT.VENDOR_REAGENTS and FLT.VENDOR_REAGENTS[id] then b.tag:SetText(L["Vendor"]); b.tag:ClearAllPoints(); b.tag:SetPoint("RIGHT", b.c3, "LEFT", -6, 0); b.tag:Show() end
+    local m = CL.MerchantSells and CL.MerchantSells(id)
+    if m then
+      b.buyBtn.id = id; b.buyBtn.cost = CL.MerchantCost(m, shop[id]); b.buyBtn:Enable(); b.buyBtn:Show()
+    elseif FLT.VENDOR_REAGENTS and FLT.VENDOR_REAGENTS[id] then
+      local vs = FLT.VENDOR_REAGENTS[id]
+      local anchor = b.c3
+      if type(vs) == "table" and #vs > 0 then b.mapBtn.id = id; b.mapBtn:Show(); anchor = b.mapBtn end
+      b.tag:SetText(L["Vendor"]); b.tag:ClearAllPoints(); b.tag:SetPoint("RIGHT", anchor, "LEFT", -6, 0); b.tag:Show()
+      b.name:SetPoint("RIGHT", b.c3, "LEFT", -74, 0)
+    end
     b.c3:SetText("|cffff6060" .. shop[id] .. "|r"); b.c3:Show()
   end
   child:SetHeight(-y + 8)
+end
+
+-- the nearest vendor of my faction who sells an item: { name, side, uiMapID, x, y } (Data/VendorReagents.lua, 6.2.10)
+local vlist = {}
+function CL.NearestVendor(id)
+  local ids, npcs = FLT.VENDOR_REAGENTS and FLT.VENDOR_REAGENTS[id], FLT.REAGENT_VENDOR_NPCS
+  if type(ids) ~= "table" or not npcs then return nil end
+  local fac = UnitFactionGroup and UnitFactionGroup("player")
+  fac = fac == "Alliance" and "A" or fac == "Horde" and "H" or nil
+  wipe(vlist)
+  for _, nid in ipairs(ids) do
+    local v = npcs[nid]
+    if v and (not fac or v[2] == "AH" or v[2] == fac) then vlist[#vlist + 1] = v end
+  end
+  if #vlist == 0 then return nil end
+  return UI.NearestOf and UI.NearestOf(vlist, 3) or vlist[1]
+end
+
+-- the missing materials as a shopping list for Auctionator (6.2.10, user 15.11.: "ganz unten einen button der die
+-- fehlenden materialien an auctionator senden kann als einkaufsliste"); what a vendor sells is left out
+local function sendToAuctionator()
+  local SU = FLT.SkillUp
+  if not (SU and SU.SendToAuctionator) then return end
+  local items = {}
+  compute()
+  for id, n in pairs(shop) do
+    if n > 0 and not (FLT.VENDOR_REAGENTS and FLT.VENDOR_REAGENTS[id]) then items[#items + 1] = { id = id, n = n } end
+  end
+  table.sort(items, function(a, b) return a.id < b.id end)
+  local function msg(ok, missing)
+    if not FLT.Msg then return end
+    if #items == 0 then FLT.Msg(L["Nothing to buy at the auction house."]); return end
+    FLT.Msg(ok and L["Shopping list \"OneForAll Crafting List\" is in Auctionator (Shopping tab)."] or L["Auctionator did not take the list (open the auction house once, then try again)."])
+    if ok and missing > 0 then FLT.Msg(string.format(L["%d materials could not be added yet (item data still loading) - send the list again."], missing)) end
+  end
+  if #items > 0 then SU.SendToAuctionator({ ah = items }, "OneForAll Crafting List", msg) else msg(false, 0) end
 end
 
 local function create()
@@ -472,39 +609,16 @@ local function create()
     if UI.Confirm then UI.Confirm(L["Remove everything from the Crafting List?"], function() wipe(list()); changed() end)
     else wipe(list()); changed() end
   end)
-  -- one secure Craft button, laid over the small "Craft" of the row under the mouse (secure buttons cannot be
-  -- moved in combat, rows are reused, so there is only this one; it opens the profession window, then crafts)
-  local ov = CreateFrame("Button", "OneForAllCraftListCraft", frame, "SecureActionButtonTemplate"); ov:Hide()
-  UI.CombatDetach(ov) -- not inside the Crafting List window in combat, so the window can still be closed
-  local ohl = ov:CreateTexture(nil, "HIGHLIGHT"); ohl:SetAllPoints(); ohl:SetColorTexture(FLT.SkinC(1, 0.82, 0.3, 0.15))
-  -- the small button grows with its text ("Craft now" ran over its edge, user 05.11.), the secure one follows it
-  secureCraft(ov, function() if ov.t then return ov.t.prof, ov.t.r, ov.t.n end end, function(t)
-    local fake = ov.fake
-    if not fake then return end
-    fake:SetLabel(t)
-    local fs = fake._label
-    local w = fs and fs.GetStringWidth and fs:GetStringWidth() or 0
-    fake:SetWidth(math.max(46, math.ceil(w) + 14))
-    if CL._hoverCraft then CL._hoverCraft(fake) end
+  frame.atr = UI.GoldButton(frame, L["Send to Auctionator"], 150, 20, nil, 11); frame.atr:SetPoint("LEFT", frame.clear, "RIGHT", 8, 0)
+  frame.atr:SetScript("OnClick", sendToAuctionator)
+  frame.atr:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_TOP"); GameTooltip:SetText(L["Send to Auctionator"], GOLD[1], GOLD[2], GOLD[3])
+    GameTooltip:AddLine(L["Puts the missing materials into Auctionator as the shopping list \"OneForAll Crafting List\". Materials a vendor sells are left out."], 1, 1, 1, true)
+    GameTooltip:Show()
   end)
-  ov:SetScript("OnEnter", function(self)
-    if not self.t then return end
-    GameTooltip:SetOwner(self, "ANCHOR_TOP"); GameTooltip:AddLine(string.format(L["Craft %sx"], self.t.n), 1, 0.82, 0)
-    GameTooltip:AddLine(L["Opens your profession window if it is closed; click again to craft."], 1, 1, 1, true); GameTooltip:Show()
-  end)
-  ov:SetScript("OnLeave", function(self) GameTooltip:Hide(); if not (InCombatLockdown and InCombatLockdown()) then self:Hide() end end)
-  CL._hoverCraft = function(fake)
-    if InCombatLockdown and InCombatLockdown() then return end
-    -- placed by screen position, not anchored to the row (user 05.11.: "Cannot anchor protected frames to regions" -
-    -- the live client does not let a secure button hang on a normal frame)
-    local l, b, w, h = fake:GetLeft(), fake:GetBottom(), fake:GetWidth(), fake:GetHeight()
-    if not (l and b and w and h) then return end
-    local k = (fake:GetEffectiveScale() or 1) / (ov:GetEffectiveScale() or 1)
-    ov:ClearAllPoints(); ov:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", l * k, b * k); ov:SetSize(w * k, h * k)
-    ov:SetFrameStrata(frame:GetFrameStrata()); ov:SetFrameLevel(fake:GetFrameLevel() + 5)
-    ov.t, ov.fake = fake.target, fake
-    ov:Show()
-  end
+  frame.atr:SetScript("OnLeave", function() GameTooltip:Hide() end)
+  -- one secure Craft button, laid over the small "Craft" of the row under the mouse (CL.CraftOverlay)
+  CL._hoverCraft = CL.CraftOverlay(frame, "OneForAllCraftListCraft")
   -- like the OneForAll window (user 26.10.): the corner grip scales the whole list, the bottom grip sets its height.
   -- Scale: OneForAllDB.craftListScale (unset = the OneForAll window's scale), height: OneForAllDB.craftListH.
   local function cdb() return type(OneForAllDB) == "table" and OneForAllDB or {} end
@@ -716,6 +830,46 @@ secureCraft = function(btn, target, onState)
 end
 CL._secureCraft = secureCraft
 
+-- one secure Craft button for a window: laid over the small look-only "Craft" (a GoldButton with .target =
+-- { prof, r, n }) the mouse is on. Secure buttons cannot be moved in combat and rows are reused, so there is only this
+-- one per window; it opens the profession window, then crafts. Returns hover(fake) for the fake's OnEnter.
+-- (Crafting List 6.1.x; Skill-Up guide 6.2.6-beta19)
+function CL.CraftOverlay(frame, name)
+  local ov = CreateFrame("Button", name, frame, "SecureActionButtonTemplate"); ov:Hide()
+  UI.CombatDetach(ov) -- not inside the window in combat, so the window can still be closed
+  local ohl = ov:CreateTexture(nil, "HIGHLIGHT"); ohl:SetAllPoints(); ohl:SetColorTexture(FLT.SkinC(1, 0.82, 0.3, 0.15))
+  local hover
+  -- the small button grows with its text ("Craft now" ran over its edge, user 05.11.), the secure one follows it
+  secureCraft(ov, function() if ov.t then return ov.t.prof, ov.t.r, ov.t.n end end, function(t)
+    local fake = ov.fake
+    if not fake then return end
+    fake:SetLabel(t == L["Craft"] and (fake.label0 or t) or t)
+    local fs = fake._label
+    local w = fs and fs.GetStringWidth and fs:GetStringWidth() or 0
+    fake:SetWidth(math.max(fake.minW or 46, math.ceil(w) + 14))
+    hover(fake)
+  end)
+  ov:SetScript("OnEnter", function(self)
+    if not self.t then return end
+    GameTooltip:SetOwner(self, "ANCHOR_TOP"); GameTooltip:AddLine(string.format(L["Craft %sx"], self.t.n), 1, 0.82, 0)
+    GameTooltip:AddLine(L["Opens your profession window if it is closed; click again to craft."], 1, 1, 1, true); GameTooltip:Show()
+  end)
+  ov:SetScript("OnLeave", function(self) GameTooltip:Hide(); if not (InCombatLockdown and InCombatLockdown()) then self:Hide() end end)
+  hover = function(fake)
+    if InCombatLockdown and InCombatLockdown() then return end
+    -- placed by screen position, not anchored to the row (user 05.11.: "Cannot anchor protected frames to regions" -
+    -- the live client does not let a secure button hang on a normal frame)
+    local l, b, w, h = fake:GetLeft(), fake:GetBottom(), fake:GetWidth(), fake:GetHeight()
+    if not (l and b and w and h) then return end
+    local k = (fake:GetEffectiveScale() or 1) / (ov:GetEffectiveScale() or 1)
+    ov:ClearAllPoints(); ov:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", l * k, b * k); ov:SetSize(w * k, h * k)
+    ov:SetFrameStrata(frame:GetFrameStrata()); ov:SetFrameLevel(fake:GetFrameLevel() + 5)
+    ov.t, ov.fake = fake.target, fake
+    ov:Show()
+  end
+  return hover
+end
+
 function CL.RecipeBar(parent)
   -- stacked (user 24.10.): amount and "+ List", below it "Craft", below that how many are on the list
   local bar = CreateFrame("Frame", nil, parent); bar:SetSize(104, 70)
@@ -731,9 +885,14 @@ function CL.RecipeBar(parent)
   local onList = FLT.NewFS(bar, nil, "OVERLAY", "GameFontDisableSmall"); onList:SetPoint("TOP", bar, "TOP", 0, -56)
   add:SetScript("OnClick", function()
     if not cur then return end
-    CL.Add(cur.prof, cur.r.s, n()); amount:ClearFocus()
-    onList:SetText(string.format(L["%d on the list"], CL.Count(cur.r.s))); CL.Show()
-    if bar.onChange then bar.onChange() end -- the recipe view makes room for the "on the list" line
+    local r, prof, cnt = cur.r, cur.prof, n()
+    amount:ClearFocus()
+    CL.AddAsk(function()
+      CL.Add(prof, r.s, cnt)
+      if cur and cur.r == r then onList:SetText(string.format(L["%d on the list"], CL.Count(r.s))) end
+      CL.Show()
+      if bar.onChange then bar.onChange() end -- the recipe view makes room for the "on the list" line
+    end, true)
   end)
   add:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_TOP"); GameTooltip:AddLine(L["Add to the Crafting List"], 1, 0.82, 0)
@@ -788,6 +947,18 @@ end
 
 -- Events: stock of this character ------------------------------------------------------
 local bankOpen, pending
+-- 6.2.7-beta5 (user 13.11.: took 1 Silk Cloth out of the bank, the bank count stayed): the bank is read right away on every
+-- change while it is open and once more when it closes (the 2 s delay missed a bank closed right after). Only while the
+-- bank containers can be read, so a closed bank never wipes what was saved.
+local function scanBank(c)
+  for _, bag in ipairs(BANK) do
+    if numSlots(bag) > 0 then scan(c, "bank", BANK); return true end
+  end
+end
+local function bankChanged() -- the Crafting List and the Skill-Up guide (its "(12 in bank)" hints)
+  changed()
+  if FLT.SkillUp and FLT.SkillUp.RefreshGuide then FLT.SkillUp.RefreshGuide() end
+end
 local function bagsLater()
   if pending or not (C_Timer and C_Timer.After) then return end
   pending = true
@@ -795,19 +966,103 @@ local function bagsLater()
     pending = false
     local c = me(); if not c then return end
     scan(c, "bags", BAGS)
-    if bankOpen then scan(c, "bank", BANK) end
+    if bankOpen then scanBank(c) end
     changed()
   end)
 end
+-- the open merchant (6.2.7, user 13.11.): [itemID] = { index, price, per (items per purchase), max (stack), left (-1 = any) };
+-- read when a merchant opens (6.2.8: also for the Skill-Up guide's vendor section), gone when the merchant closes
+local merchant, merchantOpen = {}, false
+-- the modern client has C_MerchantFrame.GetItemInfo (a table) instead of GetMerchantItemInfo (6.2.7-beta22: no Buy button in
+-- the game with beta21)
+local function merchantInfo(i)
+  local CM = type(C_MerchantFrame) == "table" and C_MerchantFrame
+  if CM and CM.GetItemInfo then
+    local ok, t = pcall(CM.GetItemInfo, i)
+    if ok and type(t) == "table" then return t.price, t.stackCount, t.numAvailable, t.isPurchasable, t.hasExtendedCost end
+  end
+  if GetMerchantItemInfo then
+    local _, _, price, per, left, purchasable, _, extended = GetMerchantItemInfo(i)
+    return price, per, left, purchasable, extended
+  end
+end
+local function merchantItemID(i)
+  if GetMerchantItemID then return GetMerchantItemID(i) end
+  local link = GetMerchantItemLink and GetMerchantItemLink(i)
+  return link and tonumber(link:match("item:(%d+)")) or nil
+end
+local function readMerchant()
+  wipe(merchant)
+  local num = (GetMerchantNumItems and GetMerchantNumItems()) or (type(C_MerchantFrame) == "table" and C_MerchantFrame.GetNumItems and C_MerchantFrame.GetNumItems()) or 0
+  if not merchantOpen then return end
+  for i = 1, num do
+    local id = merchantItemID(i)
+    local price, per, left, purchasable, extended = merchantInfo(i)
+    if id and price and price > 0 and purchasable ~= false and not extended then
+      merchant[id] = { i = i, price = price, per = math.max(1, per or 1), max = GetMerchantItemMaxStack and GetMerchantItemMaxStack(i) or 20, left = left or -1 }
+    end
+  end
+end
+function CL.MerchantSells(id) return merchantOpen and merchant[id] or nil end
+local function buys(m, need) -- purchases needed (one purchase = m.per items), limited by stock and money
+  local n = math.ceil(need / m.per)
+  if m.left and m.left >= 0 then n = math.min(n, m.left) end
+  local money = GetMoney and GetMoney()
+  if money then n = math.min(n, math.floor(money / m.price)) end
+  return math.max(0, n)
+end
+function CL.MerchantCost(m, need)
+  local n = buys(m, need or 0)
+  return n > 0 and (FLT.QoL and FLT.QoL.Money and FLT.QoL.Money(n * m.price) or tostring(n * m.price)) or nil
+end
+function CL.BuyFromMerchant(id, need) -- need: how many (Skill-Up guide); else what the Crafting List misses
+  local m = CL.MerchantSells(id)
+  if not need then
+    if dirty then compute() end
+    need = shop[id]
+  end
+  local buy = BuyMerchantItem or (type(C_MerchantFrame) == "table" and C_MerchantFrame.BuyItem) or nil
+  if not (m and need and need > 0 and buy) then return end
+  local n = buys(m, need)
+  if m.per > 1 then
+    for _ = 1, n do buy(m.i, 1) end -- packs: one pack per call
+  else
+    local stack = math.max(1, m.max or 1)
+    while n > 0 do local k = math.min(n, stack); buy(m.i, k); n = n - k end
+  end
+end
 local ev = CreateFrame("Frame")
-for _, e in ipairs({ "PLAYER_LOGIN", "BAG_UPDATE_DELAYED", "BANKFRAME_OPENED", "BANKFRAME_CLOSED" }) do pcall(ev.RegisterEvent, ev, e) end
+for _, e in ipairs({ "MERCHANT_SHOW", "MERCHANT_CLOSED", "MERCHANT_UPDATE" }) do pcall(ev.RegisterEvent, ev, e) end
+for _, e in ipairs({ "PLAYER_LOGIN", "BAG_UPDATE_DELAYED", "BANKFRAME_OPENED", "BANKFRAME_CLOSED", "PLAYERBANKSLOTS_CHANGED" }) do pcall(ev.RegisterEvent, ev, e) end
 if ev.RegisterUnitEvent then pcall(ev.RegisterUnitEvent, ev, "UNIT_SPELLCAST_SUCCEEDED", "player") end
 ev:SetScript("OnEvent", function(_, event, _, _, spell)
+  if event == "MERCHANT_SHOW" or event == "MERCHANT_UPDATE" or event == "MERCHANT_CLOSED" then
+    if event == "MERCHANT_UPDATE" and not merchantOpen then return end
+    merchantOpen = event ~= "MERCHANT_CLOSED"
+    local had = next(merchant) ~= nil
+    readMerchant()
+    if had or next(merchant) then
+      changed()
+      if FLT.SkillUp and FLT.SkillUp.RefreshGuide then FLT.SkillUp.RefreshGuide() end
+    end
+    return
+  end
   if event == "UNIT_SPELLCAST_SUCCEEDED" then
     if spell and not (FLT.IsSecret and FLT.IsSecret(spell)) and #list() > 0 then CL.Crafted(spell) end
-  elseif event == "BANKFRAME_OPENED" then bankOpen = true; local c = me(); if c then scan(c, "bank", BANK); changed() end
-  elseif event == "BANKFRAME_CLOSED" then bankOpen = false
-  else bagsLater() end
+  elseif event == "BANKFRAME_OPENED" then bankOpen = true; local c = me(); if c and scanBank(c) then bankChanged() end
+  elseif event == "BANKFRAME_CLOSED" then
+    local c = bankOpen and me(); if c and scanBank(c) then bankChanged() end
+    bankOpen = false
+  else
+    if bankOpen and event ~= "PLAYER_LOGIN" then local c = me(); if c and scanBank(c) then bankChanged() end end
+    -- 6.2.6-beta17, once: the banks saved so far may hold the reagent bag (old bag list) - forget them, each character's
+    -- bank is read again the next time it is opened
+    if event == "PLAYER_LOGIN" and type(OneForAllDB) == "table" and not OneForAllDB.craftInvBank2 then
+      for _, o in pairs(OneForAllDB.craftInv or {}) do if type(o) == "table" and type(o.bank) == "table" then wipe(o.bank) end end
+      OneForAllDB.craftInvBank2 = true
+    end
+    bagsLater()
+  end
 end)
 CL._compute = function() compute(); return rows, shop end -- tests
 CL._reset = function() bySpell = nil; dirty = true end

@@ -27,14 +27,13 @@ FLT.FAVOR_GUIDE = {
 }
 
 -- Library Book reward quests (Wowhead Forever, 2 October 2026).
--- Each tier is a separate quest at the librarian; the book count for the
--- third tier is not confirmed yet.
+-- Each tier is a separate quest at the librarian; the third tier is at 25 books (since 6.2.6-beta40, Discord Kharo / Wowhead).
 FLT.BOOK_REWARD_TIERS = {
   {books="10 books", quest="Friend of the Library", questID=78150, req=1,
    items={{277203,"Scholarly Pendant",2,"Neck - +3 Stamina, +2 Spirit"},{277204,"Erudite's Amulet",2,"Neck - +2 Agility, +3 Stamina"}}},
   {books="20 books", quest="Greater Friend of the Library", questID=79536, req=20,
    items={{281634,"Field Researcher's Loop",3,"Ring - +7 Agility, +7 Stamina"},{281635,"Philanthropist's Ring",3,"Ring - +5 Intellect, up to +9 spell power"}}},
-  {books="30 books (?)", quest="Greater Friend of the Library", questID=82208, req=30,
+  {books="25 books", quest="Greater Friend of the Library", questID=82208, req=35, -- 25 books (Discord Kharo 11.11., Wowhead), level 35 (QuestieDB)
    items={{277254,"Truthseeker's Bow",3,"Bow - +7 Agility, +3 Stamina"},{277258,"Crest of Elucidation",3,"Shield - +12 Spirit, healing"},{277260,"Researcher's Night Light",3,"Off-hand - +12 Stamina, fire damage"}}},
 }
 

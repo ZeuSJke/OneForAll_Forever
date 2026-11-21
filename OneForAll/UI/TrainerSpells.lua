@@ -47,6 +47,9 @@ end
 
 local function costsDB(token)
   if type(OneForAllDB) ~= "table" or not token then return {} end
+  -- 6.2.9 (Discord 14.11., druids: "Swipe Rank 1 at level 54"): 6.2.8 saved the level and fee of a spell's highest rank
+  -- under its rank 1 (see serviceSpellID); those values are dropped once and read again at the next trainer visit
+  if (OneForAllDB.trainerCostsV or 1) < 2 then OneForAllDB.trainerCosts = nil; OneForAllDB.trainerCostsV = 2 end
   OneForAllDB.trainerCosts = OneForAllDB.trainerCosts or {}
   OneForAllDB.trainerCosts[token] = OneForAllDB.trainerCosts[token] or {}
   return OneForAllDB.trainerCosts[token]
@@ -56,6 +59,8 @@ local function rankOf(text)
   return tonumber(type(text) == "string" and text:match("(%d+)") or nil) or 0
 end
 
+-- spells the spellbook drops once a later one is learned: id -> the later spell's id
+local SUPERSEDED = { [5487] = 9634 } -- Bear Form -> Dire Bear Form
 -- spellbook: highest known rank per spell name
 local function knownSpells()
   local known = {}
@@ -83,8 +88,18 @@ end
 -- learn costs (and the real level) while a class trainer of your class is open
 -- the spell behind a trainer line, read from a hidden tooltip (names and rank
 -- texts are not reliable enough to match our list)
+-- 6.2.8 (Discord FatPunk 13.11.: "Freeze when visiting the trainer"): building a tooltip per line is slow, so each line's
+-- spell ID is read once per trainer visit (keyed by name and rank text; wiped when the trainer opens / closes)
 local scanTip
+local idCache = {}
+-- 6.2.9: the key also holds the level and the fee - the Forever client gives no rank text, so name and rank text alone
+-- were the same for every rank and all ranks got the first rank's spell ID (Discord 14.11.: Swipe Rank 1 listed at 54)
 local function serviceSpellID(i)
+  local name, sub = GetTrainerServiceInfo(i)
+  local lvl = GetTrainerServiceLevelReq and GetTrainerServiceLevelReq(i)
+  local cost = GetTrainerServiceCost and GetTrainerServiceCost(i)
+  local key = name and (name .. "|" .. tostring(sub) .. "|" .. tostring(lvl) .. "|" .. tostring(cost))
+  if key and idCache[key] ~= nil then return idCache[key] or nil end
   if not scanTip then
     scanTip = CreateFrame("GameTooltip", "OneForAllTrainerScanTip", nil, "GameTooltipTemplate")
   end
@@ -95,7 +110,9 @@ local function serviceSpellID(i)
     id = select(2, scanTip:GetSpell())
     scanTip:Hide()
   end)
-  return tonumber(id)
+  id = tonumber(id)
+  if key then idCache[key] = id or false end
+  return id
 end
 -- Learn level of recipes (6.1.5, user 05.11.: not in the client data, the trainer knows it): read at a profession
 -- trainer, kept in OneForAllDB.recipeLearn[profession][spellID] and filled into the recipe data (r.req) where it is missing
@@ -115,6 +132,16 @@ function FLT.ApplyRecipeLearnLevels()
     end
   end
 end
+local byNameCache = {}
+local function recipeByName(prof)
+  local t = byNameCache[prof]
+  if not t then
+    t = {}
+    for _, r in ipairs(FLT.PROFESSION_RECIPES[prof] or {}) do t[r.n] = r end
+    byNameCache[prof] = t
+  end
+  return t
+end
 local function readProfTrainer(all)
   if not (GetTrainerServiceSkillReq and FLT.PROFESSION_RECIPES) then return end
   -- user 05.11.: learned recipes kept their "?" - the trainer list hides them (filter "already learned" off). On opening
@@ -131,8 +158,6 @@ local function readProfTrainer(all)
       if ok and not (v == true or v == 1) and pcall(SetTrainerServiceTypeFilter, t, true) then saved[t] = true end
     end
   end
-  local byName = {}
-  for prof, list in pairs(FLT.PROFESSION_RECIPES) do for _, r in ipairs(list) do byName[prof .. "|" .. r.n] = r end end
   local got = 0
   for i = 1, GetNumTrainerServices() do
     local name, _, category = GetTrainerServiceInfo(i)
@@ -142,10 +167,22 @@ local function readProfTrainer(all)
       -- the trainer names the profession in the client's language ("Schneiderei"): our key (6.2.0)
       skill = FLT.ProfKey and FLT.ProfKey(skill) or skill
       if type(skill) == "string" and rank then
-        local r = byName[skill .. "|" .. name]
-        local id = serviceSpellID(i)
-        if not r and id then for _, x in ipairs(FLT.PROFESSION_RECIPES[skill] or {}) do if x.s == id then r = x; break end end end
-        if r then db[skill] = db[skill] or {}; db[skill][r.s] = rank; got = got + 1 end
+        -- by name first (one table per profession, built once); the slow spell ID only when the name does not match
+        local r = recipeByName(skill)[name]
+        if not r then
+          local id = serviceSpellID(i)
+          if id then for _, x in ipairs(FLT.PROFESSION_RECIPES[skill] or {}) do if x.s == id then r = x; break end end end
+        end
+        if r then
+          db[skill] = db[skill] or {}; db[skill][r.s] = rank; got = got + 1
+          -- the fee as the trainer asks it (6.2.6, Skill-Up Helper; beats Data/ProfessionFees.lua)
+          local cost = GetTrainerServiceCost and tonumber((GetTrainerServiceCost(i)))
+          if cost and type(OneForAllDB) == "table" then
+            OneForAllDB.trainerFees = OneForAllDB.trainerFees or {}
+            local f = OneForAllDB.trainerFees[skill] or {}; OneForAllDB.trainerFees[skill] = f
+            f[r.s] = cost
+          end
+        end
       end
     end
   end
@@ -155,8 +192,14 @@ local function readProfTrainer(all)
 end
 
 local trainerRaw = {}
+local readThisVisit = false -- 6.2.8 (Discord Pylons 13.11.: every learned spell froze the game): read once per visit
 local function readTrainer(show)
   if not GetNumTrainerServices or not GetTrainerServiceInfo then return end
+  -- fees, levels and recipe levels do not change while you stand at the trainer: once per visit (the list can still be
+  -- empty on TRAINER_SHOW - then the first TRAINER_UPDATE reads it)
+  if readThisVisit then if FLT.RefreshTrainerSpells then FLT.RefreshTrainerSpells() end return end
+  if (GetNumTrainerServices() or 0) == 0 then return end
+  readThisVisit = true
   if IsTradeskillTrainer and IsTradeskillTrainer() then readProfTrainer(show); return end
   local db = costsDB(myToken)
   trainerRaw = {}
@@ -187,12 +230,21 @@ end
 
 local ev = CreateFrame("Frame")
 -- not every event exists in every client (e.g. LEARNED_SPELL_IN_TAB is missing in Forever)
-for _, e in ipairs({ "PLAYER_LOGIN", "TRAINER_SHOW", "TRAINER_UPDATE", "SPELLS_CHANGED", "LEARNED_SPELL_IN_TAB", "PLAYER_LEVEL_UP" }) do
+for _, e in ipairs({ "PLAYER_LOGIN", "TRAINER_SHOW", "TRAINER_UPDATE", "TRAINER_CLOSED", "SPELLS_CHANGED", "LEARNED_SPELL_IN_TAB", "PLAYER_LEVEL_UP" }) do
   pcall(ev.RegisterEvent, ev, e)
 end
+local updatePending = false
 local function onEventSafe(_, event)
   if event == "PLAYER_LOGIN" then FLT.ApplyRecipeLearnLevels()
-  elseif event == "TRAINER_SHOW" or event == "TRAINER_UPDATE" then readTrainer(event == "TRAINER_SHOW")
+  elseif event == "TRAINER_SHOW" then idCache = {}; updatePending = false; readThisVisit = false; readTrainer(true)
+  elseif event == "TRAINER_CLOSED" then idCache = {}; updatePending = false; readThisVisit = false
+  elseif event == "TRAINER_UPDATE" then
+    -- one purchase (and our own filter switching) fires several updates: read once, a moment after the last
+    if updatePending then return end
+    updatePending = true
+    if C_Timer and C_Timer.After then
+      C_Timer.After(0.5, function() if updatePending then updatePending = false; FLT.SafeCall("Trainer", readTrainer, false) end end)
+    else updatePending = false; readTrainer(false) end
   elseif FLT.RefreshTrainerSpells then
     if C_Timer and C_Timer.After then C_Timer.After(0.3, FLT.RefreshTrainerSpells) else FLT.RefreshTrainerSpells() end
   end
@@ -236,6 +288,9 @@ local function spellList(cid)
         local ok, yes = pcall(IsSpellKnown or function() end, id)
         -- rogue poisons are recipes of the Poisons skill, not in the spellbook (6.2.2): IsPlayerSpell knows them
         if not (ok and yes) and IsPlayerSpell then ok, yes = pcall(IsPlayerSpell, id) end
+        -- replaced in the spellbook by a later spell (6.2.10, Discord eclipsetech 15.11.: Bear Form quest listed again
+        -- once Dire Bear Form was learned at 40)
+        if not (ok and yes) and SUPERSEDED[id] then ok, yes = pcall(IsSpellKnown or function() end, SUPERSEDED[id]) end
         if ok and yes then known[name] = rank end
       end
     end
@@ -332,8 +387,6 @@ local function createFrame()
     local hl = b:CreateTexture(nil, "HIGHLIGHT"); FLT.SetTex(hl, UI.ASSET_ROOT .. "talent_frame"); hl:SetAllPoints(); hl:SetBlendMode("ADD")
     hl:SetVertexColor(FLT.SkinC(1, 0.86, 0.40, 0.85)); b:SetHighlightTexture(hl)
     b.icon, b.ring = ic, ring
-    -- 6.2.x "New" mark (TODO.md "Neu-Markierungen")
-    if m[1] == "pet" and UI.NewMark then local nm = UI.NewMark(b, L["New in this version."]); nm:SetPoint("CENTER", b, "TOPRIGHT", -2, -2) end
     b:SetScript("OnClick", function() viewMode = m[1]; if f.sf then f.sf:SetVerticalScroll(0) end; FLT.RefreshTrainerSpells() end)
     b:SetScript("OnEnter", function(self)
       GameTooltip:SetOwner(self, "ANCHOR_TOP"); GameTooltip:AddLine(L[m[3]], 1, 0.82, 0); GameTooltip:AddLine(L[m[4]], 1, 1, 1, true); GameTooltip:Show()
@@ -667,7 +720,7 @@ local function refreshQuests(f, c, own)
 end
 
 -- Pet training (6.2.2, user 09.11.): hunters only. The ranks of the Pet Trainer skills (Data/HunterPets.lua, source
--- "trainer") by level like the spells - your own: what Beast Training does not list yet (FLT:GetKnownPetRank, read by
+-- "trainer") by level like the spells - your own: what Beast Training does not list yet (FLT:HasPetRank, read by
 -- UI/HunterPets.lua) - then the pet trainers of your faction with a Map button (Data/PetTrainers.lua). Costs are read
 -- at a pet trainer like at the class trainer (readTrainer keeps them under the hunter's costs).
 local function refreshPet(f, c, own)
@@ -676,9 +729,8 @@ local function refreshPet(f, c, own)
   local list = {}
   for _, a in ipairs(FLT.PET_ABILITIES or {}) do
     if a.source == "trainer" then
-      local have = own and FLT.GetKnownPetRank and FLT:GetKnownPetRank(a.name) or 0
-      for _, rk in ipairs(a.ranks or {}) do
-        if rk.rank > have then list[#list + 1] = { lvl = rk.level or 1, a = a, r = rk } end
+      for _, rk in ipairs(a.ranks or {}) do -- every rank you do not have yet, also a lower one (6.2.11: ranks are learned one by one)
+        if not (own and FLT.HasPetRank and FLT:HasPetRank(a.name, rk.rank)) then list[#list + 1] = { lvl = rk.level or 1, a = a, r = rk } end
       end
     end
   end

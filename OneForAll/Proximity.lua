@@ -96,7 +96,8 @@ local function createAlertFrame()
   local f = CreateFrame("Frame", "OneForAllNearbyAlert", UIParent)
   f:SetSize(470, 128)
   f:SetPoint("TOP", UIParent, "TOP", 0, -145)
-  f:SetFrameStrata("FULLSCREEN_DIALOG")
+  -- under the game's dialogs (group invites, ready checks ...), they share this place on the screen (6.2.11)
+  f:SetFrameStrata("HIGH")
   f:SetClampedToScreen(true)
   f:EnableMouse(true)
   makeBackdrop(f)
@@ -181,19 +182,27 @@ end
 -- macro through a SecureActionButton (only works when clicked by the player).
 -- It is a separate top-level frame (not a child of the alert) so the alert
 -- itself can still be hidden in combat; it cannot be set up during combat.
-local secureTarget, secureHidePending
+local secureTarget, secureHidePending, secureFor
 local function getSecureTarget()
   if secureTarget then return secureTarget end
   local b = CreateFrame("Button", "OneForAllAlertTargetButton", UIParent, "SecureActionButtonTemplate,UIPanelButtonTemplate")
-  b:SetSize(84, 25); b:SetFrameStrata("FULLSCREEN_DIALOG"); b:SetFrameLevel(50)
+  b:SetSize(84, 25); b:SetFrameStrata("HIGH"); b:SetFrameLevel(50)
   b:RegisterForClicks("AnyUp", "AnyDown")
   b:SetAttribute("type", "macro")
   if FLT.UI and FLT.UI.SkinBlizzButton then FLT.UI.SkinBlizzButton(b, 25) end
   b:Hide()
+  -- combat starts: hide it while that is still allowed, so no invisible button stays on the screen in combat
+  -- (Discord brownie0084 17.11.: the pet alert covered a group invite and could not be closed in combat)
   local ev = CreateFrame("Frame")
-  ev:RegisterEvent("PLAYER_REGEN_ENABLED")
-  ev:SetScript("OnEvent", function()
-    if secureHidePending then secureHidePending = nil; b:Hide(); b:SetAlpha(1) end
+  ev:RegisterEvent("PLAYER_REGEN_ENABLED"); ev:RegisterEvent("PLAYER_REGEN_DISABLED")
+  ev:SetScript("OnEvent", function(_, event)
+    if event == "PLAYER_REGEN_DISABLED" then
+      if b:IsShown() then
+        b:Hide()
+        local ph = b.placeholder
+        if ph and ph:IsShown() then ph:SetAlpha(1); ph:Disable() end
+      end
+    elseif secureHidePending then secureHidePending = nil; b:Hide(); b:SetAlpha(1) end
   end)
   secureTarget = b
   return b
@@ -242,9 +251,9 @@ function FLT:ShowAlert(opts)
             local sb = getSecureTarget()
             sb:SetAttribute("macrotext", spec.secureMacro)
             sb:SetText(spec.text or "")
-            sb:ClearAllPoints(); sb:SetAllPoints(b); sb:SetAlpha(1); sb:Show()
+            sb.placeholder = b
+            secureFor = b
             secureHidePending = nil
-            b:SetAlpha(0)
           end
         else
           b:SetScript("OnEnter", nil); b:SetScript("OnLeave", nil)
@@ -269,6 +278,19 @@ function FLT:ShowAlert(opts)
   alertSerial = alertSerial + 1
   local mySerial = alertSerial
   f:Show()
+  if secureFor then
+    -- placed on UIParent at the placeholder's spot, NOT anchored to it: a protected frame anchored to the alert makes
+    -- the alert protected too, and then neither the X nor a button could close it in combat (Discord 17.11.)
+    local b, sb = secureFor, getSecureTarget()
+    secureFor = nil
+    local l, bt, us = b:GetLeft(), b:GetBottom(), UIParent:GetEffectiveScale()
+    if l and bt and us and us > 0 then
+      local k = b:GetEffectiveScale() / us
+      sb:ClearAllPoints(); sb:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", l * k, bt * k)
+      sb:SetSize(b:GetWidth() * k, b:GetHeight() * k); sb:SetAlpha(1); sb:Show()
+      b:SetAlpha(0)
+    end
+  end
   if C_Timer and C_Timer.After then
     C_Timer.After(ALERT_DURATION, function()
       if alertFrame and alertFrame:IsShown() and alertSerial == mySerial then alertFrame:Hide() end
@@ -361,6 +383,8 @@ function FLT:CheckNearbyBooks()
   end
   if not C_Map or not C_Map.GetBestMapForUnit then return end
   if IsInInstance and IsInInstance() then return end
+  -- 6.2.7: optionally not while flying (on a flight path, too)
+  if FLT.QoL and FLT.QoL.Get("bookAlertNoFlying") and ((UnitOnTaxi and UnitOnTaxi("player")) or (IsFlying and IsFlying())) then return end
 
   local currentMapID = C_Map.GetBestMapForUnit("player")
   if not currentMapID then return end

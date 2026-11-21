@@ -25,6 +25,8 @@ local ROWS = {
   { key = "mapQuestGivers", label = N"Quest givers (!)", sub = true, parent = "mapQuests" }, -- 6.1.9 (user 07.11.)
   { key = "mapQuestTurnins", label = N"Turn-ins (?)", sub = true, parent = "mapQuests" },
   { key = "mapQuestsContinent", label = N"Also on the continent map", sub = true, parent = "mapQuests" },
+  { key = "mapQuestNoRoutes", label = N"Hide walking routes", sub = true, parent = "mapQuests" }, -- 6.2.12-beta5
+  { key = "mapQuestsGrey", label = N"Low level quests (grey)", sub = true, parent = "mapQuests" }, -- 6.2.12-beta15
   { key = "guildMap", label = N"Guild members" }, -- 6.2.2 (user 09.11.: a switch for it on the map)
   { key = "mapFog", label = N"Remove Fog" },
   { key = "mapZoneLevel", label = N"Zone level range" },

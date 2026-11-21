@@ -23,6 +23,8 @@ local function frames()
     end
   end
   if type(GeneralDockManager) == "table" then list[#list + 1] = GeneralDockManager end
+  -- the "Social (O)" friends button left of the chat (user 12.11.2026)
+  if type(QuickJoinToastButton) == "table" and QuickJoinToastButton.SetShown then list[#list + 1] = QuickJoinToastButton end
   return list
 end
 
@@ -105,7 +107,7 @@ local function hookAll()
 end
 
 -- key binding (Bindings.xml)
-BINDING_HEADER_ONEFORALL = "OneForAll"
+-- (BINDING_HEADER_ONEFORALL: UI/KeyBindings.lua)
 BINDING_NAME_ONEFORALL_TOGGLECHAT = "Hide / show chat"
 function OneForAll_ToggleChat() CH.Toggle() end
 

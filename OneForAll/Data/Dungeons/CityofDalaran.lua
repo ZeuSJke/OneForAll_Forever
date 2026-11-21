@@ -103,7 +103,10 @@ FLT.DUNGEON_REGISTRY["City of Dalaran"] = {
             pickup = "Image of Archmage Modera, Alterac Mountains (14.3, 59.6)",
             objective = "Defeat 8 Seeking Remnants, 8 Saturated Remnants, and 8 Mana Echoes inside the City of Dalaran for Archmage Modera outside of Dalaran.",
             turnin = "Image of Archmage Modera, Alterac Mountains",
+            rewardChoice = true,
             rewardItems = {
+                {279837, "Fallen Guard's Pendant", 2},
+                {279838, "Arcane Infused Rod", 2},
             },
         },
         {
@@ -115,7 +118,11 @@ FLT.DUNGEON_REGISTRY["City of Dalaran"] = {
             pickup = "Image of Archmage Modera, Alterac Mountains (14.3, 59.6)",
             objective = "Collect the Arcane Mote for the Image of Archmage Modera near the City of Dalaran.",
             turnin = "Image of Archmage Modera, Alterac Mountains",
+            rewardChoice = true,
             rewardItems = {
+                {279839, "Spellguard Pauldrons", 3},
+                {279840, "Renewing Footpads", 3},
+                {279841, "Defender of Dalaran", 3},
             },
         },
         {
@@ -127,6 +134,34 @@ FLT.DUNGEON_REGISTRY["City of Dalaran"] = {
             pickup = "Image of Archmage Modera, Alterac Mountains (14.3, 59.6)",
             objective = "Collect the Arcane Mote in the City of Dalaran for Magus Wordeen Voidglare in Tarren Mill.",
             turnin = "Magus Wordeen Voidglare, Hillsbrad Foothills",
+            rewardChoice = true,
+            rewardItems = {
+                {279842, "Battle Spaulders", 3},
+                {279843, "Enchanted Sandals", 3},
+                {279844, "Striking Staff", 3},
+            },
+        },
+        {
+            level = 33,
+            id = 92432,
+            name = "An Alarming Request",
+            requires = 30,
+            faction = "Alliance",
+            pickup = "Emissary Jacques, Hillsbrad Foothills (48.3, 60.0)",
+            objective = "Report to the Image of Archmage Modera near the City of Dalaran.",
+            turnin = "Image of Archmage Modera, Alterac Mountains",
+            rewardItems = {
+            },
+        },
+        {
+            level = 33,
+            id = 92459,
+            name = "Friend of the Kirin Tor",
+            requires = 24,
+            faction = "Alliance",
+            pickup = "Image of Archmage Modera, Alterac Mountains (14.3, 59.6)",
+            objective = "Speak to Archmage Celindra in the City of Dalaran.",
+            turnin = "Archmage Celindra, Alterac Mountains",
             rewardItems = {
             },
         },
@@ -163,8 +198,10 @@ FLT.DUNGEON_REGISTRY["City of Dalaran"] = {
             },
         },
         {
-            description = "Mana elemental needed for the quest Power Overwhelming.",
             name = "Arcanic Enigma",
+            npcID = 246016,
+            displayID = 129900,
+            description = "Mana elemental needed for the quest Power Overwhelming.",
             loot = {
                 {273043, "Wand of Mana Concentration", "Ranged, Wand", 3},
                 {273044, "Violet Sorcerer's Robes", "Chest, Cloth", 3},
@@ -220,5 +257,16 @@ FLT.DUNGEON_REGISTRY["City of Dalaran"] = {
                 {273103, "Blueprint: Arcane Salvager", "Blueprint", 2},
             },
         },
+    },
+    -- trash: blue bind-on-equip drops of the dungeon's enemies - Wowhead Forever, one item ID block per new dungeon
+    -- (several confirmed by "Dropped by" a mob of this dungeon), 13.11.2026
+    trashLoot = {
+        {286990, "Arcane Remnant Leggings", "Legs, Leather", 3},
+        {286991, "Roused Nature Footwraps", "Feet, Leather", 3},
+        {286992, "Construct's Grips", "Hands, Mail", 3}, -- Dropped by: Fragmented Sentry
+        {286993, "Suffused Bindings", "Waist, Mail", 3},
+        {286994, "Tattered Kirin Tor Cloak", "Back", 3},
+        {286995, "Guardian's Emblem", "Neck", 3},
+        {286996, "City Guard's Tarnished Blade", "One-Hand, Sword", 3},
     },
 }

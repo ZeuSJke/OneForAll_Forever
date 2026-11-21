@@ -30,6 +30,8 @@ function FLT.ProfKey(name)
   end
   return profByName[name]
 end
+-- true once the client knows every profession spell's name (ProfKey can map all of them; early after login it can't)
+function FLT.ProfKeyReady() if not profByName then FLT.ProfKey("") end; return profByName ~= nil end
 
 -- Safe calls for event handlers: an error is caught instead of popping up again and
 -- again (e.g. in combat, when the Forever client hands out "secret" values). The
@@ -86,6 +88,7 @@ function FLT.CharSave(tbl, d, legacy)
   local key = FLT.CharKey(); if not key then return end
   local _, cls = UnitClass("player")
   d.name, d.realm, d.class = UnitName("player"), GetRealmName and GetRealmName() or "", cls
+  if type(OneForAllCharDB) == "table" and OneForAllCharDB.fullName then d.full = OneForAllCharDB.fullName end -- with surname
   tbl[key] = d
   local old = legacy or oldKey()
   if old and old ~= key then tbl[old] = nil end
@@ -97,6 +100,7 @@ function FLT.CharLabel(tbl, key, d)
   if not dup then
     for k, o in pairs(tbl) do if k ~= key and FLT.CharOf(k, o) == name then dup = true; break end end
   end
+  if dup and type(d) == "table" and d.full and d.full ~= name then return d.full end -- "Smörgi Banklshofer"
   local cn = dup and cls and LOCALIZED_CLASS_NAMES_MALE and LOCALIZED_CLASS_NAMES_MALE[cls]
   return cn and (name .. " (" .. cn .. ")") or name
 end
@@ -180,10 +184,11 @@ function FLT:GetCounts()
   local done, owned = 0, 0
   for _, b in ipairs(self.BOOKS) do
     local s = self:GetBookState(b)
-    if s == "done" then
+    -- "manual" = marked as turned in by hand (6.2.6, user 12.11.: turned in before OneForAll was installed - it counts)
+    if s == "done" or s == "manual" then
       done = done + 1
       owned = owned + 1
-    elseif s == "manual" or s == "bag" or s == "bank" then
+    elseif s == "bag" or s == "bank" then
       owned = owned + 1
     end
   end
@@ -397,6 +402,14 @@ SlashCmdList.ONEFORALL = function(cmd)
     msg(L["Caught errors cleared."])
   elseif cmd == "bug" then
     if FLT.UI and FLT.UI.ShowBugReport then FLT.UI.ShowBugReport() end
+  elseif cmd == "play" then
+    if FLT.GuildGames then FLT.GuildGames.Toggle() end
+  elseif cmd == "play invite" then
+    if FLT.GuildGames then FLT.GuildGames.TestInvite() end
+  elseif cmd == "play debug" then
+    if FLT.GuildGames and FLT.GuildGames.ToggleDebug then FLT.GuildGames.ToggleDebug() end
+  elseif cmd == "play bots" then
+    if FLT.GuildGames then FLT.GuildGames.ToggleBots(); FLT.GuildGames.Open() end
   elseif cmd == "rolltest" then
     if FLT.GearMarks then FLT.GearMarks.RollTest() end
   elseif cmd == "questtest" then
@@ -409,9 +422,13 @@ SlashCmdList.ONEFORALL = function(cmd)
     if FLT.ScanPetAbilities then FLT.ScanPetAbilities() end
     local t = type(OneForAllCharDB) == "table" and OneForAllCharDB.petAbilities or {}
     local parts = {}
-    for name, rank in pairs(t) do parts[#parts + 1] = name .. " " .. rank end
+    for name, v in pairs(t) do -- each rank on its own since 6.2.11 (an old number = the highest rank)
+      local rs = {}
+      if type(v) == "table" then for r in pairs(v) do rs[#rs + 1] = r end; table.sort(rs) else rs[1] = v end
+      parts[#parts + 1] = name .. " " .. table.concat(rs, "/")
+    end
     table.sort(parts)
-    msg(#parts > 0 and string.format(L["Known pet abilities: %s"], table.concat(parts, ", ")) or L["No pet abilities found yet - summon your pet and try again."])
+    msg(#parts > 0 and string.format(L["Known pet abilities: %s"], table.concat(parts, ", ")) or L["Open Beast Training once so OneForAll knows your ranks"])
   elseif cmd == "news" then
     if FLT.ShowNews then FLT.ShowNews() end
   elseif cmd == "setup" then

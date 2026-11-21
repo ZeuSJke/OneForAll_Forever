@@ -70,7 +70,9 @@ local function setBossPortrait(tex, dungeon, boss)
   if showDisplay(tex, id) then note(dungeon, boss, "data", id); return true end
   id = learned(npc, "displayID")
   if showDisplay(tex, id) then note(dungeon, boss, "seen in game", id); return true end
-  FLT.SetTex(tex, UNKNOWN_PORTRAIT)
+  -- 6.2.7-beta10: a fitting icon instead of the "?" for bosses whose model the client cannot draw (Wowhead shows a
+  -- server-only display); a portrait learned in game still replaces it
+  if boss and boss.fallbackIcon then FLT.SetTex(tex, boss.fallbackIcon) else FLT.SetTex(tex, UNKNOWN_PORTRAIT) end
   tex:SetTexCoord(0.08, 0.92, 0.08, 0.92)
   if npc then
     tex._ofaNpc = npc
@@ -91,15 +93,13 @@ local function portraitLearned(npc, displayID)
   end
 end
 
--- Boss level: static table (QuestieDB) or learned in game.
+-- Boss level: learned in game (what the game itself shows, 6.2.7-beta8) or the static table (QuestieDB and others).
 function FLT:GetBossLevel(boss)
   if not boss then return nil end
-  local B = FLT.BOSS_LEVELS
-  local lv = B and ((boss.npcID and B[boss.npcID]) or (boss.name and B[boss.name]))
-  if lv then return lv end
   local lv2 = learned(boss.npcID, "level")
-  if lv2 then return (lv2 < 0) and "??" or tostring(lv2) end
-  return nil
+  if type(lv2) == "number" then return (lv2 < 0) and "??" or tostring(lv2) end
+  local B = FLT.BOSS_LEVELS
+  return B and ((boss.npcID and B[boss.npcID]) or (boss.name and B[boss.name])) or nil
 end
 
 -- Creature type (Humanoid, Beast, ...) and rank (Elite / Rare / Summoned).

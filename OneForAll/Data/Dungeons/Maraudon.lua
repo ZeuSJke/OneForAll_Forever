@@ -160,7 +160,10 @@ FLT.DUNGEON_REGISTRY["Maraudon"] = {
             faction = "Both",
             objective = "Venture to Maraudon and recover a Vial of Earth Song Water and return it to Woodwyrd at the Forlorn Gardens in Desolace.",
             turnin = "Woodwyrd, Desolace",
+            rewardChoice = true,
             rewardItems = {
+                {272186, "Overgrown Cuffs", 3},
+                {272187, "Thornplated Cord", 3},
             },
             note = "Still being discovered: who gives this quest and its rewards are not known yet.",
         },
@@ -195,6 +198,7 @@ FLT.DUNGEON_REGISTRY["Maraudon"] = {
                 {17752, "Satyr's Lash", "One-Hand, Dagger", 3},
                 {17754, "Infernal Trickster Leggings", "Legs, Mail", 3},
                 {17755, "Satyrmane Sash", "Waist, Cloth", 3},
+                {275864, "Putridus Wall", "Off Hand, Shield", 3},
             },
         },
         {

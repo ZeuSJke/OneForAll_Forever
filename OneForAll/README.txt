@@ -71,6 +71,276 @@ and add the file to OneForAll.toc before UI\MainFrame.lua.
 Changelog (newest first)
 ========================
 
+6.2.13 - BiS List, Cheap Upgrades, new stat weights and many fixes
+==================================================================
+Armory
+- New tab "BiS List" in the Gear Planner: the WoW Forever "Pre Raid" BiS lists of wowtbc.gg for every class and spec - pick a
+  class and a spec (yours at first), the items per slot with their sources, the BiS pick marked. More lists will follow.
+- New tab "Cheap Upgrades": Bind on Equip gear from the auction house that improves your gear, up to a highest price you set
+  (silver or gold), best gain first; per slot or "All slots", with the level, armor and weapon filters. Gear that needs a
+  profession skill only shows when you have it. The search box moved one row down; the warning sign next to the tabs is gone.
+- New button "Cheap Upgrade Scan" on the Buy page of the auction house: scans the whole auction house (once every 15 minutes)
+  and keeps the cheapest price of every Bind on Equip piece of gear - items with a random bonus ("of the Eagle") each with
+  their own price and stats. A chat line when it is done; Cheap Upgrades show how old the last scan is. Without a scan the
+  prices come from Auctionator. Switch: Quality of Life > Loot & Vendors.
+- Gear Value: new stat weights from Geared Forever by fistedwaffles05 (built for WoW Forever, GPL-3) for every class, spec and
+  level; Haste, Expertise and Spell Penetration count now (also in the own weights editor). A worn item without value is no
+  longer "slot empty".
+- Quality of Life: "Gear Value shows" - Whole gear (as before), Item against item, or Both ("65% (overall 6%)").
+
+Quality of Life
+- New entry "Miscellaneous" with "Skip the talk at service NPCs" (vendor, bank, trainer, flight master, auctioneer, stable
+  master, guild bank, tabard vendor, battlemaster - "All" at the top; all off at first; also found by searching "gossip"),
+  flight times, camera zoom, hiding error messages, thanking for buffs and all chat options (the "Chat" entry is gone).
+- Move Blizzard windows: a window whose saved place is off the screen is put back onto it; the full screen world map stays in
+  the middle.
+- Quicker loot: no longer loops with full bags (the game froze or disconnected while the loot window stayed open), and works
+  with the auto loot key set to "None". The Bags full helper no longer moves on every check, and loot worth exactly as much
+  as the cheapest item in your bags is no longer offered for a swap (thanks to emzime for finding the loop).
+- Buff reminder: the buff list is per character now. Sell junk also sells from the reagent bag.
+- With Leatrix Plus the OneForAll button follows the logo color. Only this version's new options keep a yellow "!".
+
+Dungeons & quests
+- Dungeon maps for The Drowned City, Blackmaw Hold, Alcaz Prison, Shaper's Terrace and Krol'dok Stronghold (from Forever
+  Simple World Map by Tarolg, with his agreement), the entrances of Alcaz Prison, The Drowned City and Krol'dok Stronghold,
+  and the Sunken Temple statues numbered 1-6 in the order they must be used. Krol'dok Stronghold's entrance moved to the
+  real spot (Riverglades 37.5, 39.0).
+- Quest data from the newest QuestieDB: about 130 new quests on the world map, corrected quest givers and quest item drops;
+  quests the game no longer offers are left out; Image of Archmage Modera for both factions.
+- Sunken Temple: the Alliance quest chain for Alliance characters; Scarlet Monastery Library: "In the Name of the Light";
+  Friend of the Library shows the giver of your faction. "Share all Quests" shares one quest per click.
+- Map Landmarks: 7 more ley lines from players' reports.
+
+Professions & books
+- Skill-Up Helper / Profit: no reagents from vendors with a limited stock (WoW Forever's vendor data), a vendor only when it
+  is not dearer than the auction house, the 1 hour transmutes count as cooldowns; the price note no longer lies under the
+  column heads.
+- A profession you dropped or changed is forgotten again.
+- Library Books: books marked by hand count in the set totals; two Eastern Plaguelands locations corrected.
+
+6.2.12 - Guild Games, Skill-Up buy or craft, hunter pet ranks from the game and many fixes
+==========================================================================================
+Special thanks to Deaders for testing this version, and to Gälda, Ritter Roulade and Deaders for testing the Guild Games.
+- New: Guild Games - Death Roll, High / Low and Tic Tac Toe with your guild members in their own window, open tables to join,
+  optional gold stakes (only written down - you trade the gold yourselves) and your own history. Switch it on in Quality of
+  Life > Guild > "Play with Guildies" (off by default); the "Start" button below it, the info bar element "Guild Games",
+  /ofa play or a key binding open the window. Players who go offline leave the table; a new dealer takes over.
+- Skill-Up guide: new section "Buy ready-made or craft" - bolts, leather, bars and other intermediates bought finished
+  instead of crafted, with the cost difference; a click switches. "Send to Auctionator" also takes the materials under
+  "Farm or find". The "Open guide" button is green.
+- Skill-Up Helper and Profit: new switch "Don't use own materials" (off by default) - nothing from your bags, bank or other
+  characters is used, every material is bought or farmed. Profit says why when nothing is found.
+- Hunter Pets: every rank is read straight from the game (also at login) and recognised from the "You have learned"
+  message, without the Beast Training window; ranks are no longer lost when Beast Training is opened with another pet;
+  right-click a rank to mark it yourself.
+- Quality of Life > World Map: "Low level quests (grey)" (off by default) and "Hide walking routes" of quest givers.
+- Quality of Life > Loot & Vendors: choose the "Junk list key" (Alt + right-click stays the default).
+- Resize Blizzard windows: hold Ctrl and the right mouse button (a plain right-click no longer starts resizing).
+- Info bar: "Remove a character from the gold list" for deleted characters; the gold of your characters is saved as soon
+  as it changes.
+- Gear Planner: no suggestions from raids that are not open in WoW Forever (Ahn'Qiraj, Naxxramas, Blackwing Lair, Molten
+  Core, Zul'Gurub) or crafts that need them; Onyxia's Lair, Hyjal Summit and Barrow Deeps from 9 December 2026. Quest chains
+  (e.g. the Heroism set) only show the steps of your faction and class.
+- Dungeons: every dungeon quest checked against the quest database (quests that do not belong removed, names and levels
+  corrected); Dalaran's open-city quests removed; Stratholme's Dead Man's Plea chain fits your faction and class;
+  Krol'dok Stronghold: Eye of Mugg chain, quest givers, notes and a Key page for the Krol'dok Compound Key.
+- Drop chances: about 250 more, measured in WoW Forever; 77 wrong boss loot entries removed.
+- Map Landmarks: ley lines / Elemental Convergences only at confirmed spots again (far fewer pins).
+- Map: zone transition signs can be clicked again with the mouse while a controller is plugged in.
+- Disenchant value: right under Auctionator's Auction line without moving other tooltip lines (ItemTree), and shown on
+  every item tooltip again.
+- Fixes: the first open of the window and M in a dungeon no longer stop half way in combat; unlearned professions no longer
+  stay learned and the professions overview updates right away; quest marks no longer error with BlizzThreatPlates;
+  the Guild Games "Start" button is greyed out while switched off; quest data updated.
+
+6.2.11 - Quest mark position by dragging, black logo, more Forever quest data and many fixes
+============================================================================================
+- Quest marks on nameplates: the position drop-down is replaced by a sample nameplate in Quality of Life > Quests -
+  drag the sword / bag anywhere around it, also below the plate; "Reset" puts it back. The progress text sits on the
+  outer side. Works with the game's nameplates and with nameplate addons like Platynator and Plater (the mark sits at
+  their health bar, at a normal size). No more "Can't measure restricted regions" errors.
+- Quest marks on nameplates: also on the mobs of the new WoW Forever quests (about 770 more mobs).
+- Quality of Life > Interface > Minimap: new logo color "Black" and a "Logo size" slider (60 - 150 %) for the OneForAll
+  minimap button and the collector button.
+- Gear Planner: about 330 more quest rewards of the new WoW Forever quests. Two different quests with the same name show
+  their quest giver, e.g. "Khan Jehn (Orgrul)" and "Khan Jehn (Nerlokh)" (Discord).
+- Gear Planner: suggestions no longer go missing after a /reload or while your worn gear is still loading - before, items
+  the game had not loaded yet were judged "no upgrade" until gear or spec changed (dungeon items gone) (Discord).
+- Hunter pets: every ability rank counts on its own - knowing Claw 4 no longer marks Claw 1-3 as learned, and an ability
+  counts only once Beast Training lists it, not when you tame the beast. The Pet Trainer list shows a missing lower rank.
+  New option "Also lower ranks" in Popups & Alerts: the pet ability alert also for a lower rank (off by default) (Discord).
+- Hunter pets: the "pet ability nearby" alert can be closed in combat again and no longer covers group invites (Discord).
+- Check low spell ranks: also spells bound in the game's Click Casting, shown with "(Click Casting)" (Discord).
+- Quest XP on the experience bar: works with Bartender4 and uses the bar that is shown (Discord).
+- Minimap button collector: buttons like WIM's that put themselves back on the minimap stay in the bar (Discord).
+- Scarlet Monastery: reopening the window inside a wing keeps the wing you looked at (Discord).
+- Dungeons & Raids: German, French, Spanish and Portuguese clients show the wing again (Scarlet Monastery, Dire Maul,
+  Blackrock Spire); a boss's note line sits right of the portrait (Discord).
+- Removed what is not in WoW Forever: The Heart of the Void, Goblin Lockpicks, Alonso's Dragonslayer quests, Hammer of
+  the Righteous at the class trainer (Discord).
+- Hide error messages stays on even when the game or another addon turns the messages back on (Discord).
+- Quest sharing: no blocked action in combat (Discord).
+- Map Landmarks: Skyborne Ley Lines and Elemental Convergences from SLLCM 1.3.0 plus players' reports.
+- Quest data from the newest QuestieDB.
+
+6.2.10 - New dungeon pictures, armor / weapon type filter, Armory performance and many fixes
+===========================================================================================
+- Turn in quests automatically: safer with reward choices - it waits a moment, checks the number of choices again and
+  in the quest log, and leaves the quest to you on any doubt (Discord).
+- Dungeons & Raids: new dungeon pictures from the game's own loading screens - in the list (full row height, soft edges),
+  in the header and as the colour of the detail background. Scarlet Monastery wings, Upper Blackrock Spire and Dire Maul
+  East / North have their own pictures; the raids too (Barrow Deeps with a new picture, Hyjal Summit with the game's
+  loading screen). The addon got about 20 MB smaller (the old pictures are gone).
+- Dungeons & Raids: boss loot and quest rewards show the green arrow on items that are an upgrade for you (like the
+  bags and the quest window).
+- Gear Planner filter menu: "Armor type" and "Weapon type" are always there and open their own list to the right.
+  Weapon type has One-Hand, Two-Hand and Ranged (a click switches all of them, the mouse on them shows each type) and
+  Shields (Discord).
+- Info bar: the clock shows 12 or 24 hours like the game's clock ("24-hour mode" at the minimap clock).
+- Map Landmarks: the flight masters of the Riverglades are on the map (Discord).
+- Dungeons & Raids: Blackfathom Deeps lists the warlock quest "The Orb of Soran'ruk" too; "A Dynamite Plan" asks for
+  Rough Dynamite, not Coarse Dynamite (Discord).
+- Skill-Up Helper (Alchemy): the Discolored Healing Potions - Lesser at 85, Major at 270; the Minor and Major ones are
+  taught by the Odd Child / Apothecary Renferrel too (Discord).
+- Quest loot sparkles: switching it off sets the game's loot glow back to off, so quest givers stop glowing (after a
+  restart); the option tells that NPCs glow too while it is on (Discord).
+- Move Blizzard windows: the Cooldown Settings window can be moved (Discord).
+- With a controller connected: clicking a zone transition sign on the world map no longer switches the map, and "Open in
+  quest log" only selects the quest (you open the log yourself) - both broke the pad controls until /reload (Discord).
+- Class trainer window (druid): the Bear Form quest is no longer listed again once Dire Bear Form is learned (Discord).
+- Dungeons & Raids: inside Scarlet Monastery the tab opens the wing you are in, not always the Graveyard (English
+  clients; the wing is told by the place name on the minimap; Discord).
+- Tooltips of players, enemies and NPCs in the world fade out at once again when the mouse leaves them - our extra
+  lines (target, NPC quests) kept them up for 2 seconds and more (Discord).
+- Bags full helper: drag it anywhere (the place is kept), Esc closes it, and a Soul Shard from Drain Soul no longer
+  opens it (Discord).
+- Info bar: with the combined bag, Gold and Free bag slots open the bags through the game's backpack button - with a
+  controller the pad controls no longer break until /reload (Discord).
+- Dungeon quests: "Rumi of Gnomeregan: The Collected Works" (a Library Book) is no longer listed under Gnomeregan (Discord).
+- Dungeon quests: Razorfen Downs lists "An Unholy Alliance" once (the Small Scroll step belongs to Razorfen Kraul and is
+  shown in the quest chain).
+- Move Blizzard windows: inspecting a player from the right-click menu no longer breaks right-clicking names and chat
+  links until /reload (since 6.2.9; Discord). Windows that load later are set up a moment after loading, and only the
+  world map passes the mouse hover on to other addons' text under its title bar.
+- Crafting List: adding recipes while the list already has some asks whether to clear it first ("Clear list" / "Keep
+  and add" / Cancel). Profit asks every time; the "+ List" button of a recipe asks once until the list is empty again.
+- Crafting List: materials a vendor sells have a map button to the nearest vendor of your faction who sells them, and a
+  "Send to Auctionator" button puts the missing materials into Auctionator as a shopping list (vendor items left out).
+- Guild members on the world map: dots on top of each other share one tooltip with every name, level and class.
+- Gear Planner: an item's upgrade judgement is kept until your gear, talents or level change, and items the server never
+  answers stop being asked for - fewer spikes with many armor types and "All slots" (Discord).
+- Gear Planner: "All slots" with a wide level range (or "All") no longer lags without end. Items the game does not have
+  yet are loaded in small batches, items the server does not know are left out, and the Armory redraws less often while
+  items arrive (Discord).
+
+6.2.9 - Trainer window, map and Skill-Up fixes
+==============================================
+- Class trainer window: rank 1 of many spells (Swipe, Faerie Fire, Rake, Shred, Thorns ...) was listed at the level and
+  with the fee of the highest rank, and lower ranks seemed to be missing (since 6.2.8; Discord). Every rank keeps its own
+  level and fee again; the fees saved by 6.2.8 are dropped once and read again at the next trainer visit.
+- Move Blizzard windows: other addons' text at the top of the map (Leatrix Plus' Wowhead link) can be hovered and copied
+  again; dragging the map by its title bar still works (Discord).
+- Skill-Up guide: Forever's own recipes are only planned when it is known who teaches them, or a trainer offered them
+  to you. The Discolored Healing Potions point to the Odd Child (Westfall) / Apothecary Renferrel (Silverpine Forest)
+  instead of your alchemy trainer, who does not teach them (Discord).
+
+6.2.8 - Dungeon quest chains and rewards, Brazilian Portuguese
+==============================================================
+- Dungeon quests: every dungeon quest checked against QuestieDB and Wowhead Forever. 48 missing quest chains and
+  pre-quests (The Drowned City, Alcaz Prison, Krol'dok Stronghold, Blackmaw Hold, Ruins of Lordaeron ...), 33 missing
+  quests (among them all new WoW Forever ones of the old dungeons) and the rewards of all dungeon quests (about 80 quests
+  corrected: rewards of another quest, new Forever choices, missing rewards). Items given on top of the chosen reward
+  show under "You will also receive:". The chain steps show quest giver, turn-in (with map buttons), level and objective.
+- Dungeon quests: "Unavailable" only when you cannot take a quest (level, faction, race, class); a chain not started yet
+  shows "Available | Chain", a started one "Chain started" and the step you are at. The Drowned City lists its quests like
+  in the game (pre-quests only as chain steps).
+- Boss loot: the new WoW Forever drops of all dungeons (53 items, e.g. Herod's Band of Crimson Light), new bosses Ruuzlu
+  (Zul'Farrak), Malor the Zealous, Crimson Hammersmith, Black Guard Swordsmith and Ezra Grimm (Stratholme), trash drops of
+  Ruins of Lordaeron.
+- Armory > Quests (Cozy Sleeping Bag and the other chains): steps show Done / In log / Ready to turn in like the dungeon
+  quests; click a step for its start, turn-in (map buttons), level and objective; the map button points to the turn-in
+  once the quest is in your log.
+- Shaman class quests: the Air Totem row has the whole Call of Air chain with the "Chain" button.
+- Gear Planner: dungeon quest rewards count from the level you can take the quest at (Wingblade was missing from 1 - 20);
+  Greatstaff of the Necrokhans, the City of Dalaran and Library Books rewards are in it.
+- Skill-Up guide: "Buy" in the vendor section while a merchant who sells it is open.
+- Profit: Reset button; Frilled Lichen, Pristine Leather and Torbernite no longer count as vendor items (only a black
+  market NPC lists them), so Cerulean Dye no longer shows a huge profit.
+- Trainers: no more freeze when buying at a trainer; the trainer is read once per visit.
+- Nameplate quest marks: on plates with the level above the bar the mark sits right of the bar.
+- New language: Brazilian Portuguese (translation by ValadaresX), with quest and NPC names in a Brazilian client.
+
+6.2.7 - New Forever dungeons filled in, Buy at the merchant, Tooltip at the mouse
+==================================================================================
+- New Forever dungeons: boss loot for Blackmaw Hold, Shaper's Terrace, Krol'dok Stronghold and Alcaz Prison (about 70 items
+  with the boss that drops them), boss names as in the game, boss levels, portraits (an icon where the game cannot draw the
+  model) and creature types, drop chances for Krol'dok Stronghold and Alcaz Prison, new bosses and rares (Zarla Ober, Umbra,
+  "Pyromancer" Braxton, Kroog, Gortek the Apprentice, Tunnelweb Matriarch, Ravasaur Hunters), their trash drops (56 blue
+  items), 17 more dungeon quests and map buttons for all their entrances. No more "Partial data" warning on them.
+- Dungeons: a boss level and type learned by targeting the boss show at once and win over the stored ones; arrow buttons
+  next to "Dungeons" switch to the previous / next dungeon of the list.
+- Dungeon quests: "Starts at" and "Turn in" have a Map button wherever the place is known; an NPC or a drop inside the
+  dungeon points to its entrance. Also for the key / attunement steps.
+- Crafting List: with a merchant open who sells a missing material, a "Buy" button buys exactly what is missing. Next to a
+  material not (all) in your bags it says where it is - "(12 in bank)", "(5 on <character>)".
+- Skill-Up Helper and Profit: the bank and your other characters count; new switch "Without other characters' materials"
+  (off by default). Skill-Up Helper: tidier header, item names that were not loaded yet are filled in, the "Materials"
+  rows sit at the left edge. "Send to Auctionator" waits for item names instead of dropping them.
+- Bank: read on every change while it is open and once more when you close it.
+- Tailoring: the coloured bags need one bolt more in WoW Forever (Green Silk Pack 5 Bolts of Silk Cloth ...); when the
+  profession window shows other materials than OneForAll's data, the window's amounts are used everywhere.
+- New Quality of Life option "Tooltip at the mouse" (off by default): six positions around the mouse, separate switches to
+  keep the usual place in dungeons and raids and on battlegrounds.
+- Nearby Library Book alerts: new switch "Not while flying" (off by default). Library Books info window: the librarians on
+  their own rows with crest, place and a Map button.
+- Quests on NPCs (tooltip): dungeon and raid quests show "D" / "R" and the dungeon's name.
+- Talent planner: ranks come from the talent data, not from the client (Marksmanship "Improved Stings" has 3 ranks).
+
+6.2.6 - Skill-Up Helper, Profit, new stat weights
+=================================================
+- New: Skill-Up Helper (Professions > every crafting profession, also Cooking and First Aid): the cheapest way from your
+  skill to a target - auction house prices from Auctionator (if installed), vendor prices and trainer fees; materials you
+  have (bags, bank, other characters) count as free. A big progress bar, the costs as tiles, when Auctionator last scanned,
+  the steps with ranks to train, tools (runed rods, Blacksmith Hammer, Arclight Spanner ...) and intermediates to make
+  first; patterns from vendors and the auction house are planned by default. The plan keeps its recipes after buying,
+  relogging or a reload; "Recalculate" works it out again.
+- Skill-Up guide window: walks you through it step by step (auction house, vendors, trainer, materials, crafts) and sends
+  the shopping list to Auctionator. "Craft" / "Craft all" in the current step, a small progress bar and your chance of a
+  skill point per craft, right-click marks a step done, finished shopping sections get a green check, materials say where
+  they are when not in your bags and shrink while you craft, "Learn at the trainer" names the recipe and the nearest
+  trainer who really teaches it, pattern steps name the pattern. Alt-right-click on the minimap button opens the last guide.
+- New: Profit (Professions > a profession > "Profit"): recipes that sell for more than their materials cost (Auctionator
+  prices, after the 5% cut), only known recipes by default; filters for learn level and least profit; select recipes with
+  a craft count and see the gold to invest and the profit; send the materials to Auctionator (what is in your bags is left
+  out, cheaper raw materials when making a material yourself costs less) or put them on the Crafting List; right-click
+  opens the recipe.
+- Gear Planner / item Value: new stat weights based on SimGear Forever by Frostmil (simulated per spec and level), with
+  OneForAll's own changes for leveling: Intellect and Spirit for casters and healers, Stamina, mana and health per 5 sec.,
+  healers' crit, Protection Paladin block value, Bear Stamina, smooth values from 50 to 60, no wand DPS for classes without
+  one. Weapon speed counts per spec (Cat and Bear: weapon DPS only, their speed is fixed by the form). Your own custom
+  weights stay as they are.
+- New Quality of Life option "Disenchant value" (Tooltips, off by default): what green, blue and purple weapons and armor
+  are worth disenchanted, at Auctionator prices (only with Auctionator).
+- Key bindings in their own "OneForAll" section (Options > Keybindings): the window, each main tab, the Skill-Up Helper,
+  the last Skill-Up guide, Profit and the Crafting List; pressing the key again closes the window.
+- Hide chat also hides the "Social" friends button next to the chat.
+- Professions: the Crafting List button moved into All recipes / Favorites; trainer fees are read and remembered; recipe
+  vendors and mobs have their map button again (many had no position); clicking a crafted item in the Gear Planner or the
+  dungeon loot opens its recipe even with a recipe filter set.
+- Crafting List / Skill-Up Helper: the reagent bag counts as bags (it was read as bank and counted twice), the bank is no
+  longer counted twice, characters with the same first name no longer take over each other's bank; Darkmoon Faire items
+  no longer count as vendor materials.
+- Dungeons: quests only some races can take show as unavailable for the others (Compendium of the Fallen); The Eye of
+  Bhossca and The Horn of Xelthos track the right quest step; an unavailable quest says why (faction, class, level or which
+  chain step comes first); coordinates only next to a Map button; Gnomeregan teleporter note fixed.
+- Library Books: the third reward tier is at 25 books (level 35); a book marked by hand counts as turned in.
+- Move Blizzard windows: the loot window stays at the mouse with "Open loot window at mouse".
+- Square minimap: the round ring no longer comes back (thanks to ProEvilz).
+- Loot feed: money lines without the coin icon in front.
+- Quest XP on the experience bar: the mark stays inside the bar and has the fill's height and pointed end.
+- Noteworthy changes for 6.2.6 (shown once, bigger window): Skill-Up Helper, Profit, new stat weights.
+- Data update: QuestieDB (Forever NPC / quest fixes, quest icons, reagent sources, hunter pet spawns, names).
+
 6.2.5 - Special Quests, movable info bar, Gear Planner values
 =============================================================
 - Armory: new list "Special Quests" - quest chains with an unusual reward, for now the Cozy Sleeping Bag (both

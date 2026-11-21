@@ -154,8 +154,10 @@ local function readMe()
   me.grey = me.level - range
 end
 
-local function available(q)
-  if q.req > me.level or q.lvl < me.grey or (q.max > 0 and me.level > q.max) then return false end
+-- grey: also the quests that are grey for you (6.2.12-beta15, user 18.11.: "low level quests (grau) wieder in der map
+-- anzuzeigen. optional als schalter (standard: Aus)" - qol.mapQuestsGrey, only for the map pins)
+local function available(q, grey)
+  if q.req > me.level or (q.lvl < me.grey and not grey) or (q.max > 0 and me.level > q.max) then return false end
   -- far above your level (6.1.1, user 04.11.: level 60 book, Legacy and event quests that anyone may take showed for
   -- a level 9 character): only up to 10 levels above
   if q.lvl > me.level + 10 then return false end
@@ -198,6 +200,38 @@ function FLT.IsQuestGrey(id, level)
   end
   return level ~= nil and level > 0 and level <= greyAt(pl)
 end
+-- where a quest starts / is turned in according to the pin data (6.2.7, user 13.11.: every NPC under "Starts at" / "Turn in"
+-- of a dungeon quest gets a Map button): { mapID, x, y, label }, looked up on first use per quest (a Map button is rare)
+local pinLoc = { [false] = {}, [true] = {} }
+function FLT.QuestPinLoc(id, isEnd)
+  if not (id and FLT.QUEST_PINS) then return nil end
+  local c = pinLoc[isEnd and true or false]
+  if c[id] ~= nil then return c[id] or nil end
+  local found = false
+  local key = "/" .. id .. "/"
+  for mapID, raw in pairs(FLT.QUEST_PINS) do
+    if isEnd then
+      for x, y, ids, name in raw:gmatch("%?([%d.]+),([%d.]+),([%d/]+),([^\n]*)") do
+        if ("/" .. ids .. "/"):find(key, 1, true) then found = { mapID = mapID, x = tonumber(x), y = tonumber(y), name = name }; break end
+      end
+    else
+      local p = raw:find("\n" .. id .. "|", 1, true)
+      if p then
+        for at, x, y, name in raw:gmatch("()!([%d.]+),([%d.]+),([^\n]*)") do
+          if at > p then break end
+          found = { mapID = mapID, x = tonumber(x), y = tonumber(y), name = name }
+        end
+      end
+    end
+    if found then break end
+  end
+  if found then
+    local m = C_Map and C_Map.GetMapInfo and C_Map.GetMapInfo(found.mapID)
+    found.label = (FLT.Name and FLT.Name(found.name) or found.name) .. (m and m.name and (", " .. m.name) or "")
+  end
+  c[id] = found
+  return found or nil
+end
 local function xpRange(q)
   local from = math.max(1, q.req)
   local to = from
@@ -220,7 +254,8 @@ local function hoverOnly(f) f:EnableMouse(false) end
 local spots = {} -- reused per refresh: key "x,y" -> { x, y, name, avail = {}, turnin = {} }
 local spotList = {}
 
--- the route of a walking quest giver, always shown with its icon (user 01.11., like Questie)
+-- the route of a walking quest giver, shown with its icon (user 01.11., like Questie); qol.mapQuestNoRoutes hides them
+-- (6.2.12-beta5, Discord #general Baezil 18.11.: "all 3 alliance cities are covered in squiggles")
 local routeFrame, lines, nLines = nil, {}, 0
 -- invisible hover spots along the routes (6.1.1, user 04.11.: like Questie, the route shows its giver's tooltip and
 -- lights up on mouseover); pooled like the lines
@@ -422,9 +457,10 @@ function MQ.Refresh()
       -- zone coordinates (0-100) -> this map's; walking routes only on the zone map itself
       local function at(x, y) return z[2] * 100 + x * z[4], z[3] * 100 + y * z[5] end
       local givers, turnins = Q("mapQuestGivers") ~= false, Q("mapQuestTurnins") ~= false -- 6.1.9: each on its own
+      local grey = Q("mapQuestsGrey") and true or false
       for _, g in ipairs(givers and d.starts or {}) do
         for _, q in ipairs(g.quests) do
-          if available(q) then local x, y = at(g.x, g.y); local s = spot(x, y, g.name, whole and g.route or nil); s.avail[#s.avail + 1] = q end
+          if available(q, grey) then local x, y = at(g.x, g.y); local s = spot(x, y, g.name, whole and g.route or nil); s.avail[#s.avail + 1] = q end
         end
       end
       for _, e in ipairs(turnins and d.ends or {}) do
@@ -439,6 +475,11 @@ function MQ.Refresh()
     local pin = acquire(child)
     pin.spot = s
     setIcon(pin.tex, #s.turnin > 0)
+    -- only grey quests there: a grey "!" (like the game's own low level quest marks)
+    local allGrey = #s.turnin == 0 and #s.avail > 0
+    for _, q in ipairs(s.avail) do if q.lvl >= me.grey then allGrey = false; break end end
+    if pin.tex.SetDesaturated then pin.tex:SetDesaturated(allGrey) end
+    pin.tex:SetVertexColor(allGrey and 0.75 or 1, allGrey and 0.75 or 1, allGrey and 0.75 or 1)
     local dq, dqid
     for _, q in ipairs(s.avail) do if not dq then dq = dungeonOf(q.id); dqid = dq and q.id end end
     for _, id in ipairs(s.turnin) do if not dq then dq = dungeonOf(id); dqid = dq and id end end
@@ -450,7 +491,7 @@ function MQ.Refresh()
     pin:ClearAllPoints()
     pin:SetPoint("CENTER", child, "TOPLEFT", (s.x / 100) * w / scale, -(s.y / 100) * h / scale)
     pin:Show()
-    if s.route then showRoute(s.route, child, w, h, scale, level, s) end
+    if s.route and not Q("mapQuestNoRoutes") then showRoute(s.route, child, w, h, scale, level, s) end -- 6.2.12-beta5: can be hidden
   end
   setWatch(used > 0)
   shiftPins()
@@ -521,6 +562,8 @@ local AVAIL_ICON, TURNIN_ICON = "|TInterface\\GossipFrame\\AvailableQuestIcon:0|
 function MQ.AddUnitLines(tt, unit)
   if not Q("npcQuestTip") or questieLoaded() or not unit then return end
   if not (UnitExists and UnitExists(unit)) or (UnitIsPlayer and UnitIsPlayer(unit)) then return end
+  -- fading out after the mouse left the NPC (6.2.10, Discord darkgameover 15.11.): no Show() that would stop the fade
+  if not UnitExists("mouseover") then return end
   local name = UnitName and UnitName(unit)
   if type(name) ~= "string" or (FLT.IsSecret and FLT.IsSecret(name)) then return end
   local mapID = C_Map and C_Map.GetBestMapForUnit and C_Map.GetBestMapForUnit("player")
@@ -537,20 +580,27 @@ function MQ.AddUnitLines(tt, unit)
   local added = false
   local e = nearest(npc.ends, px, py)
   for _, id in ipairs(e and e.ids or {}) do
-    if complete[id] then tt:AddLine(TURNIN_ICON .. (titles[id] or title({ id = id })), 0.4, 0.9, 0.4, true); added = true end
+    if complete[id] then
+      local d = dungeonOf(id) -- 6.2.7-beta14 (user 13.11.: "im tooltip steht kein D fuer Dungeon quest"), like the map pins
+      tt:AddLine(TURNIN_ICON .. (d and ("[" .. dLetter(d) .. "] ") or "") .. (titles[id] or title({ id = id }))
+        .. (d and ("  |cff9d9d9d" .. dName(d) .. "|r") or ""), 0.4, 0.9, 0.4, true); added = true
+    end
   end
   local g = nearest(npc.starts, px, py)
   for _, q in ipairs(g and g.quests or {}) do
     if available(q) then
       local c = GetQuestDifficultyColor and GetQuestDifficultyColor(q.lvl) or { r = 1, g = 1, b = 1 }
-      tt:AddLine(AVAIL_ICON .. "[" .. q.lvl .. "] " .. title(q), c.r, c.g, c.b, true); added = true
+      local d = dungeonOf(q.id)
+      tt:AddLine(AVAIL_ICON .. "[" .. (d and dLetter(d) or "") .. q.lvl .. "] " .. title(q) .. (d and ("  |cff9d9d9d" .. dName(d) .. "|r") or ""),
+        c.r, c.g, c.b, true); added = true
     end
   end
   if added then tt:Show() end
 end
 
 MQ.QuestieLoaded = questieLoaded
-MQ._mapData, MQ._available, MQ._pool, MQ._xpRange, MQ._dungeonOf, MQ._openDQ = mapData, available, pool, xpRange, dungeonOf, openDungeonQuest -- for tools/tests/t_mapquests.lua
+MQ._mapData, MQ._available, MQ._pool, MQ._xpRange, MQ._dungeonOf, MQ._openDQ = mapData, available, pool, xpRange, dungeonOf, openDungeonQuest
+MQ._routeLines = function() return nLines end -- 6.2.12-beta5 test: route lines drawn -- for tools/tests/t_mapquests.lua
 function MQ._me(t) for k, v in pairs(t) do me[k] = v end wipe(bagHas) end
 
 local boot = CreateFrame("Frame")
@@ -558,6 +608,8 @@ boot:RegisterEvent("PLAYER_LOGIN")
 boot:SetScript("OnEvent", function(self)
   self:UnregisterAllEvents()
   if FLT.QoL and FLT.QoL.On then FLT.QoL.On("mapQuests", MQ.Apply); FLT.QoL.On("mapQuestsContinent", MQ.Refresh)
-    FLT.QoL.On("mapQuestGivers", MQ.Refresh); FLT.QoL.On("mapQuestTurnins", MQ.Refresh) end
+    FLT.QoL.On("mapQuestGivers", MQ.Refresh); FLT.QoL.On("mapQuestTurnins", MQ.Refresh)
+    FLT.QoL.On("mapQuestNoRoutes", MQ.Refresh)
+    FLT.QoL.On("mapQuestsGrey", MQ.Refresh) end
   if Q("mapQuests") then MQ.Apply() end
 end)

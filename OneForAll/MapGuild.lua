@@ -160,14 +160,31 @@ GM._ReceiveOpenMap = receiveOpenMap -- tests
 -- drawing (only while the map is open)
 -- ---------------------------------------------------------------------------
 local pool, used = {}, 0
+local near = {} -- the pins under the mouse (reused)
 local function onEnter(pin)
   local m, name = pin.m, pin.name
   if not (m and GameTooltip) then return end
   GameTooltip:SetOwner(pin, "ANCHOR_RIGHT")
-  local c = RAID_CLASS_COLORS and RAID_CLASS_COLORS[m.cls]
-  GameTooltip:AddLine(Ambiguate and Ambiguate(name, "guild") or name, c and c.r or 1, c and c.g or 1, c and c.b or 1)
-  local cname = LOCALIZED_CLASS_NAMES_MALE and LOCALIZED_CLASS_NAMES_MALE[m.cls] or m.cls
-  GameTooltip:AddLine(string.format(L["Level %s %s"], m.lvl or "?", cname or ""), 1, 1, 1)
+  -- dots on top of each other share one tooltip with every name (6.2.10, user 15.11.: "da sind drei gildenleute,
+  -- solltest du die nicht mal zusammenfuegen im tool tip?")
+  wipe(near)
+  for i = 1, used do
+    local p = pool[i]
+    if p.m and p.cx and pin.cx and math.abs(p.cx - pin.cx) <= pin.reach and math.abs(p.cy - pin.cy) <= pin.reach then near[#near + 1] = p end
+  end
+  if #near < 2 then near[1] = pin; for i = #near, 2, -1 do near[i] = nil end end
+  table.sort(near, function(a, b) return a.name < b.name end)
+  for _, p in ipairs(near) do
+    local c = RAID_CLASS_COLORS and RAID_CLASS_COLORS[p.m.cls]
+    local cname = LOCALIZED_CLASS_NAMES_MALE and LOCALIZED_CLASS_NAMES_MALE[p.m.cls] or p.m.cls
+    local who, lvl = Ambiguate and Ambiguate(p.name, "guild") or p.name, string.format(L["Level %s %s"], p.m.lvl or "?", cname or "")
+    if #near == 1 then
+      GameTooltip:AddLine(who, c and c.r or 1, c and c.g or 1, c and c.b or 1)
+      GameTooltip:AddLine(lvl, 1, 1, 1)
+    else
+      GameTooltip:AddDoubleLine(who, lvl, c and c.r or 1, c and c.g or 1, c and c.b or 1, 1, 1, 1)
+    end
+  end
   local info = C_Map and C_Map.GetMapInfo and C_Map.GetMapInfo(m.map)
   if info and info.name then GameTooltip:AddLine(info.name, 0.8, 0.8, 0.8) end
   GameTooltip:AddLine(L["Guild member"], 0.4, 0.8, 1)
@@ -224,6 +241,7 @@ local function drawMember(m, name, shown, child, w, h, scale, level, size)
   pin:SetSize(size, size); pin:SetScale(scale); pin:SetFrameLevel(level + 1)
   pin:ClearAllPoints()
   pin:SetPoint("CENTER", child, "TOPLEFT", x * w / scale, -y * h / scale)
+  pin.cx, pin.cy, pin.reach = x * w, y * h, size * scale -- where it sits on the map, for the shared tooltip
   pin:Show()
 end
 function GM.Refresh()

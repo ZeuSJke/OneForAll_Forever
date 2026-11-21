@@ -47,11 +47,11 @@ FLT.DUNGEON_REGISTRY["Dire Maul: West"] = {
         {
             id = 7507,
             liveXPFallback = 6600,
-            name = "Foror's Compendium",
+            name = "Nostro's Compendium",
             level = 60,
             requires = 60,
-            pickup = "Foror's Compendium of Dragon Slaying, a drop inside Dire Maul",
-            objective = "Return Foror's Compendium of Dragon Slaying to the Athenaeum.",
+            pickup = "Nostro's Compendium of Dragon Slaying, a drop inside Dire Maul",
+            objective = "Return Nostro's Compendium of Dragon Slaying to the Athenaeum.",
             turnin = "Lorekeeper Lydros, inside Dire Maul",
         },
         {
@@ -63,30 +63,6 @@ FLT.DUNGEON_REGISTRY["Dire Maul: West"] = {
             pickup = "A Dull and Flat Elven Blade, a drop inside Dire Maul",
             objective = "Give the Dull and Flat Elven Blade to Lorekeeper Lydros.",
             turnin = "Lorekeeper Lydros, inside Dire Maul",
-        },
-        {
-            level = 56,
-            id = 5250,
-            name = "Starfall",
-            requires = 53,
-            faction = "Alliance",
-            pickup = "Daryn Lightwind, Teldrassil (55.4, 92.2)",
-            objective = "Find Starfall in Winterspring and speak with Wynd Nightchaser.",
-            turnin = "Wynd Nightchaser, Winterspring",
-            rewardItems = {
-            },
-        },
-        {
-            level = 57,
-            id = 5247,
-            name = "Fragments of the Past",
-            requires = 53,
-            faction = "Alliance",
-            pickup = "Aurora Skycaller, Eastern Plaguelands (46.5, 16.0)",
-            objective = "Bring an Enchanted Thorium Bar, 5 Crystal Restore, and a Vial of Dire Water to Aurora Skycaller near the Northpass Tower in Eastern Plaguelands.",
-            turnin = "Aurora Skycaller, Eastern Plaguelands",
-            rewardItems = {
-            },
         },
         {
             level = 60,

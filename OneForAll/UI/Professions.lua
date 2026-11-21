@@ -113,6 +113,7 @@ local function createProfessionPanel(parent)
   local campingView=CreateFrame("Frame",nil,body); campingView:SetAllPoints(); campingView:Hide()
   local homeView=CreateFrame("Frame",nil,body); homeView:SetAllPoints(); homeView:Hide()
   local showHome, updateHome, showProfession, showCamping, showFavorPage -- forward
+  local skillUpView -- the Skill-Up Helper page, made on first use
   local recipeView=CreateFrame("Frame",nil,content); recipeView:SetAllPoints(); recipeView:Hide()
   local allView=UI.CreateRecipeBrowser and UI.CreateRecipeBrowser(content)
   local navButtons={}
@@ -778,24 +779,17 @@ local function createProfessionPanel(parent)
   -- Sub-navigation inside a profession: "All recipes" | "Merchant's Favor".
   local currentProfession, currentSub = nil, nil
   local subButtons, subX = {}, 0
-  for _,spec in ipairs({{"all",N"All recipes"},{"fav",N"Favorites"},{"favor",N"Merchant's Favor"}}) do
-    local b=UI.GoldButton(subnav,L[spec[2]],spec[1]=="favor" and 150 or 120,26,nil,13); b:SetPoint("TOPLEFT",subX,-2); subX=subX+b:GetWidth()+6
+  for _,spec in ipairs({{"all",N"All recipes"},{"fav",N"Favorites"},{"skillup",N"Skill-Up Helper"},{"profit",N"Profit"},{"favor",N"Merchant's Favor"}}) do
+    local b=UI.GoldButton(subnav,L[spec[2]],(spec[1]=="favor" or spec[1]=="skillup") and 150 or 120,26,nil,13); b:SetPoint("TOPLEFT",subX,-2); subX=subX+b:GetWidth()+6
     b:SetScript("OnClick",function()
       if currentProfession then showProfession(currentProfession, spec[1]) end
     end)
     subButtons[spec[1]]=b
   end
-  -- the Crafting List window (5.7.3, UI/CraftList.lua): stays open when OneForAll closes
-  do
-    local b=UI.GoldButton(subnav,L["Crafting List"],130,26,nil,13); b:SetPoint("TOPLEFT",subX+18,-2)
-    b:SetScript("OnClick",function() if FLT.CraftList then FLT.CraftList.Toggle() end end)
-    b:SetScript("OnEnter",function(self)
-      GameTooltip:SetOwner(self,"ANCHOR_TOP"); GameTooltip:AddLine(L["Crafting List"],1,0.82,0)
-      GameTooltip:AddLine(L["Plan what to craft: the materials you have in your bags, bank and on your other characters, and what is still missing. Add recipes with \"+ List\". Also /ofa craft."],1,1,1,true)
-      GameTooltip:Show()
-    end)
-    b:SetScript("OnLeave",function() GameTooltip:Hide() end)
-  end
+  -- 6.2.6: the Skill-Up Helper (UI/SkillUpUI.lua, logic SkillUp.lua) - new in this version (TODO.md "Neu-Markierungen")
+  -- 6.2.6-beta28: the Profit page (UI/ProfitUI.lua) - new in this version; the Crafting List button moved into
+  -- All recipes / Favorites (UI/ProfessionRecipes.lua, user 12.11.: "dort besser aufgehoben")
+  local profitView -- made on first use
 
   -- Merchant's Favor page (own entry in the left menu) -----------------------
   local favorPage=CreateFrame("Frame",nil,body); favorPage:SetAllPoints(); favorPage:Hide()
@@ -828,6 +822,8 @@ local function createProfessionPanel(parent)
   local function hideViews()
     if allView then allView:Hide() end
     recipeView:Hide(); campingView:Hide(); homeView:Hide(); favorPage:Hide()
+    if skillUpView then skillUpView:Hide() end
+    if profitView then profitView:Hide() end
     nav:SetHeight(481)
   end
   showProfession=function(profession,sub)
@@ -835,19 +831,54 @@ local function createProfessionPanel(parent)
     if sub=="guide" then sub="favor" end
     sub=sub or (currentProfession==profession and currentSub) or (hasAll and "all" or "favor")
     if (sub=="all" or sub=="fav") and not hasAll then sub="favor" end
+    local hasSkillUp=FLT.SkillUp and FLT.SkillUp.PROFS[profession] and UI.CreateSkillUpPage and hasAll
+    if (sub=="skillup" or sub=="profit") and not hasSkillUp then sub=hasAll and "all" or "favor" end
     currentProfession, currentSub = profession, sub
     hideViews(); subnav:Show(); setNavButtonState(profession)
     if hasAll then subButtons.all:Show(); subButtons.fav:Show() else subButtons.all:Hide(); subButtons.fav:Hide() end
     -- keep the visible sub buttons packed from the left
     local x=0
-    for _,k in ipairs({"all","fav","favor"}) do
+    subButtons.skillup:SetShown(hasSkillUp and true or false)
+    subButtons.profit:SetShown(hasSkillUp and UI.CreateProfitPage and true or false)
+    for _,k in ipairs({"all","fav","skillup","profit","favor"}) do
       local b=subButtons[k]
       if b:IsShown() then b:ClearAllPoints(); b:SetPoint("TOPLEFT",x,-2); x=x+b:GetWidth()+6 end
       paintActive(b, k==sub)
     end
     setContentTop(-36)
     if sub=="all" or sub=="fav" then allView:ShowProfession(profession, sub)
+    elseif sub=="skillup" then
+      if allView then allView:Hide() end
+      skillUpView=skillUpView or UI.CreateSkillUpPage(content)
+      skillUpView:ShowProfession(profession)
+    elseif sub=="profit" then
+      if allView then allView:Hide() end
+      profitView=profitView or UI.CreateProfitPage(content)
+      profitView:ShowProfession(profession)
     else showFavorRecipes(profession) end
+  end
+
+  -- Key bindings (6.2.6, user 12.11.): open the Skill-Up Helper / Profit of the profession shown last, else of the last
+  -- Skill-Up guide, else the first own crafting profession; without one the professions home page
+  FLT.ShowProfessionSub = function(sub)
+    local SUx = FLT.SkillUp
+    local ok = function(p) return p and SUx and SUx.PROFS[p] end
+    local prof = ok(currentProfession) and currentProfession
+    local last = type(OneForAllCharDB) == "table" and OneForAllCharDB.skillUpLast
+    if not prof and type(last) == "table" and ok(last.prof) then prof = last.prof end
+    if not prof then
+      local own = type(OneForAllCharDB) == "table" and OneForAllCharDB.professions or {}
+      for _, p in ipairs(FLT.PROFESSION_ORDER or {}) do
+        if ok(p) and type(own[p]) == "table" and (tonumber(own[p].skill) or 0) > 0 then prof = p; break end
+      end
+    end
+    if prof then showProfession(prof, sub) else showHome() end
+  end
+
+  -- is that page on screen right now? (the key then closes the window again, user 12.11.)
+  FLT.ProfessionSubShown = function(sub)
+    local v = (sub == "skillup" and skillUpView) or (sub == "profit" and profitView)
+    return currentSub == sub and v and v:IsVisible() and true or false
   end
 
   -- Jump straight to a recipe (dungeon loot -> Professions tab).
@@ -867,6 +898,14 @@ local function createProfessionPanel(parent)
   end
   showHome=function()
     hideViews(); subnav:Hide(); homeView:Show(); setNavButtonState("home"); updateHome()
+  end
+  -- 6.2.12-beta25 (tester Deaders 19.11.: a profession learned / unlearned showed only after switching pages): the overview
+  -- follows SKILL_LINES_CHANGED while it is visible (next frame, after ProfessionRecipes has read the skill lines)
+  do
+    local ev=CreateFrame("Frame"); ev:RegisterEvent("SKILL_LINES_CHANGED")
+    ev:SetScript("OnEvent",function()
+      if homeView:IsVisible() and C_Timer then C_Timer.After(0,function() if homeView:IsVisible() then updateHome() end end) end
+    end)
   end
 
   -- Left navigation: Overview, the professions, Camping Buffs (last).

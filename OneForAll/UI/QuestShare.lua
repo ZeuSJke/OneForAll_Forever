@@ -53,6 +53,15 @@ local function normalize(s)
   return s
 end
 
+-- Scarlet Monastery wings by the minimap's place name (6.2.10, Discord ghostspartan 15.11.: always Graveyard - the Forever
+-- client has no map of its own for the wings, so the map check below finds nothing). English place names; in other
+-- languages it stays as before
+local SM_WINGS = {
+  ["Chamber of Atonement"] = "smgy", ["Forlorn Cloister"] = "smgy", ["Honor's Tomb"] = "smgy",
+  ["Huntsman's Cloister"] = "smlib", ["Gallery of Treasures"] = "smlib", ["Athenaeum"] = "smlib",
+  ["Training Grounds"] = "smarm", ["Footman's Armory"] = "smarm", ["Crusader's Armory"] = "smarm", ["Hall of Champions"] = "smarm",
+  ["Chapel Gardens"] = "smcath", ["Crusader's Chapel"] = "smcath",
+}
 local function findCurrentDungeon()
   if not IsInInstance then return nil end
   local inInstance, instanceType = IsInInstance()
@@ -62,15 +71,17 @@ local function findCurrentDungeon()
   -- Scarlet Monastery wings share one instance ID: tell them apart by the map.
   local uiMap = C_Map and C_Map.GetBestMapForUnit and C_Map.GetBestMapForUnit("player")
   local byID
+  local wing = SM_WINGS[(GetMinimapZoneText and GetMinimapZoneText()) or ""] or SM_WINGS[(GetSubZoneText and GetSubZoneText()) or ""]
   for _, d in ipairs(FLT.DUNGEONS or {}) do
     if d.instanceID and instanceID and d.instanceID == instanceID then
       if d.uiMaps and uiMap then
-        for _, m in ipairs(d.uiMaps) do if m == uiMap then return d end end
+        for _, m in ipairs(d.uiMaps) do if m == uiMap then return d, true end end
       end
+      if wing and d.key == wing then return d, true end
       byID = byID or d
     end
   end
-  if byID then return byID end
+  if byID then return byID, false end -- not sure: a Scarlet Monastery corridor without a known place name
   for _, d in ipairs(FLT.DUNGEONS or {}) do
     local dn = normalize(d.name)
     if dn == wanted or (d.instanceName and normalize(d.instanceName) == wanted) then return d end
@@ -86,6 +97,17 @@ local function findCurrentDungeon()
 end
 
 FLT.FindCurrentDungeon = findCurrentDungeon
+-- the dungeon to open the window on: when the wing is not sure (a corridor without a known place name) and the window already
+-- shows a dungeon with the same instance ID (another Scarlet Monastery wing), that one stays (6.2.11-beta23, Discord wzrdx
+-- 17.11.: Library / Armory - every reopen jumped back to Graveyard)
+function FLT.DungeonToOpen()
+  local d, sure = findCurrentDungeon()
+  if d and not sure then
+    local cur = FLT.UI and FLT.UI.SelectedDungeon and FLT.UI.SelectedDungeon()
+    if cur and cur.instanceID and cur.instanceID == d.instanceID then return cur end
+  end
+  return d
+end
 
 -- ---------------------------------------------------------------------------
 -- Quest log helpers (modern C_QuestLog API with Classic fallbacks)
@@ -220,6 +242,8 @@ end
 local function shareQuest(c)
   if testMode then return shareQuestTest(c) end
   local q = c.quest
+  -- the game blocks sharing from an addon in combat (Discord crusty8448 16.11.: ADDON_ACTION_BLOCKED)
+  if InCombatLockdown and InCombatLockdown() then FLT.Msg(L["Not available in combat"]); return end
   selectQuest(q.id, c.logIndex)
   if not QuestLogPushQuest then return end
   lastShareQuest = q.id
@@ -428,8 +452,8 @@ end
 
 -- "Share all Quests" in the dungeon quest list (6.0.2, user 31.10.): works anywhere (in town, at the entrance), for
 -- the dungeon open in OneForAll. Shares only quests that are in your log, can be shared and that at least one group
--- member is missing and can take (same checks as the popup); one after the other, 1.5 s apart (the game handles one
--- share at a time). The game's replies show in the chat as usual.
+-- member is missing and can take (same checks as the popup); one per click (see ShareAllQuests). The game's replies show
+-- in the chat as usual.
 local function candidatesFor(d)
   local saved = currentDungeon
   currentDungeon = d; scan(); currentDungeon = saved
@@ -444,16 +468,29 @@ function FLT.ShareAllPreview(d)
   if #list == 0 then return nil, L["Nothing to share: your group has all quests of this dungeon you can share, or cannot take them."] end
   return list
 end
+-- 6.2.13-beta2 (Discord crusty8448 17.11.: ADDON_ACTION_BLOCKED QuestLogPushQuest() from the timer of "Share all"): the game
+-- lets an addon share a quest only straight from a click - so one quest per click: the first click shares the first quest,
+-- every next click on "Share all Quests" (within a minute) the next one of the same list.
+local shareQueue, shareQueueAt, shareQueueDungeon = {}, 0, nil
 function FLT.ShareAllQuests(d)
-  local list, why = FLT.ShareAllPreview(d)
-  if not list then FLT.Msg(why); return end
-  local names = {}
-  for i, c in ipairs(list) do
-    names[i] = c.quest.name or (L["Quest"] .. " " .. tostring(c.quest.id))
-    if C_Timer and C_Timer.After then C_Timer.After((i - 1) * 1.5, function() shareQuest(c) end) elseif i == 1 then shareQuest(c) end
+  local now = GetTime and GetTime() or 0
+  if not (#shareQueue > 0 and shareQueueDungeon == d and now - shareQueueAt < 60) then
+    local list, why = FLT.ShareAllPreview(d)
+    if not list then FLT.Msg(why); return end
+    wipe(shareQueue); for i, c in ipairs(list) do shareQueue[i] = c end
+    shareQueueDungeon = d
   end
-  FLT.Msg((#list == 1 and L["Sharing 1 quest:"] or string.format(L["Sharing %d quests:"], #list)) .. " " .. table.concat(names, ", "))
+  local c = table.remove(shareQueue, 1)
+  shareQueueAt = now
+  shareQuest(c)
+  local name = c.quest.name or (L["Quest"] .. " " .. tostring(c.quest.id))
+  if #shareQueue > 0 then
+    FLT.Msg(string.format(L["Shared: %s. Click \"Share all Quests\" again for the next one (%d left)."], name, #shareQueue))
+  else
+    FLT.Msg(string.format(L["Shared: %s."], name))
+  end
 end
+FLT._shareQueue = shareQueue -- tests
 
 function FLT:OpenQuestShare()
   currentDungeon = findCurrentDungeon()

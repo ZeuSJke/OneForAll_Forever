@@ -7,14 +7,24 @@ local function N(s) return s end -- marks an English text translated where it is
 -- QuestObjective); "slain" / "killed" = kill, anything else = loot. Done objectives (10/10) show nothing.
 -- Inside instances the game keeps that data secret: no marks there for now (no guessing, user 31.10.);
 -- /ofa questmarks test shows what the game gives away there.
--- Switch qol.questMarks (off by default), position qol.questMarkPos = "left" / "top" / "right".
+-- Switch qol.questMarks (off by default), position qol.questMarkAt (QM.At below).
 -- Lean: the events are only registered while the switch is on; a plate is looked at when it appears and again
 -- (all shown plates) after the quest log changed, debounced.
 
 local QM = {}
 FLT.QuestMarks = QM
-QM.POS_OPTIONS = { { key = "left", label = N"Left" }, { key = "topleft", label = N"Top left" }, { key = "top", label = N"Top" },
-  { key = "topright", label = N"Top right" }, { key = "right", label = N"Right" } } -- top left / right: user 31.10.
+-- Position (6.2.11, user 17.11.: dragged in a sample nameplate in the settings, all around the plate - no drop-down):
+-- qol.questMarkAt = { z = "L" / "C" / "R", x, y }: the mark's centre, in mark sizes (the mark grows with the bar), from
+-- the bar's left edge (L), across the bar + level box as a fraction 0..1 (C) or from the level box's / bar's right edge
+-- (R); y from the bar's middle (up = +). The old qol.questMarkPos ("left" ... "right") gives the start.
+QM.PRESETS = { left = { z = "L", x = -0.65, y = 0 }, topleft = { z = "C", x = 0.06, y = 1.5 }, top = { z = "C", x = 0.5, y = 1.5 },
+  topright = { z = "C", x = 0.88, y = 1.5 }, right = { z = "R", x = 0.8, y = 0 } }
+QM.LIMIT_X, QM.LIMIT_Y = 3, 2.5 -- how far it may go from the plate (mark sizes)
+function QM.At()
+  local a = FLT.QoL and FLT.QoL.Get("questMarkAt")
+  if type(a) == "table" and (a.z == "L" or a.z == "C" or a.z == "R") and type(a.x) == "number" and type(a.y) == "number" then return a end
+  return QM.PRESETS[FLT.QoL and FLT.QoL.Get("questMarkPos") or "right"] or QM.PRESETS.right
+end
 
 local KILL_ATLAS, LOOT_ATLAS = "Crosshair_Attack_32", "Crosshair_pickup_32"
 local KILL_TEX, LOOT_TEX = "Interface\\Cursor\\Attack", "Interface\\Cursor\\Pickup" -- when the client has no atlas
@@ -123,32 +133,76 @@ local function markFor(plate)
   return m
 end
 
--- the level box right of the health bar (Classic plates): "Right" goes beyond it, it covered the box (beta8)
-local function levelBox(uf)
-  if not uf then return end
-  for _, k in ipairs({ "LevelFrame", "levelFrame", "LevelText", "levelText" }) do
-    local f = uf[k]
-    if type(f) == "table" and f.IsShown and f:IsShown() then return f end
+-- the health bar the player SEES: Blizzard's, or - when a nameplate addon (Platynator, Plater ...) hides Blizzard's frame -
+-- that addon's biggest shown status bar on the plate (user 17.11., Platynator: the mark sat off the bar because Blizzard's
+-- hidden bar is somewhere else). Found once per plate and kept while it is shown; sizes only, no positions.
+-- a size we may calculate with: Platynator's bars give "secret" sizes - arithmetic on them is an error (user 17.11. 21:10)
+local function num(v)
+  if type(v) ~= "number" or FLT.IsSecret(v) then return nil end
+  return v
+end
+-- shown? A secret answer (BlizzThreatPlates' own frames, Discord grumpymuppet 18.11.: "attempt to perform boolean test on a
+-- secret boolean value") counts as not shown (6.2.12-beta22)
+local function shown(f)
+  if not (f and f.IsVisible) then return false end
+  local v = f:IsVisible()
+  if FLT.IsSecret(v) then return false end
+  return v and true or false
+end
+local function addonBar(f, skip, depth, best, bestA)
+  for _, c in ipairs({ f:GetChildren() }) do
+    if c ~= skip and shown(c) then
+      if c.IsObjectType and c:IsObjectType("StatusBar") then
+        local w, h = num(c:GetWidth()), num(c:GetHeight())
+        -- secret sizes: the bar the addon calls its health / status bar wins, else the first one found
+        local a = (w and h) and w * h or ((f.statusBar == c or f.healthBar == c) and 1e9 or 1)
+        if a > bestA then best, bestA = c, a end
+      end
+      if depth < 3 then best, bestA = addonBar(c, skip, depth + 1, best, bestA) end
+    end
   end
+  return best, bestA
+end
+local function visibleBar(plate, uf)
+  local bar = uf and (uf.healthBar or uf.HealthBar)
+  if bar and (not uf.IsVisible or shown(uf)) and (not uf.GetEffectiveAlpha or (num(uf:GetEffectiveAlpha()) or 1) > 0.05)
+    and (not bar.IsVisible or shown(bar)) then return bar, true end
+  local c = plate.ofaBar
+  if not shown(c) then c = plate.GetChildren and addonBar(plate, uf, 1, nil, 0); plate.ofaBar = c end
+  if c then return c, false end
+  return bar or plate, true
 end
 local function place(plate, m)
   local uf = plate.UnitFrame
-  local bar = uf and (uf.healthBar or uf.HealthBar) or plate
-  local pos = Q().Get("questMarkPos") or "right"
+  local bar, blizz = visibleBar(plate, uf)
+  local at = QM.At()
   m:ClearAllPoints(); m.text:ClearAllPoints()
-  if pos == "right" then
-    local lv = levelBox(uf)
-    if lv then m:SetPoint("LEFT", lv, "RIGHT", 3, 0) else m:SetPoint("LEFT", bar, "RIGHT", 30, 0) end
-    m.text:SetPoint("LEFT", m, "RIGHT", 1, 0)
-  elseif pos == "top" then
-    m:SetPoint("BOTTOM", bar, "TOP", 0, 16); m.text:SetPoint("LEFT", m, "RIGHT", 1, 0)
-  elseif pos == "topleft" then
-    m:SetPoint("BOTTOMLEFT", bar, "TOPLEFT", 0, 16); m.text:SetPoint("LEFT", m, "RIGHT", 1, 0)
-  elseif pos == "topright" then
-    m:SetPoint("BOTTOMRIGHT", bar, "TOPRIGHT", 0, 16); m.text:SetPoint("RIGHT", m, "LEFT", -1, 0)
-  else
-    m:SetPoint("RIGHT", bar, "LEFT", -3, 0); m.text:SetPoint("RIGHT", m, "LEFT", -1, 0)
+  -- grows with the plate (Discord petrovafired 16.11.: Blizzard plates at size 3 - the mark sat on the level box's frame)
+  -- nameplate addons: always 20 - their bars live in their own scale (Platynator: 2.5), so the height is not ours
+  -- (6.2.11-beta19 user 17.11.: "viel zu gross")
+  local h = blizz and bar.GetHeight and num(bar:GetHeight()) or 0
+  local size = math.max(20, math.floor(h * 1.1 + 0.5))
+  if m.size ~= size then
+    m.size = size; m:SetSize(size, size)
+    local font, _, flags = m.text:GetFont(); if font then m.text:SetFont(font, math.max(10, math.floor(size * 0.45)), flags or "OUTLINE") end
   end
+  -- The level box beside Blizzard's bar is a FIXED allowance, no question to the plate at all (user 17.11.: "kannst du nicht
+  -- einfach die positionen in ofa dafuer aendern ohne jedesmal an der nameplate selbst irgendwas abzufragen?" - the game
+  -- forbids measuring and anchor queries there, and the style CVar did not tell the Forever client's classic style):
+  -- measured on the user's screenshot (21:08), the box ends 21.5 % of the bar's width right of the bar. Nameplate addons: none.
+  local extra = blizz and bar.GetWidth and (num(bar:GetWidth()) or 0) * 0.215 or 0
+  local x, y = at.x * size, at.y * size
+  local over = (plate:GetFrameLevel() or 1) + 30 -- above the plate's art (box, border); the plate's own level is safe to read
+  if m:GetFrameLevel() < over then m:SetFrameLevel(over) end
+  if at.z == "L" then
+    m:SetPoint("CENTER", bar, "LEFT", x, y)
+  elseif at.z == "R" then
+    m:SetPoint("CENTER", bar, "RIGHT", extra + x, y)
+  else -- across the bar and the level box (sizes only, no positions)
+    m:SetPoint("CENTER", bar, "LEFT", at.x * ((bar.GetWidth and num(bar:GetWidth()) or 120) + extra), y) -- 120: secret width
+  end
+  -- the progress on the outer side: left of the mark when it sits left of the plate
+  if at.z == "L" then m.text:SetPoint("RIGHT", m, "LEFT", -1, 0) else m.text:SetPoint("LEFT", m, "RIGHT", 2, 0) end
 end
 
 local function update(unit)
@@ -223,5 +277,5 @@ boot:RegisterEvent("PLAYER_LOGIN")
 boot:SetScript("OnEvent", function() if on() then QM.Apply() end end)
 if FLT.QoL and FLT.QoL.On then
   FLT.QoL.On("questMarks", function() QM.Apply() end)
-  FLT.QoL.On("questMarkPos", function() updateAll() end)
+  FLT.QoL.On("questMarkAt", function() updateAll() end)
 end

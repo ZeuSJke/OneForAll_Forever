@@ -254,6 +254,23 @@ FLT.DUNGEON_REGISTRY["Dire Maul: North"] = {
                 {18470, "Royal Seal of Eldre'Thalas", 3},
             },
         },
+        {
+            level = 60,
+            id = 1318,
+            name = "Unfinished Gordok Business",
+            requires = 56,
+            faction = "Both",
+            pickup = "Captain Kromcrush, inside Dire Maul: North",
+            objective = "Find the Gauntlet of Gordok Might and return it to Captain Kromcrush in Dire Maul.  According to Kromcrush, the \"old timey story\" says that Tortheldrin - a \"creepy\" elf who called himself a prince - stole it from one of the Gordok kings.",
+            turnin = "Captain Kromcrush, inside Dire Maul: North",
+            rewardChoice = true,
+            rewardItems = {
+                {18366, "Gordok's Handguards", 3},
+                {18367, "Gordok's Gauntlets", 3},
+                {18368, "Gordok's Gloves", 3},
+                {18369, "Gordok's Handwraps", 3},
+            },
+        },
     },
     bosses = {
         {

@@ -39,8 +39,12 @@ FLT.DUNGEON_REGISTRY["Zul'Farrak"] = {
             pickup = "Chief Engineer Bilgewhizzle, Tanaris (52.5, 28.5)",
             objective = "Bring the Divino-matic Rod to Chief Engineer Bilgewhizzle in Gadgetzan.",
             turnin = "Chief Engineer Bilgewhizzle, Tanaris",
-            rewardItems = {{9533, "Masons Fraternity Ring", 3}, {9534, "Engineer's Guild Headpiece", 3}},
             rewardChoice = true,
+            rewardItems = {
+                {9533, "Masons Fraternity Ring", 3},
+                {9534, "Engineer's Guild Headpiece", 3},
+                {270099, "Magister Cowl", 3},
+            },
         },
         {
             id = 2865,
@@ -71,8 +75,14 @@ FLT.DUNGEON_REGISTRY["Zul'Farrak"] = {
             pickup = "Tabetha, Dustwallow Marsh (46.1, 57.1)",
             objective = "Bring the Tiara of the Deep to Tabetha in Dustwallow Marsh.",
             turnin = "Tabetha, Dustwallow Marsh",
-            rewardItems = {{9527, "Spellshifter Rod", 3}, {9531, "Gemshale Pauldrons", 3}},
             rewardChoice = true,
+            rewardItems = {
+                {9531, "Gemshale Pauldrons", 2},
+                {270098, "Dank Shoulderpads", 2},
+            },
+            rewardAlso = {
+                {9527, "Spellshifter Rod", 2},
+            },
         },
         {
             id = 2770,
@@ -120,6 +130,43 @@ FLT.DUNGEON_REGISTRY["Zul'Farrak"] = {
             rewardItems = {
             },
         },
+        {
+            level = 50,
+            id = 80411,
+            name = "The Talisman of Kazdor",
+            requires = 45,
+            faction = "Both",
+            class = "ROGUE",
+            pickup = "Fahrad, Alterac Mountains (84.5, 80.3)",
+            objective = "Find The Talisman of Kazdor inside of Zul'Farrak. Then, bring it to Fahrad at Ravenholdt Manor. You must complete the job alone.",
+            turnin = "Fahrad, Alterac Mountains",
+            rewardItems = {
+            },
+        },
+        {
+            level = 46,
+            id = 96770,
+            name = "The Witch Doctor's Head",
+            requires = 39,
+            faction = "Alliance",
+            pickup = "Archmage Lan'dalock, Alterac Mountains (15.3, 73.9)",
+            objective = "Slay Witch Doctor Zum'rah and bring Zum'rah's Head to Archmage Lan'dalock in Dalaran.",
+            turnin = "Archmage Lan'dalock, Alterac Mountains",
+            rewardItems = {
+            },
+        },
+        {
+            level = 46,
+            id = 96775,
+            name = "Zum'rah's Head",
+            requires = 42,
+            faction = "Horde",
+            pickup = "Mazu'kon, Mulgore (32.5, 20.7)",
+            objective = "Slay Witch Doctor Zum'rah and bring Zum'rah's Head to Mazu'kon in Mulgore.",
+            turnin = "Mazu'kon, Mulgore",
+            rewardItems = {
+            },
+        },
     },
     bosses = {
         {
@@ -146,6 +193,7 @@ FLT.DUNGEON_REGISTRY["Zul'Farrak"] = {
             loot = {
                 {18082, "Zum'rah's Vexing Cane", "Two-Hand, Staff", 3},
                 {18083, "Jumanza Grips", "Hands, Cloth", 3},
+                {274642, "Blood Ritual Ring", "Finger", 3},
             },
         },
         {
@@ -153,6 +201,15 @@ FLT.DUNGEON_REGISTRY["Zul'Farrak"] = {
             npcID = 7796,
             displayID = 6690,
             loot = {},
+        },
+        {
+            -- fights with Nekrum Gutchewer; Wowhead Forever zone drops 13.11.2026
+            name = "Ruuzlu",
+            npcID = 7797,
+            loot = {
+                {274654, "Sandfury Guillotine", "Two-Hand, Axe", 3},
+                {274655, "Peacekeeper Wand", "Ranged, Wand", 3},
+            },
         },
         {
             name = "Shadowpriest Sezz'ziz",
@@ -172,6 +229,9 @@ FLT.DUNGEON_REGISTRY["Zul'Farrak"] = {
             description = "Fights you on the temple stairs after the prisoner event.",
             loot = {
                 {5616, "Gutwrencher", "One-Hand, Dagger", 3},
+                {274646, "Arch of the Covenant", "Ranged, Bow", 3},
+                {274647, "Farraki Kris", "Main Hand, Dagger", 3},
+                {274648, "The Desert Rose", "Trinket", 3},
             },
         },
         {
@@ -188,6 +248,7 @@ FLT.DUNGEON_REGISTRY["Zul'Farrak"] = {
             loot = {
                 {9467, "Gahz'rilla Fang", "One-Hand, Dagger", 3},
                 {9469, "Gahz'rilla Scale Armor", "Chest, Mail", 3},
+                {274657, "Hydra Leather Legs", "Legs, Leather", 3},
             },
         },
         {
@@ -216,6 +277,7 @@ FLT.DUNGEON_REGISTRY["Zul'Farrak"] = {
             rare = true,
             loot = {
                 {12470, "Sandstalker Ankleguards", "Feet, Leather", 3},
+                {274658, "Dune Hacker", "Main Hand, Axe", 3},
             },
         },
         {
@@ -232,6 +294,7 @@ FLT.DUNGEON_REGISTRY["Zul'Farrak"] = {
             rare = true,
             loot = {
                 {12471, "Desertwalker Cane", "Held In Off-Hand", 3},
+                {12469, "Mutilator", "Two-Hand, Sword", 3},
             },
         },
     },

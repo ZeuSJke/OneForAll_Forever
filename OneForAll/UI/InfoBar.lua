@@ -56,12 +56,20 @@ IB.E = E -- (tests)
 local ORDER = {}
 local function add(e) E[e.key] = e; ORDER[#ORDER + 1] = e.key end
 
+-- 12 or 24 hours like the game's clock (its "24-hour mode" setting; 6.2.10, asked 4 times in #help)
+local function clockText(h, m)
+  if not (GetCVarBool and GetCVarBool("timeMgrUseMilitaryTime") == false) then return fmt("%02d:%02d", h, m) end
+  local ap = h >= 12 and (TIMEMANAGER_PM or "PM") or (TIMEMANAGER_AM or "AM")
+  h = h % 12
+  return fmt("%d:%02d %s", h == 0 and 12 or h, m, ap)
+end
+local function localClock() return clockText(tonumber(date("%H")) or 0, tonumber(date("%M")) or 0) end
 add({ key = "clock", label = N"Clock", icon = "Interface\\Icons\\INV_Misc_PocketWatch_01", noIcon = true, tick = true, -- no icon on the bar (user 08.11.)
-  text = function() return date("%H:%M") end,
+  text = localClock,
   tip = function(tt)
-    tt:AddDoubleLine(L["Local time"], date("%H:%M"), 1, 0.82, 0, 1, 1, 1)
+    tt:AddDoubleLine(L["Local time"], localClock(), 1, 0.82, 0, 1, 1, 1)
     local h, m = call(GetGameTime)
-    if h then tt:AddDoubleLine(L["Server time"], fmt("%02d:%02d", h, m), 1, 0.82, 0, 1, 1, 1) end
+    if h then tt:AddDoubleLine(L["Server time"], clockText(h, m), 1, 0.82, 0, 1, 1, 1) end
   end,
   click = function() if TimeManager_Toggle then call(TimeManager_Toggle) end end })
 
@@ -77,7 +85,7 @@ add({ key = "fps", label = N"FPS and latency", icon = "Interface\\Icons\\INV_Giz
     tt:AddDoubleLine(L["Latency (world)"], fmt("%d ms", world or 0), 1, 0.82, 0, 1, 1, 1)
   end })
 
-local sessionStart, moneyEvent
+local sessionStart, moneyEvent, goldSaved
 -- 6.2.5 (Discord amalae. 11.11.: every alt had 0 gold): the money read too early after login or at logout can be 0 -
 -- a 0 replaces a stored amount only after a PLAYER_MONEY event (the money really changed); nothing saved at logout
 local function saveGold()
@@ -90,7 +98,19 @@ local function saveGold()
   local _, cls = UnitClass("player")
   FLT.CharSave(t, { c, cls }, legacy)
 end
-add({ key = "gold", label = N"Gold", icon = "Interface\\Icons\\INV_Misc_Coin_02", events = { "PLAYER_MONEY" },
+-- gold / bag slots open the bags: with the combined bag a secure click on the game's backpack button (6.2.10, Discord
+-- kaanu 15.11.: ToggleAllBags from our code tainted the combined bag - with a controller the pad controls broke until
+-- /reload); separate bags keep the ordinary click (the backpack button opens only the backpack there)
+local function bagButton()
+  local on
+  pcall(function()
+    if ContainerFrameSettingsManager and ContainerFrameSettingsManager.IsUsingCombinedBags then
+      on = ContainerFrameSettingsManager:IsUsingCombinedBags()
+    elseif C_CVar and C_CVar.GetCVarBool then on = C_CVar.GetCVarBool("combinedBags") end
+  end)
+  if on then return "MainMenuBarBackpackButton" end
+end
+add({ key = "gold", label = N"Gold", icon = "Interface\\Icons\\INV_Misc_Coin_02", events = { "PLAYER_MONEY", "PLAYER_LOGOUT" },
   text = function()
     local c = GetMoney and GetMoney() or 0
     if not sessionStart then sessionStart = c end
@@ -120,7 +140,7 @@ add({ key = "gold", label = N"Gold", icon = "Interface\\Icons\\INV_Misc_Coin_02"
       tt:AddDoubleLine(L["Total"], money(total), 1, 0.82, 0, 1, 1, 1)
     end
   end,
-  click = function() if ToggleAllBags then call(ToggleAllBags) end end })
+  click = function() if ToggleAllBags then call(ToggleAllBags) end end, secureClick = bagButton })
 
 add({ key = "bags", label = N"Free bag slots", icon = "Interface\\Icons\\INV_Misc_Bag_08", events = { "BAG_UPDATE_DELAYED" },
   text = function()
@@ -128,7 +148,7 @@ add({ key = "bags", label = N"Free bag slots", icon = "Interface\\Icons\\INV_Mis
     if not free then return "?" end
     return free <= 2 and ("|cffff4040" .. free .. "|r") or tostring(free)
   end,
-  click = function() if ToggleAllBags then call(ToggleAllBags) end end })
+  click = function() if ToggleAllBags then call(ToggleAllBags) end end, secureClick = bagButton })
 
 local SLOTS = { 1, 3, 5, 6, 7, 8, 9, 10, 16, 17, 18 }
 local function durability()
@@ -404,6 +424,16 @@ add({ key = "spec", label = N"Spec for the Value", icon = "Interface\\Icons\\INV
     end, 220)
   end })
 
+-- Guild Games (6.2.12-beta4): opens the window; the text shows how many guild members can play
+add({ key = "games", label = N"Guild Games", icon = "Interface\\Buttons\\UI-GroupLoot-Dice-Up",
+  -- "(n)" while guild members have open tables (gg35, user 17.11.)
+  text = function()
+    local n = FLT.GuildGames and FLT.GuildGames.OpenTables and FLT.GuildGames.OpenTables() or 0
+    return L["Guild Games"] .. (n > 0 and (" |cffffd200(" .. n .. ")|r") or "")
+  end,
+  tip = function(tt) tt:AddLine(L["Small games with your guild members: Death Roll, High / Low, Tic Tac Toe."], 0.8, 0.8, 0.8, true) end,
+  click = function() if FLT.GuildGames then FLT.GuildGames.Toggle() end end })
+
 -- the tabs of the OneForAll window as quick access (user 08.11.: "jeden tab aus dem addon dort quasi als schnell
 -- zugriff"; menu "Addon tabs" with its own list to the right). Keys "tab:<panel key>"; made from UI.panels on first use.
 local TAB_GLYPH = { settings = 7, armory = 0, dungeons = 1, professions = 2, qol = 3, talents = 4, books = 5, pets = 6 } -- Assets/tab_icons (MainFrame.lua)
@@ -644,6 +674,7 @@ end
 local function secureOf(e)
   if e.secureItem then return "item", "item:" .. e.secureItem end
   local sc, b = e.secureClick
+  if type(sc) == "function" then sc = sc() end
   if type(sc) == "table" then for _, n in ipairs(sc) do b = b or _G[n] end else b = sc and _G[sc] end
   if type(b) == "table" then return "click", b end
 end
@@ -821,14 +852,43 @@ local function subKeys(kind)
   for _, k in ipairs(ORDER) do if E[k].blizz then t[#t + 1] = k end end
   return t
 end
+-- the other characters of this realm in the gold list (6.2.12-beta15, user 18.11.: "eine moeglichkeit charactere zu entfernen,
+-- geloeschte charactere verschwinden oben nicht"): key, label (with class colour), copper; never the one we play
+local function goldChars()
+  local t, out, realm = type(OneForAllDB) == "table" and OneForAllDB.infoGold or nil, {}, GetRealmName and GetRealmName() or "?"
+  if not t then return out end
+  for k, v in pairs(t) do
+    local _, r, cls = FLT.CharOf(k, v)
+    if r == realm and type(v) == "table" and not (FLT.IsMyChar and FLT.IsMyChar(k)) then
+      local cc = RAID_CLASS_COLORS and cls and RAID_CLASS_COLORS[cls]
+      local label = FLT.CharLabel(t, k, v)
+      if cc then label = string.format("|cff%02x%02x%02x%s|r", cc.r * 255, cc.g * 255, cc.b * 255, label) end
+      out[#out + 1] = { key = k, label = label .. "  |cff9d9d9d" .. money(v[1] or 0) .. "|r", copper = v[1] or 0 }
+    end
+  end
+  table.sort(out, function(a, b) return a.copper > b.copper end)
+  return out
+end
+IB._goldChars = goldChars -- tests
+local function hideSub() if subMenu then subMenu:Hide() end end
 local function fillSub()
   local ch, opts = chosenSet(), {}
+  if subKind == "#gold" then -- a click takes the character off the list (he comes back when he logs in again)
+    for _, c in ipairs(goldChars()) do
+      opts[#opts + 1] = { key = c.key, label = c.label, pick = function()
+        OneForAllDB.infoGold[c.key] = nil
+        if #goldChars() == 0 then hideSub() else fillSub() end
+        fillMain()
+      end }
+    end
+    fillMenu(subMenu, opts)
+    return
+  end
   for _, k in ipairs(subKeys(subKind)) do
     opts[#opts + 1] = { key = k, label = L[E[k].label], checked = ch[k], pick = function() toggleItem(k); fillSub(); fillMain() end }
   end
   fillMenu(subMenu, opts)
 end
-local function hideSub() if subMenu then subMenu:Hide() end end
 local function showSub(row)
   if not subMenu then subMenu = newMenu() end
   subKind = row.opt and row.opt.key
@@ -850,6 +910,9 @@ fillMain = function()
     if not E[k].blizz then
       opts[#opts + 1] = { key = k, label = L[E[k].label], checked = ch[k], hover = hideSub, pick = function() toggleItem(k); fillMain() end }
     end
+  end
+  if ch.gold and #goldChars() > 0 then
+    opts[#opts + 1] = { key = "#gold", label = L["Remove a character from the gold list"], sub = true, hover = showSub, pick = showSub }
   end
   for _, sub in ipairs({ { "#blizz", N"Blizzard" }, { "#tabs", N"Addon tabs" } }) do
     local n = 0; for _, k in ipairs(subKeys(sub[1])) do if ch[k] then n = n + 1 end end
@@ -1002,7 +1065,11 @@ local function build()
   -- one event frame: only the events of the chosen elements
   ev = CreateFrame("Frame")
   ev:SetScript("OnEvent", function(_, event)
-    if event == "PLAYER_MONEY" then moneyEvent = true end
+    -- the gold of this character is saved at once, not only when the bar draws its text (6.2.12-beta9, user 18.11.: the
+    -- mage had 21 g, the list of the other characters still 12 g - a folded bar draws nothing, so nothing was saved);
+    -- at logout only a real amount (the 0 read there is not trusted, see saveGold)
+    if event == "PLAYER_MONEY" then moneyEvent = true; saveGold()
+    elseif event == "PLAYER_LOGOUT" then if GetMoney and (GetMoney() or 0) > 0 then saveGold() end return end
     if event == "PLAYER_REGEN_ENABLED" then
       if secureFolds then secureFolds = false; foldLater(true) end
       syncSecure(); return
@@ -1045,6 +1112,10 @@ function IB.Apply(keepOpen)
   if not band then build() end
   applyScale(); applyLook(); applyEdge()
   registerEvents()
+  -- the amount after login, a moment later (read too early it can be 0), also with the bar folded
+  if not goldSaved and byEvent.PLAYER_MONEY and C_Timer and C_Timer.After then
+    goldSaved = true; C_Timer.After(5, saveGold)
+  end
   -- a guild element asks the server for the roster once (the client does not keep it fresh on its own)
   for _, k in ipairs(items()) do if k == "guild" and C_GuildInfo and C_GuildInfo.GuildRoster then call(C_GuildInfo.GuildRoster) end end
   for _, k in ipairs(items()) do if k == "friends" and C_FriendList and C_FriendList.ShowFriends then call(C_FriendList.ShowFriends) end end

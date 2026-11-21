@@ -468,6 +468,18 @@ local function padActive()
   local ok, ids = pcall(function() return C_GamePad and C_GamePad.GetAllDeviceIDs and C_GamePad.GetAllDeviceIDs() end)
   return ok and type(ids) == "table" and #ids > 0
 end
+FLT.PadActive = padActive
+-- the controller drives the cursor right now (6.2.12-beta22, Discord nexneko 18.11.: "Keyboard + Mouse, no gamepad - cannot click
+-- on the sign post": GamePadEnable = 1 and some device that counts as a pad, so padActive() was true for a mouse player). A
+-- click on a map pin with a controller needs the game's controller cursor; without the function: padActive()
+function FLT.PadCursor()
+  if not padActive() then return false end
+  if IsGamePadCursorControlEnabled then
+    local ok, on = pcall(IsGamePadCursorControlEnabled)
+    if ok then return on and true or false end
+  end
+  return true
+end
 local function forceMap(mapID)
   -- the map is open already: only switch it (no panel shown from our code)
   if WorldMapFrame and WorldMapFrame:IsShown() and WorldMapFrame.SetMapID then
@@ -624,21 +636,29 @@ end
 -- where a quest (or a step of its chain) starts: our checked QUEST_START_MAPS first, else the coordinates in its pickup
 -- text ("Tran'gul, Riverglades (59.4, 44.2)"), else QuestieDB (FLT.QuestStart). 6.2.4, user 10.11.: every quest and
 -- chain step with coordinates gets the Map button. Built on first use per text.
-local pickupLoc = {} -- pickup text -> loc or false
+local pickupLoc = {} -- pickup / turn-in text -> loc or false
+local function textLoc(self, text)
+  if type(text) ~= "string" then return nil end
+  local c = pickupLoc[text]
+  if c == nil then
+    local who, zone, x, y = text:match("^(.-), (.-) %((%-?[%d%.]+), (%-?[%d%.]+)%)")
+    local mapID = zone and self:FindMapID(zone)
+    c = mapID and { mapID = mapID, x = tonumber(x), y = tonumber(y), label = (FLT.PlaceText or tostring)(who .. ", " .. zone) } or false
+    pickupLoc[text] = c
+  end
+  return c or nil
+end
 function FLT:QuestLoc(id, pickup)
   local loc = id and self.QUEST_START_MAPS and self.QUEST_START_MAPS[id]
   if loc then return loc end
-  if type(pickup) == "string" then
-    local c = pickupLoc[pickup]
-    if c == nil then
-      local who, zone, x, y = pickup:match("^(.-), (.-) %((%-?[%d%.]+), (%-?[%d%.]+)%)")
-      local mapID = zone and self:FindMapID(zone)
-      c = mapID and { mapID = mapID, x = tonumber(x), y = tonumber(y), label = (FLT.PlaceText or tostring)(who .. ", " .. zone) } or false
-      pickupLoc[pickup] = c
-    end
-    if c then return c end
-  end
-  return id and FLT.QuestStart and FLT.QuestStart(id) or nil
+  loc = textLoc(self, pickup)
+  if loc then return loc end
+  -- 6.2.7: also the quest givers of the map pin data (QuestieDB), not only those with a gear reward
+  return id and (FLT.QuestStart and FLT.QuestStart(id) or FLT.QuestPinLoc and FLT.QuestPinLoc(id, false)) or nil
+end
+-- where a quest is turned in (6.2.7, user 13.11.: Map button under "Turn in"): the coordinates in the text, else the pin data
+function FLT:QuestEndLoc(id, turnin)
+  return textLoc(self, turnin) or (id and FLT.QuestPinLoc and FLT.QuestPinLoc(id, true)) or nil
 end
 
 function FLT:ShowQuestStartOnMap(quest)

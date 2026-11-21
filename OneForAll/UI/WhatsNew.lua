@@ -13,24 +13,32 @@ local NEWS_AUTO = true -- set true (and a new NEWS_ID) for the next release with
 -- 6.1.6 (agreed with the user 06.11.): more reagent sources and more quest "!" on the world map, not shown automatically.
 -- 6.2.0 (user 07.11.): only the languages, shown automatically once.
 -- 6.2.2 (user 09.11.): the info bar and guild members on the world map, shown automatically once.
-local NEWS_ID = "6.2.2"
+-- 6.2.6 (user 12.11.): Skill-Up Helper, Profit, the new stat weights - shown automatically once.
+-- 6.2.10 (user 16.11.): the new dungeon pictures and the armor / weapon type filter - NOT shown automatically.
+-- 6.2.12 (user 19.11.): Guild Games with special thanks to Gaelda, Ritter Roulade and Deaders, and "Smaller changes"
+-- (Skill-Up changes, low level quests, walking routes) - shown automatically once.
+-- 6.2.13 (user 21.11.): BiS List, Cheap Upgrades with the Cheap Upgrade Scan, the new stat weights - shown automatically once.
+local NEWS_ID = "6.2.13"
 
 -- images (optional): pictures in a row under the lines, each { tex, shown width, shown height, texcoord right,
 -- texcoord bottom } (made by tools/art/proc_news.py from the user's screenshots in source_images/news)
 -- qol = the Quality of Life group the button opens; shot = a screenshot behind a "Show me" button (user 09.11.):
 -- { texture, shown width, shown height, texcoord right, texcoord bottom } (tools/art/proc_news.py)
 local NEWS = {
-  { icon = "Interface\\Icons\\INV_Misc_PocketWatch_01", title = N"Info bar", tab = "qol", qol = "iface", button = N"Open Quality of Life",
-    shot = { "news_infobar", 1024, 84, 1, 0.65625 },
+  { icon = "Interface\\Icons\\INV_Sword_39", title = N"BiS List", tab = "armory", button = N"Open Armory",
     lines = {
-      N"A band at the top of the screen with what you choose: gold, bags, durability, experience, clock, guild, friends, the game's windows and more.",
-      N"Switch it on in Quality of Life > Interface, then right-click the band to add elements. Size, colour and opacity are set there too.",
+      N"Armory > Gear Planner > BiS List: the best items per slot before raids for every class and spec, from the WoW Forever BiS lists of wowtbc.gg.",
+      N"Your class and spec are picked at first, and every item shows where you get it. More lists will follow.",
     } },
-  { icon = "Interface\\Icons\\INV_Shirt_GuildTabard_01", title = N"Guild members on the world map", tab = "qol", qol = "guild", button = N"Open Quality of Life",
+  { icon = "Interface\\Icons\\INV_Misc_Coin_02", title = N"Cheap Upgrades", tab = "armory", button = N"Open Armory",
     lines = {
-      N"Guild members who also use OneForAll show as dots in their class colour on the zone and continent map.",
-      N"Inside a dungeon or raid a green guild flag sits on its entrance, and its tooltip names who is inside.",
-      N"One switch in Quality of Life > Guild for both ways: switched off, nobody sees you and you see nobody.",
+      N"Armory > Gear Planner > Cheap Upgrades: Bind on Equip gear from the auction house that improves your gear, up to a highest price you set.",
+      N"Click \"Cheap Upgrade Scan\" in the auction house: it reads all auctions, also items with a random bonus (\"of the Eagle\"), each with its own price.",
+    } },
+  { icon = "Interface\\Icons\\INV_Misc_Spyglass_02", title = N"New stat weights", tab = "qol", qol = "tips", button = N"Open Quality of Life",
+    lines = {
+      N"The Gear Value uses new stat weights for every class and spec (from Geared Forever).",
+      N"Quality of Life > Tooltips > \"Gear Value shows\": the change for your whole gear, item against item, or both.",
     } },
 }
 
@@ -68,59 +76,69 @@ end
 
 local function create()
   local f = CreateFrame("Frame", "OneForAllWhatsNew", UIParent)
-  f:SetSize(560, 200); f:SetPoint("CENTER", 0, 60); f:SetFrameStrata("FULLSCREEN_DIALOG")
+  f:SetSize(680, 200); f:SetPoint("CENTER", 0, 60); f:SetFrameStrata("FULLSCREEN_DIALOG")
   f:EnableMouse(true); f:SetMovable(true); f:RegisterForDrag("LeftButton")
   f:SetScript("OnDragStart", f.StartMoving); f:SetScript("OnDragStop", f.StopMovingOrSizing)
   if UISpecialFrames then table.insert(UISpecialFrames, "OneForAllWhatsNew") end -- Esc closes it
 
   UI.FramedPanel(f)
   for _, t in ipairs(UI.OrnateFrame(f, f, 18, 3, "OVERLAY", 4)) do t:SetVertexColor(FLT.SkinC(1, 1, 1, 1)) end
-  local band = makeTexture(f, "BORDER", 0.075, 0.062, 0.040, 0.90); band:SetPoint("TOPLEFT", 3, -3); band:SetPoint("TOPRIGHT", -3, -3); band:SetHeight(50)
-  local dv = f:CreateTexture(nil, "ARTWORK"); FLT.SetTex(dv, UI.ASSET_ROOT .. "divider_ornate"); dv:SetHeight(14); dv:SetPoint("TOPLEFT", 6, -46); dv:SetPoint("TOPRIGHT", -6, -46)
+  local band = makeTexture(f, "BORDER", 0.075, 0.062, 0.040, 0.90); band:SetPoint("TOPLEFT", 3, -3); band:SetPoint("TOPRIGHT", -3, -3); band:SetHeight(58)
+  local dv = f:CreateTexture(nil, "ARTWORK"); FLT.SetTex(dv, UI.ASSET_ROOT .. "divider_ornate"); dv:SetHeight(14); dv:SetPoint("TOPLEFT", 6, -54); dv:SetPoint("TOPRIGHT", -6, -54)
 
-  local logo = f:CreateTexture(nil, "OVERLAY"); logo:SetSize(34, 34); logo:SetPoint("TOPLEFT", 12, -8)
+  local logo = f:CreateTexture(nil, "OVERLAY"); logo:SetSize(42, 42); logo:SetPoint("TOPLEFT", 12, -8)
   FLT.SetTex(logo, "Interface\\AddOns\\OneForAll\\Assets\\minimap_icon")
-  local title = UI.SmallCaps(f, L["OneForAll - Noteworthy changes"], 19, 15, {1, 0.82, 0.20}, "GameFontNormalLarge"); title:SetPoint("TOPLEFT", 54, -9)
-  local ver = FLT.NewFS(f, nil, "OVERLAY", "GameFontDisableSmall"); ver:SetPoint("TOPLEFT", 54, -30)
+  local title = UI.SmallCaps(f, L["OneForAll - Noteworthy changes"], 23, 18, {1, 0.82, 0.20}, "GameFontNormalLarge"); title:SetPoint("TOPLEFT", 64, -9)
+  local ver = FLT.NewFS(f, nil, "OVERLAY", "GameFontDisableSmall"); ver:SetPoint("TOPLEFT", 64, -36)
   ver:SetText(L["Version"] .. " " .. addonVersion())
 
   local close = UI.CloseButton(f); close:SetPoint("TOPRIGHT", -12, -12)
 
   local class = UnitClass and select(2, UnitClass("player"))
-  local y = -70
+  local y = -82
   for _, entry in ipairs(NEWS) do
     do
-      local ic = f:CreateTexture(nil, "ARTWORK"); ic:SetSize(36, 36); ic:SetPoint("TOPLEFT", 16, y)
+      -- 6.2.6 (user 12.11.: "groesser und auffaelliger"): every entry on its own card with a gold edge
+      -- the card's textures belong to f (BORDER layer), cf is only their anchor: textures of a child frame are drawn
+      -- over all of f's icons and texts (6.2.6 release check, user screenshot 12.11. 23:39)
+      local cf = CreateFrame("Frame", nil, f); cf:SetPoint("TOPLEFT", 10, y + 10); cf:SetPoint("TOPRIGHT", -10, y + 10)
+      UI.Card(f, cf, 6, {0.80, 0.60, 0.22, 0.85}, {0.10, 0.085, 0.055, 0.92}, "BORDER", 2)
+      local ic = f:CreateTexture(nil, "ARTWORK"); ic:SetSize(46, 46); ic:SetPoint("TOPLEFT", 22, y)
       FLT.SetTex(ic, entry.icon); ic:SetTexCoord(0.07, 0.93, 0.07, 0.93)
       if ic.AddMaskTexture and f.CreateMaskTexture then
         local m = f:CreateMaskTexture(); FLT.SetTex(m, UI.ASSET_ROOT .. "talent_icon_mask2", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE"); m:SetAllPoints(ic); ic:AddMaskTexture(m)
       end
       local icf = f:CreateTexture(nil, "OVERLAY"); FLT.SetTex(icf, UI.ASSET_ROOT .. "talent_frame"); icf:SetPoint("TOPLEFT", ic, -3, 3); icf:SetPoint("BOTTOMRIGHT", ic, 3, -3); icf:SetVertexColor(FLT.SkinC(0.98, 0.76, 0.30, 1))
-      local h = FLT.NewFS(f, nil, "OVERLAY", "GameFontNormal"); h:SetPoint("TOPLEFT", 62, y - 2)
+      local h = FLT.NewFS(f, nil, "OVERLAY", "GameFontNormalLarge"); h:SetPoint("TOPLEFT", 82, y - 2)
       h:SetText(L[entry.title] .. (entry.note and ("  |cff9d9d9d" .. L[entry.note] .. "|r") or "")); h:SetTextColor(FLT.SkinC(1, 0.82, 0.20))
       -- the button only for characters that have that tab (Hunter Pets: hunters)
       if entry.tab and (not entry.buttonClass or entry.buttonClass == class) then
-        local b = UI.GoldButton(f, L[entry.button], 150, 24, nil, 12); b:SetPoint("TOPRIGHT", -16, y)
+        local b = UI.GoldButton(f, L[entry.button], 180, 30, nil, 14); b:SetPoint("TOPRIGHT", -22, y)
         b:SetScript("OnClick", function()
           f:Hide(); if shotFrame then shotFrame:Hide() end
           if FLT.OpenPanel then FLT:OpenPanel(entry.tab) end
           if entry.qol and UI.QoLSelect then UI.QoLSelect(entry.qol) end
+          if entry.sub and FLT.ShowProfessionSub then FLT.ShowProfessionSub(entry.sub) end
         end)
+        if entry.hint then -- a small note under the button (user 12.11. 23:43)
+          local hn = FLT.NewFS(f, nil, "OVERLAY", "GameFontDisableSmall"); hn:SetPoint("TOP", b, "BOTTOM", 0, -5)
+          hn:SetWidth(210); hn:SetJustifyH("CENTER"); hn:SetText(L[entry.hint])
+        end
       end
       if entry.shot then -- "Show me" (user 09.11.): the screenshot in its own window
-        local b = UI.GoldButton(f, L["Show me"], 150, 24, nil, 12); b:SetPoint("TOPRIGHT", -16, y - 28)
+        local b = UI.GoldButton(f, L["Show me"], 180, 30, nil, 14); b:SetPoint("TOPRIGHT", -22, y - 36)
         b:SetScript("OnClick", function() showShot(entry.shot) end)
       end
-      local ly = y - 24
+      local ly = y - 28
       for _, line in ipairs(entry.lines) do
-        local dot = FLT.NewFS(f, nil, "OVERLAY", "GameFontHighlightSmall"); dot:SetPoint("TOPLEFT", 64, ly); dot:SetText(FLT.SkinHex("d9a63a") .. "•|r")
-        local t = FLT.NewFS(f, nil, "OVERLAY", "GameFontHighlightSmall"); t:SetPoint("TOPLEFT", 76, ly)
+        local dot = FLT.NewFS(f, nil, "OVERLAY", "GameFontHighlight"); dot:SetPoint("TOPLEFT", 84, ly); dot:SetText(FLT.SkinHex("d9a63a") .. "•|r")
+        local t = FLT.NewFS(f, nil, "OVERLAY", "GameFontHighlight"); t:SetPoint("TOPLEFT", 98, ly)
         -- the lines stay left of the buttons column (user 22.10.); full width only for entries without a button
-        t:SetWidth(entry.tab and 308 or 460); t:SetJustifyH("LEFT"); t:SetText(L[line]); t:SetTextColor(FLT.SkinC(0.90, 0.88, 0.82))
-        ly = ly - math.max(16, (t:GetStringHeight() or 12) + 5)
+        t:SetWidth(entry.tab and 360 or 550); t:SetJustifyH("LEFT"); t:SetText(L[line]); t:SetTextColor(FLT.SkinC(0.90, 0.88, 0.82))
+        ly = ly - math.max(18, (t:GetStringHeight() or 14) + 6)
       end
       if entry.images then
-        local x, hmax = 76, 0
+        local x, hmax = 98, 0
         for _, im in ipairs(entry.images) do
           local pic = f:CreateTexture(nil, "ARTWORK"); pic:SetSize(im[2], im[3]); pic:SetPoint("TOPLEFT", x, ly - 4)
           FLT.SetTex(pic, UI.ASSET_ROOT .. im[1]); pic:SetTexCoord(0, im[4], 0, im[5])
@@ -130,17 +148,19 @@ local function create()
         end
         ly = ly - hmax - 12
       end
-      y = ly - 14
+      ly = math.min(ly, y - 74) -- the card holds the icon and the buttons too
+      cf:SetHeight(y + 10 - ly + 4)
+      y = ly - 24
     end
   end
 
   local foot = FLT.NewFS(f, nil, "OVERLAY", "GameFontDisableSmall"); foot:SetPoint("BOTTOMLEFT", 16, 16)
   foot:SetText(L["Type /ofa news to show this again."])
-  local ok = UI.GoldButton(f, L["Got it"], 110, 26, nil, 13); ok:SetPoint("BOTTOMRIGHT", -16, 14)
+  local ok = UI.GoldButton(f, L["Got it"], 130, 30, nil, 14); ok:SetPoint("BOTTOMRIGHT", -16, 14)
   ok:SetScript("OnClick", function() f:Hide() end)
   f:HookScript("OnHide", function() if shotFrame then shotFrame:Hide() end end)
 
-  f:SetHeight(-y + 40)
+  f:SetHeight(-y + 44)
   f:Hide()
   return f
 end

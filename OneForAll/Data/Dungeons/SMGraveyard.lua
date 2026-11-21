@@ -22,6 +22,8 @@ FLT.DUNGEON_REGISTRY["Scarlet Monastery: Graveyard"] = {
             rewardItems = {
                 {7750, "Mantle of Woe", 2},
                 {4643, "Grimsteel Cape", 2},
+            },
+            rewardAlso = {
                 {7751, "Vorrel's Boots", 2},
             },
             rewardSummary = "3,300 XP · +150 Undercity · pick one of the first 2 items, the rest is always included",
@@ -40,6 +42,19 @@ FLT.DUNGEON_REGISTRY["Scarlet Monastery: Graveyard"] = {
             rewardSummary = "7,850 XP · +150 Undercity",
             note = "Needs Going, Going, Guano! from Razorfen Kraul. Hearts of Zeal drop from Scarlet enemies in every wing.",
         },
+        {
+            level = 40,
+            id = 79946,
+            name = "A Brother In Need",
+            requires = 35,
+            faction = "Alliance",
+            class = "PALADIN",
+            pickup = "Katherine the Pure, Stormwind City (48.5, 49.1)",
+            objective = "Speak with Katherine to learn more about Aeonas, and then find him in the Scarlet Monastery.",
+            turnin = "Aeonas, inside Scarlet Monastery: Graveyard",
+            rewardItems = {
+            },
+        },
     },
     bosses = {
         {
@@ -50,8 +65,6 @@ FLT.DUNGEON_REGISTRY["Scarlet Monastery: Graveyard"] = {
                 {7682, "Torturing Poker", "One-Hand, Dagger", 3},
                 {7683, "Bloody Brass Knuckles", "One-Hand, Fist Weapon", 3},
                 {274290, "Painwalker Buckler", "Off Hand, Shield", 3},
-                {252455, "Defender's Leather Helm", "Head, Leather", 3},
-                {252513, "Trapper's Leather Helm", "Head, Leather", 3},
             },
         },
         {
@@ -63,7 +76,6 @@ FLT.DUNGEON_REGISTRY["Scarlet Monastery: Graveyard"] = {
                 {7708, "Necrotic Wand", "Ranged, Wand", 3},
                 {7709, "Blighted Leggings", "Legs, Cloth", 3},
                 {7731, "Ghostshard Talisman", "Neck", 3},
-                {252512, "Brawler's Leather Helm", "Head, Leather", 3},
             },
         },
         {
@@ -95,9 +107,7 @@ FLT.DUNGEON_REGISTRY["Scarlet Monastery: Graveyard"] = {
             loot = {
                 {7684, "Bloodmage Mantle", "Shoulder, Cloth", 3},
                 {7685, "Orb of the Forgotten Seer", "Held In Off-Hand", 3},
-                {252455, "Defender's Leather Helm", "Head, Leather", 3},
                 {274291, "Polished Skullcap", "Head, Mail", 3},
-                {252513, "Trapper's Leather Helm", "Head, Leather", 3},
             },
         },
         {
@@ -106,8 +116,6 @@ FLT.DUNGEON_REGISTRY["Scarlet Monastery: Graveyard"] = {
             npcID = 14693,
             loot = {
                 {23169, "Scorn's Icy Choker", "Neck", 3},
-                {23168, "Scorn's Focal Dagger", "Main Hand, Dagger", 3},
-                {23170, "The Frozen Clutch", "Hands, Mail", 3},
             },
         },
     },

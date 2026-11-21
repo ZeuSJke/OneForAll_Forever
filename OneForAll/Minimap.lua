@@ -56,7 +56,7 @@ local function updateDragging(self)
 end
 
 -- the logo in the chosen color: "round" (minimap button) or "card" (collector button)
-local LOGO_COLORS = { red = true, blue = true, green = true, teal = true, violet = true }
+local LOGO_COLORS = { red = true, blue = true, green = true, teal = true, violet = true, black = true } -- black: 6.2.11, user 17.11.
 -- "bronze" (header test, user 31.10.): the logo of the window header - the turquoise file without colour, tinted
 -- bronze-gold (FLT.TintLogo on every texture that shows it)
 function FLT.LogoTexture(kind)
@@ -76,6 +76,22 @@ function FLT.ApplyLogoColor()
   if FLT.collectorIcon then FLT.collectorIcon:SetTexture(FLT.LogoTexture("card")); FLT.TintLogo(FLT.collectorIcon) end
   if FLT.trainerTabIcon then FLT.trainerTabIcon:SetTexture(FLT.LogoTexture("round")); FLT.TintLogo(FLT.trainerTabIcon) end
   if FLT.collectorHi then FLT.collectorHi:SetTexture(FLT.LogoTexture("card")); FLT.TintLogo(FLT.collectorHi) end
+  -- the LibDBIcon button that replaces ours with Leatrix Plus (6.2.13-beta23, Discord deyreth_redrock 21.11.: "can't change color
+  -- of minimap button" - guessed cause: it always showed its own fixed picture); LibDataBroker passes the new icon on
+  if FLT.ldbObj then
+    FLT.ldbObj.icon = FLT.LogoTexture("round")
+    local b = FLT.ldbIcon and FLT.ldbIcon.GetMinimapButton and FLT.ldbIcon:GetMinimapButton("OneForAll")
+    if b and b.icon then FLT.TintLogo(b.icon) end
+  end
+end
+-- QoL "logoSize" (6.2.11, user 17.11.): size of the OneForAll minimap button and of the collector button, 60 - 150 %.
+-- Sizes, not SetScale: the minimap button keeps its centre on the ring (positionButton), the collector its corner.
+function FLT.ApplyLogoSize()
+  local s = (FLT.QoL and FLT.QoL.Get and tonumber(FLT.QoL.Get("logoSize")) or 100) / 100
+  if s < 0.6 or s > 1.5 then s = 1 end
+  if button then button:SetSize(31 * s, 31 * s); button.icon:SetSize(25 * s, 25 * s); button.hl:SetSize(31 * s, 31 * s) end
+  local c = FLT.collectorIcon and FLT.collectorIcon:GetParent()
+  if c then c:SetSize(34 * s, 42 * s) end
 end
 
 function FLT:CreateMinimapButton()
@@ -106,11 +122,14 @@ function FLT:CreateMinimapButton()
   highlight:SetBlendMode("ADD")
   highlight:SetSize(31, 31)
   highlight:SetPoint("CENTER", 0, 0)
+  button.hl = highlight
+  FLT.ApplyLogoSize()
 
   -- Shift-right-click: the Crafting List (user 24.10.)
   button:SetScript("OnClick", function(_, mouse)
     if mouse == "RightButton" then
-      if IsShiftKeyDown and IsShiftKeyDown() and FLT.CraftList then FLT.CraftList.Toggle() end
+      if IsAltKeyDown and IsAltKeyDown() and FLT.SkillUp and FLT.SkillUp.ToggleLastGuide then FLT.SkillUp.ToggleLastGuide()
+      elseif IsShiftKeyDown and IsShiftKeyDown() and FLT.CraftList then FLT.CraftList.Toggle() end
       return
     end
     if FLT.ToggleUI then FLT:ToggleUI() end
@@ -129,6 +148,7 @@ function FLT:CreateMinimapButton()
     GameTooltip:AddLine(FLT.DISPLAY_NAME or "OneForAll", 1, 0.82, 0)
     GameTooltip:AddLine(L["Left-click: Open / close"], 1, 1, 1)
     GameTooltip:AddLine(L["Shift-right-click: Crafting List"], 1, 1, 1)
+    GameTooltip:AddLine(L["Alt-right-click: last Skill-Up guide"], 1, 1, 1)
     GameTooltip:AddLine(L["Drag: Move around the minimap"], 0.75, 0.75, 0.75)
     GameTooltip:Show()
   end)
@@ -167,23 +187,28 @@ function FLT.RegisterLDBIcon()
   local LDB, LDBI = LibStub("LibDataBroker-1.1", true), LibStub("LibDBIcon-1.0", true)
   if not (LDB and LDBI and LDB.NewDataObject and LDBI.Register) then return false end
   local obj = LDB:NewDataObject("OneForAll", {
-    type = "launcher", icon = "Interface\\AddOns\\OneForAll\\Assets\\minimap_icon",
+    type = "launcher", icon = FLT.LogoTexture("round"), -- in the chosen logo color (6.2.13-beta23)
     OnClick = function(_, mouse)
       if mouse == "RightButton" then
-        if IsShiftKeyDown and IsShiftKeyDown() and FLT.CraftList then FLT.CraftList.Toggle() end
+        if IsAltKeyDown and IsAltKeyDown() and FLT.SkillUp and FLT.SkillUp.ToggleLastGuide then FLT.SkillUp.ToggleLastGuide()
+        elseif IsShiftKeyDown and IsShiftKeyDown() and FLT.CraftList then FLT.CraftList.Toggle() end
       elseif FLT.ToggleUI then FLT:ToggleUI() end
     end,
     OnTooltipShow = function(tt)
       tt:AddLine(FLT.DISPLAY_NAME or "OneForAll", 1, 0.82, 0)
       tt:AddLine(L["Left-click: Open / close"], 1, 1, 1)
       tt:AddLine(L["Shift-right-click: Crafting List"], 1, 1, 1)
+      tt:AddLine(L["Alt-right-click: last Skill-Up guide"], 1, 1, 1)
     end,
   })
   if not obj then return false end
+  FLT.ldbObj = obj
   if type(OneForAllDB) ~= "table" then return false end
   OneForAllDB.ldbIcon = OneForAllDB.ldbIcon or {}
   if not pcall(LDBI.Register, LDBI, "OneForAll", obj, OneForAllDB.ldbIcon) then return false end
   FLT.ldbIcon = LDBI
+  local b = LDBI.GetMinimapButton and LDBI:GetMinimapButton("OneForAll")
+  if b and b.icon then FLT.TintLogo(b.icon) end -- bronze
   return LDBI
 end
 -- registered as early as possible (when our saved variables are there), so Leatrix Plus finds the button when it gathers
@@ -202,7 +227,9 @@ end
 -- compass and north tag are hidden, GetMinimapShape() answers "SQUARE" so other addons' buttons follow the edge.
 -- Left alone when ElvUI runs or another addon already made the minimap square. Switching off restores everything.
 local square = { on = false }
-local SQUARE_HIDE = { "MinimapBorder", "MinimapCompassTexture", "MinimapNorthTag" }
+-- MinimapCompassTextureUnderlay: Forever's own round ring, shown again by MinimapCluster:UpdateMinimapConfig() (beta39,
+-- found by ProEvilz on Discord 12.11.: "Enabling the square minimap doesn't remove the circular border")
+local SQUARE_HIDE = { "MinimapBorder", "MinimapCompassTexture", "MinimapNorthTag", "MinimapCompassTextureUnderlay" }
 -- the zoom buttons sit on the round rim; on the square map they go to its corner (user 25.10.; GameTimeFrame is the
 -- calendar in Forever, not the sun - left alone): name, anchor point on the Minimap, x, y
 -- the frames may also hang under Minimap / MinimapCluster as .ZoomIn / .ZoomOut (newer client code, user 26.10.:
@@ -257,6 +284,21 @@ local function moveCorners(on)
     end
   end
 end
+-- the client sets the round mask and shows its ring again whenever it sets up the minimap (UpdateMinimapConfig, e.g.
+-- when the rotation changes): put the square back right after it (hooked once, does nothing while the option is off)
+local function squareAgain()
+  if not square.on then return end
+  Minimap:SetMaskTexture("Interface\\ChatFrame\\ChatFrameBackground")
+  for _, n in ipairs(SQUARE_HIDE) do
+    local t = _G[n]
+    if type(t) == "table" and t.IsShown and t:IsShown() then
+      t:Hide()
+      local known = false
+      for _, h in ipairs(square.hidden or {}) do if h == t then known = true end end
+      if not known and square.hidden then square.hidden[#square.hidden + 1] = t end
+    end
+  end
+end
 function FLT.ApplySquareMinimap()
   if type(Minimap) ~= "table" or not Minimap.SetMaskTexture then return end
   local want = FLT.QoL and FLT.QoL.Get and FLT.QoL.Get("mmSquare") and true or false
@@ -286,6 +328,9 @@ function FLT.ApplySquareMinimap()
       square.frame = f
     end
     square.frame:Show()
+    if not square.hooked and type(MinimapCluster) == "table" and type(MinimapCluster.UpdateMinimapConfig) == "function" and hooksecurefunc then
+      hooksecurefunc(MinimapCluster, "UpdateMinimapConfig", squareAgain); square.hooked = true
+    end
     moveCorners(true)
     -- once more a moment later, in case the game lays out the minimap after us
     if C_Timer and C_Timer.After then C_Timer.After(1, function() if square.on then moveCorners(true) end end) end
@@ -297,6 +342,8 @@ function FLT.ApplySquareMinimap()
     Minimap:SetMaskTexture(186178)
     for _, t in ipairs(square.hidden or {}) do t:Show() end
     square.hidden = nil
+    -- let the client set its minimap up again (its own mask, the ring only where it belongs); not in combat
+    if square.hooked and not (InCombatLockdown and InCombatLockdown()) then pcall(MinimapCluster.UpdateMinimapConfig, MinimapCluster) end
     if square.frame then square.frame:Hide() end
     moveCorners(false)
     GetMinimapShape = square.shape
@@ -316,7 +363,7 @@ do
   ev:SetScript("OnEvent", function(self)
     self:UnregisterAllEvents()
     if FLT.QoL and FLT.QoL.On then
-      FLT.QoL.On("mmSquare", FLT.ApplySquareMinimap); FLT.QoL.On("logoColor", FLT.ApplyLogoColor)
+      FLT.QoL.On("mmSquare", FLT.ApplySquareMinimap); FLT.QoL.On("logoColor", FLT.ApplyLogoColor); FLT.QoL.On("logoSize", FLT.ApplyLogoSize)
     end
     if FLT.SafeCall then FLT.SafeCall("SquareMinimap", FLT.ApplySquareMinimap) else pcall(FLT.ApplySquareMinimap) end
     local q = type(OneForAllDB) == "table" and OneForAllDB.qol

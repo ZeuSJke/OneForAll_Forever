@@ -308,7 +308,7 @@ local function createQuestView(body)
     return q
   end
 
-  local selected
+  local selected, openStep
   local rows, steps, items = {}, {}, {}
   local render -- forward
   -- user 11.11.2026: a hint under the list that more chains will come
@@ -347,14 +347,29 @@ local function createQuestView(body)
   end
   local function stepRow(i)
     local r = steps[i]; if r then return r end
-    r = CreateFrame("Frame", nil, detail); r:SetSize(DW - 4, 38)
+    r = CreateFrame("Button", nil, detail); r:SetSize(DW - 4, 38)
     r.card = UI.CardRow(r)
-    r.num = newText(r, "GameFontNormal", 22, GOLD); r.num:SetPoint("LEFT", 6, 0); r.num:SetJustifyH("CENTER")
+    r.num = newText(r, "GameFontNormal", 22, GOLD); r.num:SetPoint("TOPLEFT", 6, -12); r.num:SetJustifyH("CENTER")
     r.name = newText(r, "GameFontHighlight", DW - 130); r.name:SetPoint("TOPLEFT", 34, -5)
     r.sub = newText(r, "GameFontHighlightSmall", DW - 130, DIM); r.sub:SetPoint("TOPLEFT", 34, -21)
-    r.check = r:CreateTexture(nil, "OVERLAY"); r.check:SetSize(16, 16); r.check:SetPoint("RIGHT", -76, 0)
-    r.check:SetTexture("Interface\\RaidFrame\\ReadyCheck-Ready")
-    r.map = UI.GoldButton(r, L["Map"], 64, 20, UI.ASSET_ROOT .. "icon_map", 11); r.map:SetPoint("RIGHT", -6, 0)
+    -- 6.2.8 (user 14.11.: "so anpassen, dass es ist wie im dungeon quests"): the state on the right like the dungeon
+    -- quest chains (Done / Ready to turn in / In log), done = green row, in the log = green text
+    r.state = newText(r, "GameFontHighlightSmall", 110); r.state:SetPoint("RIGHT", -78, 0); r.state:SetJustifyH("RIGHT")
+    r.map = UI.GoldButton(r, L["Map"], 64, 20, UI.ASSET_ROOT .. "icon_map", 11); r.map:SetPoint("TOPRIGHT", -6, -9)
+    r.state:ClearAllPoints(); r.state:SetPoint("TOPRIGHT", -78, -13)
+    -- 6.2.8 (user 14.11.: "ein klick auf jede einzelne quest ... questannahme und turn in ... daten zur quest und was zu tun
+    -- ist"): a click opens the quest below its row: start and turn-in with map buttons, quest level, objective
+    local function line(yy)
+      local l = { label = newText(r, "GameFontNormalSmall", 80, GOLD), text = newText(r, "GameFontHighlightSmall", DW - 200) }
+      l.label:SetPoint("TOPLEFT", 34, yy); l.text:SetPoint("TOPLEFT", 118, yy)
+      l.map = UI.GoldButton(r, L["Map"], 64, 18, UI.ASSET_ROOT .. "icon_map", 10); l.map:SetPoint("TOPRIGHT", -6, yy + 3)
+      return l
+    end
+    r.lStart, r.lEnd = line(-44), line(-66)
+    r.lStart.label:SetText(L["Starts at"]); r.lEnd.label:SetText(L["Turn in"])
+    r.objLabel = newText(r, "GameFontNormalSmall", 80, GOLD); r.objLabel:SetPoint("TOPLEFT", 34, -88); r.objLabel:SetText(L["Objective"])
+    r.obj = newText(r, "GameFontHighlightSmall", DW - 160); r.obj:SetPoint("TOPLEFT", 118, -88); r.obj:SetWordWrap(true)
+    r:SetScript("OnClick", function(self) openStep = (openStep ~= self.qid) and self.qid or nil; render(selected) end)
     steps[i] = r
     return r
   end
@@ -383,22 +398,59 @@ local function createQuestView(body)
     for i, id in ipairs(ids(c.q)) do
       local q = quest(id, c)
       if q then
-        local r = stepRow(i); r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, y); r:Show(); y = y - 41
+        local r = stepRow(i); r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, y); r:Show(); r.qid = id
         local isDone = FLT:IsQuestDone(id)
+        local logInfo = UI.DungeonHelpers and UI.DungeonHelpers.getQuestLogInfo
+        local inLog, ready = false, false
+        if not isDone and logInfo then inLog, ready = logInfo({ id = id, name = q.name }) end
         r.num:SetText(i)
         r.name:SetText(FLT.Name and FLT.Name(q.name) or q.name)
-        r.name:SetTextColor(FLT.SkinC(unpack(isDone and DIM or TEXT)))
+        if isDone or inLog then r.name:SetTextColor(FLT.SkinC(0.25, 1, 0.35)) else r.name:SetTextColor(FLT.SkinC(unpack(TEXT))) end
+        r.card:SetFill(isDone and 0.10 or 0.060, isDone and 0.34 or 0.062, isDone and 0.12 or 0.074, isDone and 0.42 or 0.97)
+        if isDone then r.state:SetText(L["Done"]); r.state:SetTextColor(FLT.SkinC(0.40, 0.94, 0.50))
+        elseif ready then r.state:SetText(L["Ready to turn in"]); r.state:SetTextColor(FLT.SkinC(1, 0.82, 0.20))
+        elseif inLog then r.state:SetText(L["In log"]); r.state:SetTextColor(FLT.SkinC(1, 0.82, 0.20))
+        else r.state:SetText("") end
         local zone = zoneName(q.map)
         local who = q.giver and (FLT.Name and FLT.Name(q.giver) or q.giver) or "?"
         r.sub:SetText(who .. (zone and ("  ·  " .. zone .. (q.x and string.format(" (%.1f, %.1f)", q.x, q.y) or "")) or ""))
-        r.check:SetShown(isDone)
-        if q.map and q.x then
-          r.map:Show(); r.map:SetScript("OnClick", function() FLT:ShowOnMap({ mapID = q.map, x = q.x, y = q.y, zone = zone, name = who }) end)
+        local e = data.ends and data.ends[id]
+        local eName, eMap, eX, eY
+        if e then eName, eMap, eX, eY = strsplit("|", e); eMap, eX, eY = tonumber(eMap), tonumber(eX), tonumber(eY) end
+        local eZone = zoneName(eMap)
+        local eWho = eName and (FLT.Name and FLT.Name(eName) or eName) or "?"
+        local function place(l, nm, zn, mp, x, yy)
+          l.text:SetText(nm .. (zn and ("  ·  " .. zn .. (x and string.format(" (%.1f, %.1f)", x, yy) or "")) or ""))
+          if mp and x then l.map:Show(); l.map:SetScript("OnClick", function() FLT:ShowOnMap({ mapID = mp, x = x, y = yy, zone = zn, name = nm }) end)
+          else l.map:Hide() end
+        end
+        -- the row's map button: where to go now - the turn-in once the quest is in the log (user 14.11.: Stepping Stones
+        -- "ready to turn in" sent me to Westfall where it starts)
+        local goMap, goX, goY, goZone, goWho = q.map, q.x, q.y, zone, who
+        if (inLog or ready) and eMap and eX then goMap, goX, goY, goZone, goWho = eMap, eX, eY, eZone, eWho end
+        if goMap and goX then
+          r.map:Show(); r.map:SetScript("OnClick", function() FLT:ShowOnMap({ mapID = goMap, x = goX, y = goY, zone = goZone, name = goWho }) end)
         else r.map:Hide() end
+        if (inLog or ready) and eMap then r.sub:SetText(L["Turn in"] .. ": " .. eWho .. (eZone and ("  ·  " .. eZone .. (eX and string.format(" (%.1f, %.1f)", eX, eY) or "")) or "")) end
+        local open = openStep == id
+        local parts = { r.lStart.label, r.lStart.text, r.lStart.map, r.lEnd.label, r.lEnd.text, r.lEnd.map, r.objLabel, r.obj }
+        for _, w in ipairs(parts) do w:SetShown(open) end
+        local h = 38
+        if open then
+          place(r.lStart, who, zone, q.map, q.x, q.y)
+          place(r.lEnd, eWho, eZone, eMap, eX, eY)
+          local inf = data.info and data.info[id]
+          local qlv, obj = "", ""
+          if inf then qlv, obj = strsplit("|", inf, 2) end
+          local lvTxt = tonumber(qlv) and string.format(L["Level %d"], tonumber(qlv)) or ""
+          r.obj:SetText((obj and obj ~= "" and obj or "-") .. (lvTxt ~= "" and ("\n|cff9d9d9d" .. lvTxt .. "|r") or ""))
+          h = 92 + math.max(14, r.obj:GetStringHeight() or 14) + 8
+        end
+        r:SetHeight(h); y = y - h - 3
       end
     end
     note:ClearAllPoints(); note:SetPoint("TOPLEFT", 2, y - 6)
-    note:SetText(L["A green check marks the quests you have done and the rewards you own. Map: where the quest starts."])
+    note:SetText(L["Green = done   Green text = in log   A green check marks the rewards you own. Click a quest for start, turn-in and objective; Map: where to go next."])
     y = y - 44
     detail:SetHeight(-y)
   end
@@ -1081,10 +1133,7 @@ local function createArmoryPanel(parent)
   for _, g in ipairs(GROUPS) do navButton(g.key, L[g.label], g.icon) end
   divider()
   navButton("rep", L["Reputation"], "Interface\\Icons\\INV_Misc_Note_02")
-  do -- 6.2.x (TODO.md "Neu-Markierungen")
-    local b = navButton("quests", L["Special Quests"], "Interface\\Icons\\INV_Scroll_03")
-    local m = UI.NewMark(b, L["New in this version."]); m:SetPoint("RIGHT", b, "RIGHT", -6, 0)
-  end
+  navButton("quests", L["Special Quests"], "Interface\\Icons\\INV_Scroll_03")
   divider()
   for _, l in ipairs({ { N"Mounts", "Interface\\Icons\\Ability_Mount_RidingHorse" }, { N"Legendaries", "Interface\\Icons\\INV_Staff_Medivh" } }) do
     local b; b, navY = UI.NavEntry(nav, navY, L[l[1]], l[2])
@@ -1094,9 +1143,10 @@ local function createArmoryPanel(parent)
   end
 
   -- Item names and ownership arrive later: redraw (throttled) while visible.
-  local pending, gearChanged = false, false
+  local pending, gearChanged, lastRedraw = false, false, 0
   local function redraw()
     pending = false
+    lastRedraw = GetTime and GetTime() or 0
     local changed = gearChanged; gearChanged = false
     if not panel:IsVisible() then return end
     if current == "rep" then refreshRep(true) elseif current == "quests" then questView:Refresh(true) elseif current == "gear" then gear:Refresh(changed) elseif current then refreshSets(true) end
@@ -1108,12 +1158,23 @@ local function createArmoryPanel(parent)
   ev:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
   ev:RegisterEvent("UPDATE_FACTION")
   ev:RegisterEvent("QUEST_TURNED_IN") -- the checks of the special quests
-  ev:SetScript("OnEvent", function(_, event, _, success)
+  ev:RegisterEvent("QUEST_ACCEPTED") -- 6.2.8: their "In log" state (debounced, only while the panel is shown)
+  pcall(ev.RegisterEvent, ev, "QUEST_REMOVED")
+  ev:SetScript("OnEvent", function(_, event, id, success)
     if event == "PLAYER_EQUIPMENT_CHANGED" then gearChanged = true end
-    if event == "ITEM_DATA_LOAD_RESULT" and not success then return end -- a failed load: no redraw (it would ask again)
+    -- a failed load: no redraw (it would ask again). 6.2.10 (user 15.11., video: "All slots" lagged without end): the
+    -- same for GET_ITEM_INFO_RECEIVED - items the server does not know failed, the redraw asked for them again, and so
+    -- on forever. The Gear Planner leaves those items out (FLT.ItemLoadFailed).
+    if (event == "ITEM_DATA_LOAD_RESULT" or event == "GET_ITEM_INFO_RECEIVED") and success == false then
+      if id then FLT.ItemLoadFailed = FLT.ItemLoadFailed or {}; FLT.ItemLoadFailed[id] = true end
+      return
+    end
     if pending or not panel:IsVisible() then return end
     pending = true
-    if C_Timer and C_Timer.After then C_Timer.After(0.4, function() FLT.SafeCall("Armory", redraw) end) else redraw() end
+    -- while many items arrive the redraws come at most every 1.5 s (each one goes through the whole list)
+    local now = GetTime and GetTime() or 0
+    local wait = math.max(0.4, 1.5 - (now - lastRedraw))
+    if C_Timer and C_Timer.After then C_Timer.After(wait, function() FLT.SafeCall("Armory", redraw) end) else redraw() end
   end)
   panel.Refresh = function() if panel:IsVisible() and current then show(current) end end
 

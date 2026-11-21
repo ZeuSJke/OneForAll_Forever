@@ -175,6 +175,19 @@ FLT.DUNGEON_REGISTRY["Lower Blackrock Spire"] = {
                 {13963, "Voone's Vice Grips", 3},
             },
         },
+        {
+            level = 60,
+            id = 5306,
+            name = "Snakestone of the Shadow Huntress",
+            requires = 50,
+            faction = "Both",
+            pickup = "Kilram, Winterspring (61.3, 37.1)",
+            objective = "Travel to Blackrock Spire and slay Shadow Hunter Vosh'gajin. Recover Vosh'gajin's Snakestone and return to Kilram.",
+            turnin = "Kilram, Winterspring",
+            rewardItems = {
+                {12821, "Plans: Dawn's Edge", 3},
+            },
+        },
     },
     bosses = {
         {

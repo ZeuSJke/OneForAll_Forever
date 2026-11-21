@@ -89,26 +89,42 @@ local function bestRanks()
   return best
 end
 
--- low ranks on the bars, grouped by spell: { id, name, rank, newID, newRank, slots = {..} }
+-- the game's Click Casting bindings (6.2.11-beta23, Discord pjizzle 17.11.: bound spells stayed low): nil without the API
+local function clickBindings()
+  local CB, T = C_ClickBindings, Enum and Enum.ClickBindingType
+  if not (CB and CB.GetProfileInfo and T and T.Spell) then return nil end
+  local ok, info = pcall(CB.GetProfileInfo)
+  if ok and type(info) == "table" then return info, T.Spell end
+end
+
+-- low ranks on the bars (slots) and in Click Casting (clicks = number of bindings), grouped by spell:
+-- { id, name, rank, newID, newRank, slots = {..}, clicks }
 function LR.Scan()
   local out, byID = {}, {}
   if not GetActionInfo then return out end
   local best, keep = bestRanks(), keepList()
+  local function low(id)
+    if not id or FLT.IsSecret(id) or keep[id] then return nil end
+    local e = byID[id]
+    if e then return e end
+    local name, r = spellNameRank(id)
+    local b = name and best[name]
+    if r and b and b.rank > r and b.id ~= id then
+      e = { id = id, name = name, rank = r, newID = b.id, newRank = b.rank, slots = {}, clicks = 0 }
+      byID[id] = e; out[#out + 1] = e
+      return e
+    end
+  end
   for r = 1, #RANGES, 2 do for slot = RANGES[r], RANGES[r + 1] do
     local kind, id = GetActionInfo(slot)
-    if kind == "spell" and id and not FLT.IsSecret(kind, id) and not keep[id] then
-      local name, r = spellNameRank(id)
-      local b = name and best[name]
-      if r and b and b.rank > r and b.id ~= id then
-        local e = byID[id]
-        if not e then
-          e = { id = id, name = name, rank = r, newID = b.id, newRank = b.rank, slots = {} }
-          byID[id] = e; out[#out + 1] = e
-        end
-        e.slots[#e.slots + 1] = slot
-      end
-    end
+    local e = kind == "spell" and not FLT.IsSecret(kind) and low(id)
+    if e then e.slots[#e.slots + 1] = slot end
   end end
+  local binds, SPELL = clickBindings()
+  for _, b in ipairs(binds or {}) do
+    local e = type(b) == "table" and b.type == SPELL and low(b.actionID)
+    if e then e.clicks = e.clicks + 1 end
+  end
   table.sort(out, function(a, b) if a.name ~= b.name then return a.name < b.name end return a.rank < b.rank end)
   return out
 end
@@ -132,6 +148,13 @@ local function update(e)
     end
   end
   if ClearCursor then ClearCursor() end
+  -- Click Casting: the same profile with the new rank's spell ID
+  if (e.clicks or 0) > 0 and C_ClickBindings and C_ClickBindings.SetProfileByInfo then
+    local binds, SPELL = clickBindings()
+    local changed = 0
+    for _, b in ipairs(binds or {}) do if b.type == SPELL and b.actionID == e.id then b.actionID = e.newID; changed = changed + 1 end end
+    if changed > 0 and pcall(C_ClickBindings.SetProfileByInfo, binds) then n = n + changed end
+  end
   return n
 end
 
@@ -174,7 +197,10 @@ local function fill()
     r:ClearAllPoints(); r:SetPoint("TOPLEFT", 18, y); y = y - 32
     r.e = e
     r.icon:SetTexture(spellIcon(e.newID))
-    local slots = #e.slots > 1 and ("  |cff9d9d9d(" .. string.format(L["%d buttons"], #e.slots) .. ")|r") or ""
+    -- "(2 buttons, Click Casting)": where the low rank is (user 17.11. 22:10: a hint for Click Casting in the popup)
+    local where = #e.slots > 1 and string.format(L["%d buttons"], #e.slots) or nil
+    if (e.clicks or 0) > 0 then where = (where and where .. ", " or "") .. L["Click Casting"] end
+    local slots = where and ("  |cff9d9d9d(" .. where .. ")|r") or ""
     r.text:SetText(e.name .. "   |cff9d9d9d" .. string.format(L["Rank %s"], e.rank) .. "|r  >  " .. FLT.SkinHex("ffd35a") .. string.format(L["Rank %s"], e.newRank) .. "|r" .. slots)
     r.keep:SetScript("OnClick", function()
       keepList()[e.id] = true

@@ -176,6 +176,42 @@ FLT.DUNGEON_REGISTRY["Ruins of Lordaeron"] = {
             },
             rewardSummary = "4,600 XP · +150 Undercity",
         },
+        {
+            level = 21,
+            id = 97289,
+            name = "Unending Torment",
+            requires = 15,
+            faction = "Horde",
+            pickup = "Master Apothecary Faranell, Undercity (48.8, 69.3)",
+            objective = "Bring the Head of the Baron to the body of Othmar in the Undercity.",
+            turnin = "Unfinished Abomination, Undercity",
+            rewardItems = {
+            },
+        },
+        {
+            level = 21,
+            id = 97291,
+            name = "Unending Torment",
+            requires = 15,
+            faction = "Horde",
+            pickup = "Master Apothecary Faranell, Undercity (48.8, 69.3)",
+            objective = "Collect a Toxic Skullcap from Tawny Grisette in the Trade Quarter, Blisterweed near the Herbalism Trainer, and Essence of Agony from the poison vendor in the Rogues' Quarter for Master Apothecary Faranell in Undercity.",
+            turnin = "Master Apothecary Faranell, Undercity",
+            rewardItems = {
+            },
+        },
+        {
+            level = 21,
+            id = 97292,
+            name = "Unending Torment",
+            requires = 15,
+            faction = "Horde",
+            pickup = "Master Apothecary Faranell, Undercity (48.8, 69.3)",
+            objective = "Inject the Hissing Serum into the system above Othmar's body for Master Apothecary Faranell.",
+            turnin = "Master Apothecary Faranell, Undercity",
+            rewardItems = {
+            },
+        },
     },
     bosses = {
         {
@@ -255,5 +291,13 @@ FLT.DUNGEON_REGISTRY["Ruins of Lordaeron"] = {
                 {6642, "Phantom Armor", "Chest, Mail", 3},
             },
         },
+    },
+    -- trash: blue drops of the dungeon's enemies (Wowhead Forever zone drops, 13.11.2026)
+    trashLoot = {
+        {286977, "Sword of the Fallen", "Two-Hand, Sword", 3},
+        {286978, "Rotmender's Garb", "Chest, Cloth", 3},
+        {286979, "Rotmender's Gloves", "Hands, Cloth", 3},
+        {286980, "Rotmender's Sash", "Waist, Cloth", 3},
+        {286981, "Death Bindings", "Wrist, Mail", 3},
     },
 }

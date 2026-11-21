@@ -192,7 +192,6 @@ FLT.TRAINER_SPELLS = {
     {40,20922,"Consecration",3,0,false,135926},
     {40,1032,"Devotion Aura",5,0,false,135893},
     {40,5589,"Hammer of Justice",3,0,false,135963},
-    {40,407632,"Hammer of the Righteous",0,0,false,236253},
     {40,20927,"Holy Shield",2,0,true,135880},
     {40,20473,"Holy Shock",2,0,true,135972},
     {40,20918,"Seal of Command",3,0,true,132347},

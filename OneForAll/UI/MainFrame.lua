@@ -18,7 +18,16 @@ local function ensurePanel(key)
   if not frame then return nil end
   for _, spec in ipairs(UI.panels) do
     if spec.key == key then
-      local panel = spec.create(frame)
+      -- 6.2.12-beta6 (Discord 18.11., "everything seems to overlap each other"): when the game stops a page half way (in
+      -- combat it ends a script that runs too long), the half built page must not stay on screen over the others - its
+      -- frames are hidden and it is built again next time
+      local before = {}
+      for _, c in ipairs({ frame:GetChildren() }) do before[c] = true end
+      local ok, panel = pcall(spec.create, frame)
+      if not ok then
+        for _, c in ipairs({ frame:GetChildren() }) do if not before[c] then c:Hide() end end
+        error(panel, 0)
+      end
       if panel then
         panels[key] = panel; panel:Hide()
         if spec.combatLock and UI.CombatLock then UI.CombatLock(panel) end -- settings pages: locked in combat
@@ -550,7 +559,7 @@ local function decorateWindow()
   dcBtn:SetScript("OnLeave", function() GameTooltip:Hide() end)
 end
 
-local function createUI()
+local function buildUI()
   frame = CreateFrame("Frame", "OneForAllFrame", UIParent, "BasicFrameTemplateWithInset")
   UI.mainWindow = frame -- backgrounds inside it follow the window opacity (UI.MarkBG)
   frame:SetSize(BASE_W, BASE_H)
@@ -655,6 +664,15 @@ local function createUI()
   frame:SetScript("OnShow", function() FLT:Refresh() end)
   frame:Hide()
 end
+-- 6.2.12-beta6: stopped half way (see ensurePanel) -> hide that window and build it again next time
+local function createUI()
+  local ok, err = pcall(buildUI)
+  if not ok then
+    if frame then frame:Hide() end
+    frame = nil; panels, tabButtons, activeTab = {}, {}, nil
+    error(err, 0)
+  end
+end
 
 function FLT:UIRefresh()
   -- Bag/bank events fire often; there is nothing to update while the window
@@ -713,13 +731,39 @@ function FLT:OpenPanel(key)
 end
 
 function UI.IsWindowShown() return frame ~= nil and frame:IsShown() end
+-- 6.2.12-beta6 (Discord 18.11.: "script ran too long" when M opened the dungeon map in a dungeon, then the pages lay over
+-- each other): the first open of the window and a page is a lot of work for one key press, and in combat the game stops
+-- a script that runs too long. The window, the page and what follows are built one frame after the other, each with its
+-- own time. done() runs at once when both are built already.
+function UI.PrepareWindow(key, done)
+  if frame and (not key or panels[key]) then return done() end
+  if not (C_Timer and C_Timer.After) then
+    if not frame then createUI() end
+    if key then ensurePanel(key) end
+    return done()
+  end
+  C_Timer.After(0, function()
+    if not FLT.SafeCall("Window", function() if not frame then createUI() end end) then return end
+    C_Timer.After(0, function()
+      if key and not FLT.SafeCall("Window", ensurePanel, key) then return end
+      C_Timer.After(0, done)
+    end)
+  end)
+end
 function UI.ActiveTab() return activeTab end
 
-function FLT:ToggleUI()
-  if not frame then createUI() end
-  if frame:IsShown() then frame:Hide(); return end
+function FLT:ToggleUI(prepared)
+  if frame and frame:IsShown() then frame:Hide(); return end
   -- Inside a dungeon: open straight on that dungeon's bosses & loot.
-  local d = FLT.FindCurrentDungeon and FLT.FindCurrentDungeon()
+  local d = FLT.DungeonToOpen and FLT.DungeonToOpen()
+  if not prepared and UI.PrepareWindow then -- built step by step the first time (see UI.PrepareWindow)
+    local key = d and UI.IsTabVisible("dungeons") and "dungeons" or nil
+    if not frame or (key and not panels[key]) then
+      UI.PrepareWindow(key, function() FLT.SafeCall("Window", FLT.ToggleUI, FLT, true) end)
+      return
+    end
+  end
+  if not frame then createUI() end
   if d and UI.IsTabVisible("dungeons") and ensurePanel("dungeons") and UI.OpenDungeon then
     setPanelTab("dungeons")
     UI.OpenDungeon(d)

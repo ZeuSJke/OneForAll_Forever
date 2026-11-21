@@ -16,9 +16,14 @@ local DEFAULTS = {
   lootFeedQuality = 1, lootFeedMoney = true,
   inviteMode = "friendsguild", keywordMode = "friendsguild", keyword = "inv", duelMode = "friendsguild",
   durabilityPct = 20, mmDir = "auto", logoColor = "teal", -- logo color: turquoise by default (user 27.10.)
+  logoSize = 100, -- size of the minimap / collector button in % (6.2.11, user 17.11.; 100 = as before)
+  junkKey = "alt-right", -- the click that marks junk in the bags (6.2.12-beta3, user 18.11.: default stays Alt + right-click)
   lowRank = true, -- on by default (user 15.10.)
+  tipMousePos = "BOTTOMRIGHT", -- Tooltip at the mouse: off, bottom right preselected (user 13.11.; the list showed "Top left" before)
   mapLandmarks = true, lmDungeons = true, lmFlight = true, lmTransport = true, lmTransitions = true, -- transitions: on like all landmarks (user 01.11.) -- Map Landmarks: on with all parts (user 16.10.)
   gearValue = true, -- Gear Planner Value in item tooltips: on (user 16.10.)
+  ahScan = true, -- "Cheap Upgrade Scan" button in the auction house (6.2.13-beta19): on (user 21.11.)
+  gvMode = "overall", -- which % the Gear Value line shows (6.2.13): the whole gear's, as before (user 20.11.)
   spellbookTrainer = true, -- trainer button in the spellbook: on (user 22.10.)
   classBright = true, -- brighter class colors: on (user 22.10.)
   mapFog = true, -- Remove Fog: on (user 22.10.)
@@ -29,6 +34,9 @@ local DEFAULTS = {
   infoBarDelay = 3, -- seconds the info bar stays open after the mouse left it, when not pinned (user 09.11.: default 3)
   buffScale = 100, buffIconOnly = false, -- buff reminder size in % and icon only (6.0.3, user 01.11.)
   flightMapNow = true, -- open the flight map at once at a flight master (6.1.5): on (user 05.11.)
+  -- skip the talk at service NPCs (6.2.13): every service off at first start (user 20.11.)
+  gossipVendor = false, gossipBank = false, gossipTrainer = false, gossipAuction = false,
+  gossipStable = false, gossipGuildBank = false, gossipTabard = false, gossipBattle = false,
   flightTimes = true, -- flight times: bar while flying, times on the flight map (6.1.5): on (user 05.11.)
   buffFlash = true, -- buff reminder cards glow (6.1.4, Discord 05.11.): on (user 05.11.)
   buffSnoozeBtn = false, -- "Zz" snooze button on the cards (6.1.4): off (user 05.11.)
@@ -36,11 +44,15 @@ local DEFAULTS = {
   mapQuests = true, -- quest icons on the world map: on (user 01.11., first off)
   npcQuestTip = true, -- quests to take / turn in on NPC tooltips (6.2.2): on, off while Questie is loaded (user 08.11.)
   mapQuestsContinent = true, -- quest icons also on the continent map: on (user 04.11.)
+  mapQuestsGrey = false, -- also grey (low level) quests on the map (6.2.12-beta15, user 18.11.: "standard: Aus")
+  mapQuestNoRoutes = false, -- hide the routes of walking quest givers (6.2.12-beta5; off = routes shown as before)
   mapQuestGivers = true, mapQuestTurnins = true, -- "!" and "?" each on their own: both on (user 07.11.)
+  guildGames = false, -- Guild Games (6.2.12-beta4, user 14.11.: "standard aus")
   guildMap = true, -- guild members on the map, sends and shows (MapGuild.lua, 6.2.2): on (user 09.11.)
   mapFogAlpha = 100, -- how visible the unexplored parts are, 0-100 %; 100 (user 01.11.)
   mapBooks = true, -- Library Books on the world map: on (user 23.10.)
   mapButton = true, -- OneForAll button on the world map: on (user 01.11.)
+  petAlertLower = false, -- pet ability alert also for missing lower ranks: off (user 17.11.)
   questMarkPos = "right", -- quest marks on nameplates: the switch is off, the mark right of the bar (user 01.11.)
   chatHistory = true, -- last sent messages with arrow up / down: on (user 31.10.)
   chatHide = true, chatAutoHide = 0, -- hide chat button: on, "Hide chat after": Never (user 27.10., 6.0.0)
@@ -95,11 +107,28 @@ local function on(key, fn) listeners[key] = fn end
 QoL.On = on
 QoL.LOGO_COLORS = { { key = "red", label = N"Red" }, { key = "blue", label = N"Blue" }, { key = "green", label = N"Green" },
   { key = "teal", label = N"Turquoise" }, { key = "violet", label = N"Violet" },
-  { key = "bronze", label = N"Bronze" } }
+  { key = "bronze", label = N"Bronze" }, { key = "black", label = N"Black" } }
 QoL.CHAT_HIDE_OPTIONS = { { key = 0, label = N"Never" }, { key = 10, label = N"10 seconds" }, { key = 20, label = N"20 seconds" },
   { key = 30, label = N"30 seconds" }, { key = 60, label = N"1 minute" } }
 QoL.MM_DIR_OPTIONS = { { key = "auto", label = N"Automatic" }, { key = "top", label = N"Top" }, { key = "bottom", label = N"Bottom" },
   { key = "left", label = N"Left" }, { key = "right", label = N"Right" } }
+-- the click that puts a bag item on the junk list (6.2.12-beta3, user 18.11.: some addons use Alt + right-click themselves).
+-- Always with a modifier: a plain right-click uses the item. Not Shift + left (link to chat) or Ctrl + left (try on).
+QoL.JUNK_KEY_OPTIONS = { { key = "alt-right", label = N"Alt + right-click" }, { key = "ctrl-right", label = N"Ctrl + right-click" },
+  { key = "alt-left", label = N"Alt + left-click" }, { key = "ctrl-alt-right", label = N"Ctrl + Alt + right-click" },
+  { key = "shift-alt-right", label = N"Shift + Alt + right-click" } }
+-- Gear Value in tooltips: which % it shows (6.2.13, user 20.11.: drop-down "item<>item, overall, both"; default "Overall" =
+-- as players had it): % of the replaced item, % of the whole gear, or both ("65% (overall 6%)")
+QoL.GV_MODE_OPTIONS = { { key = "overall", label = N"Whole gear" }, { key = "item", label = N"Item against item" },
+  { key = "both", label = N"Both" } }
+QoL.JUNK_KEYS = { ["alt-right"] = { alt = true, b = "RightButton" }, ["ctrl-right"] = { ctrl = true, b = "RightButton" },
+  ["alt-left"] = { alt = true, b = "LeftButton" }, ["ctrl-alt-right"] = { ctrl = true, alt = true, b = "RightButton" },
+  ["shift-alt-right"] = { shift = true, alt = true, b = "RightButton" } }
+function QoL.JunkKeyText() -- the chosen click in the player's language (tooltips)
+  local k = QoL.Get("junkKey")
+  for _, o in ipairs(QoL.JUNK_KEY_OPTIONS) do if o.key == k then return L[o.label] end end
+  return L["Alt + right-click"]
+end
 
 local function msg(text) if FLT.Msg then FLT.Msg(text) end end
 local function paused() return IsShiftKeyDown and IsShiftKeyDown() end
@@ -215,9 +244,21 @@ end
 local function quickLoot()
   if not QoL.Get("quickLoot") or not GetNumLootItems or not LootSlot then return end
   local auto = GetCVarBool and GetCVarBool("autoLootDefault") and true or false
-  local key = IsModifiedClick and IsModifiedClick("AUTOLOOTTOGGLE") and true or false
+  -- 6.2.13-beta2 (Discord slips9497 20.11.: "quick loot stopped working ... basically its using the old auto loot"): with the
+  -- Auto Loot key set to "None" the game answers IsModifiedClick("AUTOLOOTTOGGLE") with true all the time - then no key
+  -- counts as held (guessed cause)
+  local mod = GetModifiedClick and GetModifiedClick("AUTOLOOTTOGGLE")
+  local key = mod ~= "NONE" and IsModifiedClick and IsModifiedClick("AUTOLOOTTOGGLE") and true or false
   if auto == key then return end
-  for i = GetNumLootItems(), 1, -1 do pcall(LootSlot, i) end
+  -- once per loot window (6.2.13-beta23, Discord emzime 21.11. with log and patch): with full bags every LootSlot fails
+  -- ("Inventory is full") and the server sends the loot again (LOOT_OPENED without LOOT_CLOSED) - asking for every slot again
+  -- made a loop at network speed (game frozen, disconnect). QoL._quickLootAt: cleared on LOOT_CLOSED; after 10 s it may try
+  -- once more (in case a LOOT_CLOSED was missed). A field, not a local: this file is at Lua's limit of 200 locals.
+  if QoL._quickLootAt and GetTime() - QoL._quickLootAt < 10 then return end
+  local n = GetNumLootItems() or 0
+  if n == 0 then return end -- not known yet (LOOT_READY): LOOT_OPENED does it
+  QoL._quickLootAt = GetTime()
+  for i = n, 1, -1 do pcall(LootSlot, i) end
 end
 
 local function autoRepair()
@@ -234,7 +275,7 @@ local function autoRepair()
 end
 
 -- own junk list (5.7.3, GitHub #22, user 27.10.): item IDs per character (OneForAllCharDB.junkList), sold by
--- "Sell junk" like grey items. Alt+right-click an item in the bags puts it on the list or takes it off.
+-- "Sell junk" like grey items. The junk click (default Alt + right-click) on an item in the bags puts it on the list or off.
 local function junkList()
   if type(OneForAllCharDB) ~= "table" then return {} end
   OneForAllCharDB.junkList = OneForAllCharDB.junkList or {}
@@ -311,7 +352,8 @@ local function sellJunk()
   if not QoL.Get("sellJunk") or paused() then return end
   if sellTicker then sellTicker:Cancel(); sellTicker = nil end
   local list, total = {}, 0
-  for bag = 0, NUM_BAGS do
+  -- 6.2.13 (Discord seekay1): the reagent bag too (bag 5 = NUM_TOTAL_EQUIPPED_BAG_SLOTS; the other bag loops stay 0-4)
+  for bag = 0, math.max(NUM_BAGS, tonumber(NUM_TOTAL_EQUIPPED_BAG_SLOTS) or 0) do
     for slot = 1, numSlots(bag) do
       local link, count, quality, noValue, locked = itemInfo(bag, slot)
       local id = link and tonumber(link:match("item:(%d+)"))
@@ -375,14 +417,30 @@ local function questProgress()
   if takesMarks() then msg(L["Not turned in automatically: this quest takes your battleground marks."]); return end
   CompleteQuest()
 end
+-- 6.2.10-beta16 (Discord thunderous_one 16.11.: a quest with two reward choices handed out the cloth head by itself after
+-- the player came back to the NPC): reward choices were already left alone (n > 1), but a count read too early (0) would
+-- have turned the quest in with GetQuestReward(0). Now the turn-in waits a moment, reads the count again, asks the quest
+-- log too (its reward data is there since the quest was accepted) and gives up on any doubt.
+function QoL.ChoicesInLog(id)
+  if not (id and id > 0 and GetNumQuestLogChoices) then return 0 end
+  local ok, n = pcall(GetNumQuestLogChoices, id, true)
+  return ok and tonumber(n) or 0
+end
 local function questComplete()
   if not QoL.Get("autoTurnIn") or paused() or not GetQuestReward then return end
   local n = GetNumQuestChoices and GetNumQuestChoices() or 0
-  if n <= 1 then
-    local title = GetTitleText and GetTitleText()
+  local id = GetQuestID and GetQuestID() or 0
+  if n > 1 or QoL.ChoicesInLog(id) > 1 then return end -- reward choices stay manual
+  local title = GetTitleText and GetTitleText()
+  local function turnIn()
+    if paused() or not (QuestFrame and QuestFrame:IsShown()) then return end
+    if (GetTitleText and GetTitleText()) ~= title or (GetQuestID and GetQuestID() or 0) ~= id then return end
+    local now = GetNumQuestChoices and GetNumQuestChoices() or 0
+    if now ~= n or now > 1 or QoL.ChoicesInLog(id) > 1 then return end
     if title and GetTime then QoL.recentTurnIn[title] = GetTime() end
-    GetQuestReward(n)
-  end -- reward choices stay manual
+    GetQuestReward(now)
+  end
+  if C_Timer and C_Timer.After then C_Timer.After(0.3, turnIn) else turnIn() end
 end
 -- repeatable quests are left alone (6.2.5, Discord kersey 11.11.: Mangletooth's repeatable Blood Shard quests were turned
 -- in again and again, the other quests never). Gossip and the available list say "repeatable"; for the active list of a
@@ -423,10 +481,41 @@ local function taxiOption()
     if o.type == "taxi" or icon == 132057 or (type(icon) == "string" and icon:lower():find("taxi")) then return o end
   end
 end
+-- skip the talk at service NPCs (6.2.13, user 20.11.: "gossip ueberspringen wie Dialoge, Bank, etc"; a drop-down with each
+-- service on its own, all off at first start): only when the NPC has no quests for you and exactly ONE option, and that
+-- one is the service; Shift talks normally. The client's gossip icons (Interface\GossipFrame\*GossipIcon, Mainline file
+-- IDs) - auctioneer / stable master / guild bank by the icon path where the client gives one (im Spiel pruefen)
+QoL.GOSSIP_SERVICES = {
+  { "gossipVendor", { [132060] = true }, "vendor" },
+  { "gossipBank", { [132050] = true }, "banker" },
+  { "gossipTrainer", { [132058] = true }, "trainer" },
+  { "gossipAuction", {}, "auction" },
+  { "gossipStable", {}, "stable" },
+  { "gossipGuildBank", {}, "guildbank" },
+  { "gossipTabard", { [132056] = true }, "tabard" },
+  { "gossipBattle", { [132051] = true }, "battlemaster" },
+}
+function QoL.ServiceOption() -- (a field, not a local: this file is at the 200 locals limit)
+  if not (C_GossipInfo and C_GossipInfo.GetOptions) then return nil end
+  if #(C_GossipInfo.GetAvailableQuests and C_GossipInfo.GetAvailableQuests() or {}) > 0 then return nil end
+  if #(C_GossipInfo.GetActiveQuests and C_GossipInfo.GetActiveQuests() or {}) > 0 then return nil end
+  local opts = C_GossipInfo.GetOptions() or {}
+  if #opts ~= 1 then return nil end
+  local o = opts[1]
+  local icon = o.icon
+  local path = type(icon) == "string" and icon:lower() or nil
+  for _, sv in ipairs(QoL.GOSSIP_SERVICES) do
+    if QoL.Get(sv[1]) and (sv[2][icon] or (path and path:find(sv[3], 1, true)) or o.type == sv[3]) then return o end
+  end
+end
 local function gossipShow()
   if paused() or not C_GossipInfo then return end
   if QoL.Get("flightMapNow") then
     local o = taxiOption()
+    if o and o.gossipOptionID and C_GossipInfo.SelectOption then C_GossipInfo.SelectOption(o.gossipOptionID); return end
+  end
+  do
+    local o = QoL.ServiceOption()
     if o and o.gossipOptionID and C_GossipInfo.SelectOption then C_GossipInfo.SelectOption(o.gossipOptionID); return end
   end
   if QoL.Get("autoTurnIn") and C_GossipInfo.GetActiveQuests then
@@ -608,23 +697,33 @@ QoL._thanks = { consider = considerAura, fire = fireThanks, settle = thanksSettl
 -- left - or ran out after it was up - a small popup says so; a click on its icon casts the buff again. It goes away by
 -- itself once the buff is back. The popup can be dragged, its place is remembered (qol.buffPopupPos).
 -- Checks: UNIT_AURA (player, short debounce) plus ONE timer to the next moment a buff reaches its time; the 1 s
--- countdown only runs while the popup is shown. The list lives in qol.buffReminders = { [spell name] = seconds }.
+-- countdown only runs while the popup is shown. The list lives in OneForAllCharDB.buffReminders = { [spell name] = seconds }
+-- (per character since 6.2.13; before: qol.buffReminders for the whole account, copied to each character once).
 -- ---------------------------------------------------------------------------
 local checkBuffs, buffAura, syncBuffButton, inCapital, layoutCard, noteRanks -- set in the block below (keeps the file under 200 locals)
 do
-  local function buffList()
-    local d = db(); if not d then return {} end
-    d.buffReminders = d.buffReminders or {}
-    return d.buffReminders
+  -- per character since 6.2.13 (user 20.11.: "den buff-reminder characterbezogen machen"): OneForAllCharDB.buffReminders /
+  -- .buffIDs; a character without its own list starts with a copy of the old account-wide one (qol.buffReminders), so
+  -- nobody loses entries - then each character keeps its own. Without the character table (very early): the account one.
+  local function charList(field)
+    local c = OneForAllCharDB
+    if type(c) ~= "table" then
+      local d = db(); if not d then return {} end
+      d[field] = d[field] or {}
+      return d[field]
+    end
+    if type(c[field]) ~= "table" then
+      local d, copy = db(), {}
+      for k, v in pairs(d and d[field] or {}) do copy[k] = v end
+      c[field] = copy
+    end
+    return c[field]
   end
+  local function buffList() return charList("buffReminders") end
   -- the spell / item ID of each watched buff (6.2.0, user 07.11.: after switching the client from English to German the
   -- saved English names matched nothing): qol.buffIDs[key] = spell ID or "i<item ID>". The list keys stay names in the
   -- client's language (the cast buttons need them); migrateBuffs() renames them when the client language changed.
-  local function buffIDs()
-    local d = db(); if not d then return {} end
-    d.buffIDs = d.buffIDs or {}
-    return d.buffIDs
-  end
+  local function buffIDs() return charList("buffIDs") end
   -- weapon enchants (6.0.3, user 01.11.: oils, sharpening stones, poisons): key "<item name>@mh" / "@oh"
   local SLOTS = { mh = 16, oh = 17 }
   local SLOT_LABEL = { mh = N"main hand", oh = N"off hand" } -- shown with L[...]
@@ -1171,7 +1270,7 @@ do
     return name
   end
   function QoL.RemoveBuffReminder(name) buffList()[name] = nil; buffIDs()[name] = nil; buffSeen[name] = nil; checkBuffs() end
-  function QoL.ClearBuffReminders() local d = db(); if d then d.buffReminders = {}; d.buffIDs = {} end; wipe(buffSeen); checkBuffs() end
+  function QoL.ClearBuffReminders() wipe(buffList()); wipe(buffIDs()); wipe(buffSeen); checkBuffs() end
   QoL.CheckBuffs = checkBuffs
   QoL._buffCard = function(i) return cards[i] end -- tests
   -- snooze: remember the end time it has now (a buff still running low stays quiet until it is cast again);
@@ -1530,6 +1629,7 @@ local MOVABLE = {
   "SettingsPanel", "HelpFrame", "GameMenuFrame", -- Options, Customer Support, Game Menu (user 02.11.)
   "SocialUIFrame", "CalendarFrame", "CatalogShopFrame", -- Social (Friends), Calendar, Shop (Discord Stiandresius 06.11.)
   "LegacySystemFrame", -- Forever's Legacy System (user 09.11.)
+  "CooldownViewerSettings", -- Cooldown Settings (6.2.10, Discord sumomo8681 15.11.)
 }
 -- windows whose pages cover them completely: the pages take the mouse, so they are grips as well
 local GRIPS = { LFGParentFrame = { "LFGWhoListFrame", "LFGListingFrame", "LFGBrowseFrame" } }
@@ -1558,12 +1658,41 @@ local function hiddenByAddon(f)
   if W <= 0 or H <= 0 then return false end
   return l * k >= W or t * k <= 0 or (r and r * k <= 0) or (b and b * k >= H) or false
 end
+-- a saved place inside the screen (6.2.13-beta14, user 20.11.: "fenster einfach nicht im sichtbaren bereich" - Discord again and
+-- again: map, bags, game menu gone after a new resolution / UI scale or a size from "Resize Blizzard windows"): the whole window
+-- on the screen when it fits, else its top left corner. x, y = TOPLEFT offsets from UIParent's BOTTOMLEFT, in the window's
+-- own units (as saved). (A field, not a local: this file is at the 200 locals limit.)
+function QoL.OnScreen(f, x, y)
+  if not (f.GetWidth and f.GetHeight and UIParent.GetEffectiveScale) then return x, y end
+  local ue, fe = UIParent:GetEffectiveScale() or 1, f.GetEffectiveScale and f:GetEffectiveScale() or 1
+  if ue <= 0 or fe <= 0 then return x, y end
+  local W, H = (UIParent:GetWidth() or 0) * ue / fe, (UIParent:GetHeight() or 0) * ue / fe
+  if W <= 0 or H <= 0 then return x, y end
+  local w, h = f:GetWidth() or 0, f:GetHeight() or 0
+  x = math.max(0, math.min(x, W - math.min(w, W)))
+  y = math.min(H, math.max(y, math.min(h, H)))
+  return math.floor(x + 0.5), math.floor(y + 0.5)
+end
 local function applyPos(f, name)
-  if padBag(name) or hiddenByAddon(f) then return end
   local p = positions()[name]
+  -- a window that is off the screen because of OUR saved place is not "hidden by another addon" (6.2.13-beta14: such a
+  -- window was then never put back)
+  local ours = false
+  if p and f.GetPoint then
+    local pt, rel, rp, x, y = f:GetPoint(1)
+    ours = pt == "TOPLEFT" and rel == UIParent and rp == "BOTTOMLEFT" and x and y and math.abs(x - p[1]) < 1 and math.abs(y - p[2]) < 1
+  end
+  if padBag(name) or (not ours and hiddenByAddon(f)) then return end
+  -- the full screen map has its own place (6.2.13-beta15, Discord kritch 21.11.: "if you move the quest map it changes the
+  -- alignment of the fullscreen map") - the saved place is only for the small map
+  if f.IsMaximized and f:IsMaximized() then return end
+  -- "Open loot window at mouse" (6.2.6, Discord 0xveri 12.11.): the game puts the loot window at the cursor - leave it there
+  if name == "LootFrame" and GetCVar and GetCVar("lootUnderMouse") == "1" then return end
   if not p or not QoL.Get("moveWindows") then return end
   if inCombat() and f:IsProtected() then return end
-  f:ClearAllPoints(); f:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", p[1], p[2])
+  local x, y = QoL.OnScreen(f, p[1], p[2])
+  if x ~= p[1] or y ~= p[2] then p[1], p[2] = x, y end -- the corrected place is kept
+  f:ClearAllPoints(); f:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", x, y)
 end
 -- Resize Blizzard windows (6.0.1, Discord the_txab, own switch): drag with the right mouse button on a window -
 -- right / down = larger, left / up = smaller (50 - 150 %); the size shows at the cursor while dragging and is
@@ -1646,11 +1775,13 @@ local function makeMovable(name)
   if f.EnableMouse then f:EnableMouse(true) end
   local function down(_, button)
     if button == "RightButton" then
-      if QoL.Get("resizeWindows") then sizeStart(f, name) end
+      -- Ctrl + right mouse button (6.2.12-beta2, user 18.11.: a plain right-click inside windows started resizing them)
+      if QoL.Get("resizeWindows") and IsControlKeyDown and IsControlKeyDown() then sizeStart(f, name) end
       return
     end
     if button ~= "LeftButton" or not QoL.Get("moveWindows") then return end
     if inCombat() and f:IsProtected() then return end
+    if f.IsMaximized and f:IsMaximized() then return end -- the full screen map is not dragged
     if f.SetClampedToScreen then f.ofaClamp = f.IsClampedToScreen and f:IsClampedToScreen() or false; f:SetClampedToScreen(true) end
     f.ofaMoving = true; f:StartMoving()
   end
@@ -1672,7 +1803,17 @@ local function makeMovable(name)
   for i = 1, #handles do
     local h = handles[i]
     if type(h) == "table" and h.HookScript then
-      if h ~= f and h.EnableMouse then h:EnableMouse(true) end
+      if h ~= f and h.EnableMouse then
+        h:EnableMouse(true)
+        -- 6.2.9 (Discord Nigel 14.11.: Leatrix Plus' Wowhead link at the top of the map could no longer be copied): the
+        -- title bar now takes the mouse, so hovering stays on it and never reaches what other addons put beneath it.
+        -- Passing the hover on lets their text boxes get the mouse again; clicks (dragging) stay with the title bar.
+        -- 6.2.10 (Discord fightincowboy 15.11.): only on the world map, where Leatrix' link is - on every window it was
+        -- blocked when a window loaded during a protected action (Inspect from the player menu) and the chat menu broke
+        if name == "WorldMapFrame" and h.SetPropagateMouseMotion and not (h.IsProtected and h:IsProtected()) then
+          pcall(h.SetPropagateMouseMotion, h, true)
+        end
+      end
       h:HookScript("OnMouseDown", down); h:HookScript("OnMouseUp", up)
     end
   end
@@ -1684,12 +1825,27 @@ local function makeMovable(name)
     and not (close.IsProtected and close:IsProtected()) and close:GetFrameLevel() <= title:GetFrameLevel() then
     close:SetFrameLevel(title:GetFrameLevel() + 2)
   end
+  -- the world map switching to full screen: back to the middle when it still sits at our place of the small map; back to
+  -- small: our place again (6.2.13-beta15)
+  if name == "WorldMapFrame" and f.Maximize and f.Minimize then
+    hooksecurefunc(f, "Maximize", function(self)
+      local p = positions()[name]
+      if not p or (inCombat() and self:IsProtected()) then return end
+      local pt, rel, rp, x, y = self:GetPoint(1)
+      if pt == "TOPLEFT" and rel == UIParent and rp == "BOTTOMLEFT" and x and y and math.abs(x - p[1]) < 1 and math.abs(y - p[2]) < 1 then
+        self:ClearAllPoints(); self:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+      end
+    end)
+    hooksecurefunc(f, "Minimize", function(self) applyPos(self, name) end)
+  end
   -- at once (Discord 09.11., Faith: the window showed at its default place for a moment, then jumped), and once more a
   -- frame later in case the game places it again after its OnShow
   f:HookScript("OnShow", function(self)
     applyScale(self, name); applyPos(self, name)
     if C_Timer and C_Timer.After then C_Timer.After(0, function() applyScale(self, name); applyPos(self, name) end) end
   end)
+  -- set up a moment after its addon loaded (ADDON_LOADED below): the window may already be open
+  if f:IsShown() then applyScale(f, name); applyPos(f, name) end
 end
 local function setupMovable()
   if not QoL.Get("moveWindows") and not QoL.Get("resizeWindows") then return end
@@ -1785,52 +1941,78 @@ function QoL.CompletedQuestXP(list)
   return total, n
 end
 
-local xpMarker, xpBar, xpHooked -- xpHooked = { line = tooltip hook, done = { XP bars that have it } }
+local xpMarker, xpCap, xpBar, xpHooked -- xpHooked = { line = tooltip hook, done = { XP bars that have it } }
 local xpPending
 -- Each status bar container has its own XP bar: with a tracked reputation the game shows the
 -- reputation in one container and the XP in the other, so take the XP bar that is shown
 -- (Discord sparklebeard 09.11.: quest XP gone while a reputation was tracked).
-local function findXPBar()
-  if type(MainMenuExpBar) == "table" then return MainMenuExpBar, MainMenuExpBar end
-  local first, firstHolder
-  for _, cname in ipairs({ "MainStatusTrackingBarContainer", "SecondaryStatusTrackingBarContainer", "StatusTrackingBarManager" }) do
-    local c = _G[cname]
-    if type(c) == "table" and c.GetChildren then
-      for _, ch in ipairs({ c:GetChildren() }) do
-        if ch.ExhaustionTick or ch.ExhaustionLevelFillBar then
-          local sb = ch.StatusBar or ch
-          if sb.GetMinMaxValues then
-            if not ch.IsVisible or ch:IsVisible() then return sb, ch end
-            if not first then first, firstHolder = sb, ch end
-          end
+local findXPBar
+do
+  -- XP bars below c (depth levels of children): the first shown one, else remember the first hidden one in acc
+  local function scanXP(c, depth, acc)
+    if type(c) ~= "table" or not c.GetChildren then return end
+    for _, ch in ipairs({ c:GetChildren() }) do
+      if ch.ExhaustionTick or ch.ExhaustionLevelFillBar then
+        local sb = ch.StatusBar or ch
+        if sb.GetMinMaxValues then
+          if not ch.IsVisible or ch:IsVisible() then return sb, ch end
+          if not acc[1] then acc[1], acc[2] = sb, ch end
         end
+      elseif depth > 1 then
+        local sb, h = scanXP(ch, depth - 1, acc)
+        if sb then return sb, h end
       end
     end
   end
-  return first, firstHolder
+  local acc, lastBar, lastHolder = {}, nil, nil
+  local function search()
+    -- the old bar only while it is shown (6.2.11, Discord jadyn_karn 16.11.: quest XP gone for several players - a hidden
+    -- MainMenuExpBar, e.g. from another addon, was taken although the game shows its status bars)
+    local old = type(MainMenuExpBar) == "table" and MainMenuExpBar
+    if old and (not old.IsVisible or old:IsVisible()) then return old, old end
+    wipe(acc)
+    for _, cname in ipairs({ "MainStatusTrackingBarContainer", "SecondaryStatusTrackingBarContainer", "StatusTrackingBarManager" }) do
+      local sb, h = scanXP(_G[cname], 1, acc)
+      if sb then return sb, h end
+    end
+    -- Bartender4 moves the game's XP bar into containers of its own under BT4BarStatus (6.2.11-beta23, Discord jadyn_karn
+    -- 17.11., /fstack: BT4BarStatus.content.<frame>.<frame>.<bar>); the game's own containers stay hidden
+    local sb, h = scanXP(_G.BT4BarStatus, 4, acc)
+    if sb then return sb, h end
+    if old and not acc[1] then return old, old end
+    return acc[1], acc[2]
+  end
+  findXPBar = function()
+    -- the bar found last time while it is still shown (no search on every XP / quest update)
+    if lastHolder and (not lastHolder.IsVisible or lastHolder:IsVisible()) then return lastBar, lastHolder end
+    local sb, h = search()
+    if h and (not h.IsVisible or h:IsVisible()) then lastBar, lastHolder = sb, h else lastBar, lastHolder = nil, nil end
+    return sb, h
+  end
 end
 local function updateXP()
-  if not QoL.Get("questXP") then if xpMarker then xpMarker:Hide() end; return end
+  if not QoL.Get("questXP") then if xpMarker then xpMarker:Hide(); xpCap:Hide() end; return end
   local bar, holder = findXPBar()
   if not bar then return end
   if not xpMarker then
     xpMarker = bar:CreateTexture(nil, "ARTWORK", nil, 2)
     xpMarker:SetColorTexture(1, 0.82, 0.25, 0.45)
+    -- the pointed end, like the bar's own end (user 11.11. 23:13: "am Ende abrunden")
+    xpCap = bar:CreateTexture(nil, "ARTWORK", nil, 2)
+    if xpCap.SetTexture then FLT.SetTex(xpCap, "Interface\\AddOns\\OneForAll\\Assets\\xp_cap") end
+    if xpCap.SetVertexColor then xpCap:SetVertexColor(1, 0.82, 0.25, 0.45) end
   elseif xpBar ~= bar then
-    xpMarker:SetParent(bar) -- the shown XP bar changed (reputation tracked / untracked)
+    xpMarker:SetParent(bar); xpCap:SetParent(bar) -- the shown XP bar changed (reputation tracked / untracked)
   end
   xpBar = bar
   if not xpHooked then
-    xpHooked = { done = {} }
+    xpHooked = { done = {}, mgr = {} }
     -- the game swaps the bars when a reputation is tracked or untracked: follow it (fires only then)
-    local mgr = _G.StatusTrackingBarManager
-    if hooksecurefunc and type(mgr) == "table" and type(mgr.UpdateBarsShown) == "function" then
-      hooksecurefunc(mgr, "UpdateBarsShown", function()
-        if QoL.Get("questXP") and not xpPending and C_Timer and C_Timer.After then
-          xpPending = true
-          C_Timer.After(0.5, function() xpPending = false; updateXP() end)
-        end
-      end)
+    xpHooked.swap = function()
+      if QoL.Get("questXP") and not xpPending and C_Timer and C_Timer.After then
+        xpPending = true
+        C_Timer.After(0.5, function() xpPending = false; updateXP() end)
+      end
     end
     local quests = {} -- reused (only while the tooltip is built)
     local function byXP(a, b) return a[2] > b[2] end
@@ -1860,6 +2042,13 @@ local function updateXP()
     xpHooked.line = addLine
     if GameTooltip and GameTooltip.HookScript then GameTooltip:HookScript("OnHide", function(t) t.ofaQuestXP = nil end) end
   end
+  -- the manager that swaps the bars: the game's, and Bartender4's own one above the bar (each hooked once)
+  local m = holder and holder.GetParent and holder:GetParent()
+  for _, mgr in ipairs({ _G.StatusTrackingBarManager, m, m and m.GetParent and m:GetParent() }) do
+    if hooksecurefunc and type(mgr) == "table" and type(mgr.UpdateBarsShown) == "function" and not xpHooked.mgr[mgr] then
+      xpHooked.mgr[mgr] = true; hooksecurefunc(mgr, "UpdateBarsShown", xpHooked.swap)
+    end
+  end
   -- tooltip line on every XP bar we use (each container has its own); only frames that already
   -- show the game's tooltip (adding an OnEnter to another frame would catch the mouse and hide it)
   if not xpHooked.done[holder or bar] then
@@ -1871,12 +2060,42 @@ local function updateXP()
   local xp = QoL.CompletedQuestXP()
   local cur, max = UnitXP and UnitXP("player") or 0, UnitXPMax and UnitXPMax("player") or 0
   local w = bar:GetWidth() or 0
+  xpCap:Hide()
   if xp <= 0 or max <= 0 or w <= 0 then xpMarker:Hide(); return end
-  local x1 = w * math.min(1, cur / max)
-  local x2 = w * math.min(1, (cur + xp) / max)
+  -- measure the track on the game's own fill (user 11.11.2026: at a full bar the mark stuck out past the end cap, and
+  -- guessing the cap with fixed insets put the mark on top of the fill in beta2): the fill starts where the track starts
+  -- and its width is cur/max of the track, so the track's 100 % end is where the fill would end at a full bar
+  local fill = bar.GetStatusBarTexture and bar:GetStatusBarTexture()
+  local bl = bar.GetLeft and bar:GetLeft()
+  local fl, fr = fill and fill.GetLeft and fill:GetLeft(), fill and fill.GetRight and fill:GetRight()
+  local frac = cur / max
+  local start, full = 0, w
+  if bl and fl and fr and frac >= 0.05 and fr > fl then
+    local s0, f0 = fl - bl, (fr - fl) / frac
+    if s0 >= 0 and f0 > w * 0.5 and s0 + f0 <= w * 1.05 then start, full = s0, math.min(f0, w - s0) end
+  end
+  local x1 = start + full * math.min(1, frac)
+  local x2 = start + full * math.min(1, (cur + xp) / max)
+  -- height of the game's own fill (the bar frame is taller: a full-height mark showed outside the frame, beta3);
+  -- the track ends in a point: measured on the user's screenshots (11.11. 23:04 / 23:27, beta7 stopped ~5 px short)
+  -- the point starts 0.27 fill heights before the 100 % end and ends 0.08 after it - the mark ends there with the same point (Assets/xp_cap.tga)
+  local top, bottom, hf = 0, 0, bar.GetHeight and bar:GetHeight() or 0
+  local bt, bb = bar.GetTop and bar:GetTop(), bar.GetBottom and bar:GetBottom()
+  local ft, fb = fill and fill.GetTop and fill:GetTop(), fill and fill.GetBottom and fill:GetBottom()
+  if bt and bb and ft and fb and ft > fb and ft <= bt + 1 and fb >= bb - 1 then top, bottom, hf = ft - bt, fb - bb, ft - fb end
+  local tipStart, tipEnd = start + full - hf * 0.27, start + full + hf * 0.08
+  local capped = x2 >= tipStart
+  if capped then x2 = tipStart end
+  if x2 - x1 < 1 and not capped then xpMarker:Hide(); return end
   xpMarker:ClearAllPoints()
-  xpMarker:SetPoint("TOPLEFT", bar, "TOPLEFT", x1, 0); xpMarker:SetPoint("BOTTOMLEFT", bar, "BOTTOMLEFT", x1, 0)
-  xpMarker:SetWidth(math.max(1, x2 - x1)); xpMarker:Show()
+  xpMarker:SetPoint("TOPLEFT", bar, "TOPLEFT", x1, top); xpMarker:SetPoint("BOTTOMLEFT", bar, "BOTTOMLEFT", x1, bottom)
+  xpMarker:SetWidth(math.max(x2 - x1, 0.01)); if x2 - x1 >= 1 then xpMarker:Show() else xpMarker:Hide() end
+  if capped then
+    local cx = math.max(x1, tipStart)
+    xpCap:ClearAllPoints()
+    xpCap:SetPoint("TOPLEFT", bar, "TOPLEFT", cx, top); xpCap:SetPoint("BOTTOMLEFT", bar, "BOTTOMLEFT", cx, bottom)
+    xpCap:SetWidth(math.max(tipEnd - tipStart, 1)); xpCap:Show()
+  end
 end
 
 -- ---------------------------------------------------------------------------
@@ -2005,10 +2224,107 @@ local function nameList(list, max)
   return table.concat(t, ", ") .. string.format(" +%d", #list - max)
 end
 
+-- Disenchant value (6.2.6-beta33, user 12.11.: "disenchant value ... als schalter im qol ... nur wenn auctionator
+-- installiert ist ... im gleichen stil wie auctionator und darunter"): the expected worth of the dust, essences and shards
+-- (Data/Disenchant.lua chances x Auctionator prices) for green, blue and purple weapons and armor; nil = none / no prices
+do -- (in a block: the file is at Lua's limit of 200 locals)
+local NO_DE = { INVTYPE_BODY = true, INVTYPE_TABARD = true, INVTYPE_BAG = true, INVTYPE_AMMO = true, INVTYPE_QUIVER = true }
+-- (beta34, user 12.11.: "sehe keinen tooltip fuer disenchant" - the Forever client has these only under C_Item; looked
+-- up at call time so the tests can swap them)
+local function info(id) local f = (C_Item and C_Item.GetItemInfo) or GetItemInfo; if f then return f(id) end end
+local function instant(id) local f = (C_Item and C_Item.GetItemInfoInstant) or GetItemInfoInstant; if f then return f(id) end end
+function QoL.DisenchantValue(id)
+  local SU, T = FLT.SkillUp, FLT.DISENCHANT
+  if not (SU and SU.AHPrice and T) then return nil end
+  local _, _, _, loc, _, cls = instant(id)
+  if not (cls == 2 or cls == 4) or not loc or loc == "" or NO_DE[loc] then return nil end
+  local _, _, q, ilvl = info(id)
+  local list = q and T[q]
+  if not (list and ilvl and ilvl > 0) then return nil end
+  for _, b in ipairs(list) do
+    if ilvl <= b[1] then
+      local parts = (cls == 2 and b.weapon) or b.armor
+      local v = 0
+      for _, p in ipairs(parts) do
+        local price = SU.AHPrice(p[1])
+        if price then v = v + price * p[2] * (p[3] + p[4]) / 2 end
+      end
+      return v > 0 and v or nil
+    end
+  end
+end
+end
+
+-- beta35 (user 12.11.: "bekommt man den eintrag irgendwie direkt drunter ... also unter Auction"): right under Auctionator's
+-- "Auction" line. 6.2.12-beta22 (Discord razoroth 18.11.: ItemTree's divider sat on our moved text, lines pushed out of the
+-- tooltip): no more moving text between the tooltip's lines (other addons anchor their pieces to those lines) - the line is
+-- added while Auctionator writes its own, right after its Auction line (post-hook on Auctionator.Tooltip.AddAuctionTip).
+-- Without that hook, or with Auctionator's auction price line switched off: at the end of the tooltip as before.
+do
+  -- beta25 (tester Deaders 19.11.: "this line is not displayed at all" - an enchanter, recipe tooltips): Auctionator's pass
+  -- may run before ours or not at all (no auction line for that item), and tt:GetItem() can be empty there. So: the item of
+  -- our pass is remembered; Auctionator's pass uses it; if Auctionator already ran without adding, or does not run in this
+  -- fill, the line goes at the end (next frame at the latest).
+  local hooked, done, watched, lastId, fired = false, {}, {}, {}, {}
+  local function watch(tt)
+    if watched[tt] or not tt.HookScript then return end
+    watched[tt] = true
+    tt:HookScript("OnTooltipCleared", function(self) done[self], lastId[self], fired[self] = nil, nil, nil end)
+  end
+  local function add(tt, id)
+    if done[tt] then return end
+    local v = id and QoL.DisenchantValue(id)
+    if not v then return end
+    watch(tt)
+    tt:AddDoubleLine(L["Disenchant"], money(v), 1, 0.82, 0, 1, 1, 1)
+    done[tt] = true
+  end
+  local function hook()
+    if hooked then return true end -- (not cached while missing: Auctionator may load after the first tooltip)
+    local tips = Auctionator and Auctionator.Tooltip
+    hooked = hooksecurefunc and type(tips) == "table" and type(tips.AddAuctionTip) == "function" and true or false
+    if hooked then
+      hooksecurefunc(tips, "AddAuctionTip", function(tt)
+        if type(tt) ~= "table" or not QoL.Get("deValue") then return end
+        if tt.IsForbidden and tt:IsForbidden() then return end
+        watch(tt); fired[tt] = true
+        local id = lastId[tt]
+        if not id and tt.GetItem then
+          local ok, _, link = pcall(tt.GetItem, tt)
+          if ok and type(link) == "string" and not FLT.IsSecret(link) then id = tonumber(link:match("item:(%d+)")) end
+        end
+        if id then pcall(add, tt, id) end
+      end)
+    end
+    return hooked
+  end
+  local function auctionLineOn()
+    local C = Auctionator and Auctionator.Config
+    local ok, on = pcall(function() return C.Get(C.Options.AUCTION_TOOLTIPS) end)
+    return ok and on and true or false
+  end
+  function QoL.DisenchantLine(tt, id)
+    if done[tt] or not id then return end
+    watch(tt); lastId[tt] = id
+    if not (hook() and auctionLineOn()) or fired[tt] then add(tt, id); return end -- no hook / Auctionator was first
+    -- Auctionator's pass comes later in this fill and adds it under Auction; if it never comes: at the end, next frame
+    if C_Timer then
+      C_Timer.After(0, function()
+        if not done[tt] and lastId[tt] == id and tt.IsShown and tt:IsShown() then add(tt, id); if done[tt] then tt:Show() end end
+      end)
+    end
+  end
+  QoL._deDone = done -- tests
+end
+
 local function addItemLines(tt, link)
   if type(link) ~= "string" then return end
   local id = tonumber(link:match("item:(%d+)"))
   if not id then return end
+  -- right under Auctionator's "Vendor" / "Auction" lines, in their look (only with Auctionator: the prices come from it)
+  if QoL.Get("deValue") and FLT.SkillUp and FLT.SkillUp.HasAuctionator() then
+    pcall(QoL.DisenchantLine, tt, id)
+  end
   if QoL.Get("bossDrops") then
     local drops = bossDrops(id)
     if drops then tt:AddLine(L["Drops from:"] .. " " .. nameList(drops, 2), 0.95, 0.80, 0.45, true) end
@@ -2016,7 +2332,7 @@ local function addItemLines(tt, link)
   if QoL.Get("gearValue") and FLT.GearValue then FLT.GearValue.TooltipLine(tt, id, link) end
   -- on the wishlist (Armory > Gear Planner): always, it is the player's own choice (user 03.11.)
   if FLT.IsOnWishlist and FLT.GearValue and FLT.GearValue.WISH and FLT.IsOnWishlist(id) then tt:AddLine(FLT.GearValue.WISH .. L["Wishlist"], 1, 0.82, 0.25) end
-  if QoL.Get("sellJunk") and junkList()[id] then tt:AddLine(L["On your junk list (Alt+right-click to take it off)"], 0.62, 0.62, 0.62) end
+  if QoL.Get("sellJunk") and junkList()[id] then tt:AddLine(string.format(L["On your junk list (%s to take it off)"], QoL.JunkKeyText()), 0.62, 0.62, 0.62) end
   if FLT.CraftList then FLT.CraftList.TooltipLine(tt, id) end -- only while something is planned
   if QoL.Get("recipeTip") then
     local r = recipeByItem(id)
@@ -2040,6 +2356,9 @@ local function addTargetLine(tt)
   if not QoL.Get("unitTarget") or not tt or not tt.GetUnit then return end
   local _, unit = tt:GetUnit()
   if not unit then return end
+  -- 6.2.10 (Discord darkgameover / olgi 15.11.: tooltips of units in the world stayed 2 s and longer): the game refreshes
+  -- the tooltip while it fades out after the mouse left the unit - our Show() below stopped the fade every time
+  if UnitExists and not UnitExists("mouseover") then return end
   local tu = unit .. "target"
   if not (UnitExists and UnitExists(tu)) then return end
   local name = UnitName(tu)
@@ -2156,7 +2475,49 @@ local function addQuestLines(tt)
   local _, unit = tt:GetUnit()
   FLT.MapQuests.AddUnitLines(tt, unit)
 end
+-- Tooltip at the mouse (6.2.7-beta15, user 13.11.: "eine option damit der tool tip an der maus geankert werden kann ...
+-- top mit jeweils left center right und das gleiche mit bottom ... in dungeon, raids nicht aktiv und auf pvp schlachtfeldern,
+-- das aber getrennt"). Only tooltips that use the game's default place (GameTooltip_SetDefaultAnchor: units in the world,
+-- action buttons, ...); "Top left" = above the mouse, to its left. Follows the mouse only while such a tooltip is shown.
+do -- own block: this file is at Lua's limit of 200 top-level locals
+QoL.TIP_ANCHORS = {
+  { key = "TOPLEFT", label = N"Top left" }, { key = "TOP", label = N"Top center" }, { key = "TOPRIGHT", label = N"Top right" },
+  { key = "BOTTOMLEFT", label = N"Bottom left" }, { key = "BOTTOM", label = N"Bottom center" }, { key = "BOTTOMRIGHT", label = N"Bottom right" },
+}
+local TIP_POINT = { -- tooltip corner at the cursor, offset (the bottom ones keep clear of the mouse pointer)
+  TOPLEFT = { "BOTTOMRIGHT", -4, 6 }, TOP = { "BOTTOM", 0, 8 }, TOPRIGHT = { "BOTTOMLEFT", 4, 6 },
+  BOTTOMLEFT = { "TOPRIGHT", -4, -20 }, BOTTOM = { "TOP", 0, -24 }, BOTTOMRIGHT = { "TOPLEFT", 18, -20 },
+}
+local function tipMouseOff()
+  if not QoL.Get("tipMouse") then return true end
+  local inside, kind -- not "a, b = f and f()": the "and" keeps one value (kind was always nil, 6.2.12)
+  if IsInInstance then inside, kind = IsInInstance() end
+  if not inside then return false end
+  if (kind == "party" or kind == "raid" or kind == "scenario") and QoL.Get("tipMouseNoDungeon") then return true end
+  if (kind == "pvp" or kind == "arena") and QoL.Get("tipMouseNoPvP") then return true end
+  return false
+end
+QoL._tipMouseOff = tipMouseOff -- tests
+local function tipAtMouse(tt)
+  local p = TIP_POINT[QoL.Get("tipMousePos") or "BOTTOMRIGHT"] or TIP_POINT.BOTTOMRIGHT
+  local x, y = GetCursorPosition()
+  local sc = UIParent:GetEffectiveScale()
+  tt:ClearAllPoints(); tt:SetPoint(p[1], UIParent, "BOTTOMLEFT", x / sc + p[2], y / sc + p[3])
+end
+function QoL.SetupTipMouse()
+  if not (hooksecurefunc and GameTooltip and GameTooltip.HookScript and GetCursorPosition) then return end
+  hooksecurefunc("GameTooltip_SetDefaultAnchor", function(tt, parent)
+    tt._ofaMouse = nil
+    if tt ~= GameTooltip or tipMouseOff() then return end
+    tt:SetOwner(parent or UIParent, "ANCHOR_NONE"); tt._ofaMouse = true; tipAtMouse(tt)
+  end)
+  GameTooltip:HookScript("OnUpdate", function(tt) if tt._ofaMouse then tipAtMouse(tt) end end)
+  GameTooltip:HookScript("OnHide", function(tt) tt._ofaMouse = nil end)
+end
+end
+
 local function setupTooltips()
+  pcall(QoL.SetupTipMouse)
   if TooltipDataProcessor and TooltipDataProcessor.AddTooltipPostCall and Enum and Enum.TooltipDataType and Enum.TooltipDataType.Unit then
     TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Unit, function(tt)
       if tt == GameTooltip then pcall(addTargetLine, tt); pcall(addQuestLines, tt) end
@@ -2165,7 +2526,7 @@ local function setupTooltips()
     pcall(GameTooltip.HookScript, GameTooltip, "OnTooltipSetUnit", function(tt) pcall(addTargetLine, tt); pcall(addQuestLines, tt) end)
   end
   local function handler(tt)
-    if not (QoL.Get("bossDrops") or QoL.Get("recipeTip") or QoL.Get("gearValue")) then return end
+    if not (QoL.Get("bossDrops") or QoL.Get("recipeTip") or QoL.Get("gearValue") or QoL.Get("deValue")) then return end
     if not tt or not tt.GetItem then return end
     local _, link = tt:GetItem()
     addItemLines(tt, link)
@@ -2273,11 +2634,15 @@ local function feedAdd(icon, text, r, g, b)
     e = CreateFrame("Frame", nil, f); e:SetSize(FEED_W - 8, 20)
     e.icon = e:CreateTexture(nil, "ARTWORK"); e.icon:SetSize(18, 18); e.icon:SetPoint("LEFT")
     e.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-    e.text = e:CreateFontString(nil, "OVERLAY", "GameFontNormal"); e.text:SetPoint("LEFT", e.icon, "RIGHT", 6, 0)
+    e.text = e:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     e.text:SetJustifyH("LEFT"); e.text:SetWidth(FEED_W - 34); e.text:SetWordWrap(false)
     do local font, _, flags = e.text:GetFont(); if font then e.text:SetFont(font, 14, "OUTLINE") end end
   end
-  e.icon:SetTexture(icon or "Interface\\Icons\\INV_Misc_QuestionMark")
+  -- icon = false: no icon, the text starts at the left (money: the coins are in the text already; 6.2.6, user 11.11.)
+  e.icon:SetShown(icon ~= false)
+  e.text:ClearAllPoints()
+  if icon == false then e.text:SetPoint("LEFT", e, "LEFT", 0, 0)
+  else e.icon:SetTexture(icon or "Interface\\Icons\\INV_Misc_QuestionMark"); e.text:SetPoint("LEFT", e.icon, "RIGHT", 6, 0) end
   e.text:SetText(text); e.text:SetTextColor(r or 1, g or 1, b or 1)
   -- keep a gap to the entry above
   local newest = feedActive[#feedActive]
@@ -2346,7 +2711,7 @@ end
 local lastMoney, moneyMsgAt, pendingGain, pendingAt = nil, -10, 0, -10
 local function showMoney(amount)
   if amount > 0 and QoL.Get("lootFeed") and QoL.Get("lootFeedMoney") then
-    feedAdd("Interface\\Icons\\INV_Misc_Coin_02", "+" .. money(amount), 1, 0.85, 0.3)
+    feedAdd(false, "+" .. money(amount), 1, 0.85, 0.3)
   end
 end
 local function moneyChanged()
@@ -2367,7 +2732,7 @@ end
 function QoL.TestLootFeed()
   feedAdd("Interface\\Icons\\INV_Misc_Pelt_Wolf_01", "+3 Light Leather", 1, 1, 1)
   feedAdd("Interface\\Icons\\INV_Sword_04", "+Trogg Scepter", 0, 0.44, 0.87)
-  feedAdd("Interface\\Icons\\INV_Misc_Coin_02", "+" .. money(31240), 1, 0.85, 0.3)
+  feedAdd(false, "+" .. money(31240), 1, 0.85, 0.3)
   feedAdd("Interface\\Icons\\INV_Sword_39", "+Thunderfury, Blessed Blade of the Windseeker", 1, 0.5, 0)
 end
 
@@ -2703,6 +3068,15 @@ local function helperFrame()
   local f = CreateFrame("Frame", "OneForAllBagsFull", UIParent)
   f:SetSize(W, 172); f:SetFrameStrata("FULLSCREEN_DIALOG"); f:EnableMouse(true)
   f:SetClampedToScreen(true) -- next to a loot window at the right edge it was cut off (user 06.11. video)
+  -- 6.2.10 (Discord scylon77 15.11.): drag it anywhere (the place is kept, qol.bagsFullPos), Esc closes it
+  f:SetMovable(true); f:RegisterForDrag("LeftButton")
+  f:SetScript("OnDragStart", f.StartMoving)
+  f:SetScript("OnDragStop", function(self)
+    self:StopMovingOrSizing()
+    local x, y, d = self:GetLeft(), self:GetTop(), db()
+    if x and y and d then d.bagsFullPos = { math.floor(x + 0.5), math.floor(y + 0.5) } end
+  end)
+  if UISpecialFrames then table.insert(UISpecialFrames, "OneForAllBagsFull") end
   f.left, f.ti, f.cands, f.ci = {}, 1, {}, 1
   UI.FramedPanel(f)
   -- header: alert icon, title, subtitle, close
@@ -2770,12 +3144,14 @@ local function helperFrame()
       self.inc.caption:SetText(L["You get:"])
     end
     -- left card + button
-    local notWorth = b and target and not target.prio and target.value < b.value
+    -- not worth it either when the loot is worth exactly as much (6.2.13-beta16, user 21.11.: "1c gegen 1c .. sowas sollte doch
+    -- eigentlich nicht vorgeschlagen werden")
+    local notWorth = b and target and not target.prio and target.value <= b.value
     local showBrowse = b and not notWorth
     for _, w in ipairs({ self.prev, self.next, self.counter, self.never }) do w:SetShown(showBrowse and true or false) end
     if notWorth then
-      self.sub:SetText(L["This loot is worth less than anything in your bags."])
-      self.out:SetMessage("|cffffd27f" .. L["Not worth picking up."] .. "|r\n" .. L["Everything in your bags is worth more."])
+      self.sub:SetText(L["This loot is not worth more than anything in your bags."])
+      self.out:SetMessage("|cffffd27f" .. L["Not worth picking up."] .. "|r\n" .. L["Everything in your bags is worth as much or more."])
       self.destroy:Hide()
     elseif b then
       self.sub:SetText(self.noLoot and L["Destroy a low-value item, then loot again."] or L["Destroy a low-value item to loot."])
@@ -2828,10 +3204,31 @@ function QoL.CheckBagsFull(force, fromError)
     for i, c in ipairs(f.cands) do if c.bag == keep.bag and c.slot == keep.slot and c.link == keep.link then f.ci = i; break end end
   end
   f:Paint()
-  f:ClearAllPoints()
-  if type(LootFrame) == "table" and LootFrame:IsShown() then f:SetPoint("TOPLEFT", LootFrame, "TOPRIGHT", 6, 0)
-  else f:SetPoint("CENTER", UIParent, "CENTER", 0, 120) end
+  -- placed when it opens or its anchor changes (saved place / at the loot window / centre), not again on every check
+  -- (6.2.13-beta23, Discord emzime: it was moved on every round of the loot loop, ~35 times a second)
+  local pos = db() and db().bagsFullPos
+  local at = (type(pos) == "table" and pos[1] and "saved") or (type(LootFrame) == "table" and LootFrame:IsShown() and "loot") or "center"
+  if not f:IsShown() or f.placedAt ~= at then
+    f:ClearAllPoints()
+    if at == "saved" then f:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", pos[1], pos[2])
+    elseif at == "loot" then f:SetPoint("TOPLEFT", LootFrame, "TOPRIGHT", 6, 0)
+    else f:SetPoint("CENTER", UIParent, "CENTER", 0, 120) end
+    f.placedAt = at
+  end
   f:Show()
+end
+-- one waiting check at a time (6.2.13-beta23, Discord emzime): every "Inventory is full" and every reopened loot window started
+-- a timer of its own, each scanning all bags. QoL._bfPending / QoL._bfError: fields (this file is at the 200-locals limit)
+function QoL.ScheduleBagsFull(delay, fromError)
+  if fromError then QoL._bfError = true end
+  if not (C_Timer and C_Timer.After) then QoL.CheckBagsFull(false, fromError); return end
+  if QoL._bfPending then return end
+  QoL._bfPending = true
+  C_Timer.After(delay or 0.1, function()
+    local e = QoL._bfError
+    QoL._bfPending, QoL._bfError = nil, nil
+    QoL.CheckBagsFull(false, e)
+  end)
 end
 
 function QoL.PrintCheapest()
@@ -2846,14 +3243,16 @@ local function bagsChanged()
   pendingLoot = nil
   if GetNumLootItems and (GetNumLootItems() or 0) >= slot and LootSlotHasItem(slot) then
     pcall(LootSlot, slot)
-    if C_Timer and C_Timer.After then C_Timer.After(0.4, function() QoL.CheckBagsFull() end) end
+    QoL.ScheduleBagsFull(0.4)
   end
 end
 
 local function lootError(_, message)
   if not QoL.Get("bagsFull") then return end
   if message == ERR_INV_FULL or message == ERR_LOOT_NO_SPACE or message == "Inventory is full." then
-    if C_Timer and C_Timer.After then C_Timer.After(0.1, function() QoL.CheckBagsFull(false, true) end) else QoL.CheckBagsFull(false, true) end
+    -- a Soul Shard from Drain Soul with full bags (6.2.10, Discord elipz 15.11.): no helper - only loot counts then
+    if QoL._drainAt and GetTime() - QoL._drainAt < 16 and not (GetNumLootItems and (GetNumLootItems() or 0) > 0) then return end
+    QoL.ScheduleBagsFull(0.1, true)
   end
 end
 
@@ -2876,6 +3275,15 @@ local function keepError(message)
 end
 local function applyHideErrors(on)
   if type(UIErrorsFrame) ~= "table" or not UIErrorsFrame.UnregisterEvent then return end
+  -- another addon or the game may register the event again (Discord punchline5958 16.11.: "There is nothing to attack."
+  -- still shown): undo that while the option is on (hook set once, only when the option is used)
+  if on and not QoL._errHook and hooksecurefunc then
+    QoL._errHook = true
+    hooksecurefunc(UIErrorsFrame, "RegisterEvent", function(f, e)
+      if e == "UI_ERROR_MESSAGE" and QoL.Get("hideErrors") and not QoL._errOff then f:UnregisterEvent(e) end
+    end)
+  end
+  QoL._errOff = not on -- our own RegisterEvent below must not be undone
   if on then UIErrorsFrame:UnregisterEvent("UI_ERROR_MESSAGE") else UIErrorsFrame:RegisterEvent("UI_ERROR_MESSAGE") end
 end
 local function errorMessage(a1, a2)
@@ -2925,11 +3333,15 @@ local function applySparkles()
 end
 local function sparkleSwitch(on)
   if on then applySparkles(); return end
-  local d = db(); if not d or not d.sparkleOrig then return end
+  local d = db(); if not d then return end
+  if not d.sparkleOrig and GetCVar and GetCVar("outlineModeShowLootEffectWhenDisabled") ~= "1" then return end -- already off
   if inCombat() then msg(L["This can be changed after combat."]); return end
+  d.sparkleOrig = d.sparkleOrig or {}
   SPK.outlineBack(d)
-  for k, v in pairs(d.sparkleOrig) do pcall(SetCVar, k, v) end
   d.sparkleOrig = nil
+  -- back to the game's default "0", not to a saved value (6.2.10, Discord locksmite 16.11.: NPCs kept glowing - a saved
+  -- "1" from earlier versions came back; players needed /console outlineModeShowLootEffectWhenDisabled 0)
+  for k in pairs(SPK.cvars) do pcall(SetCVar, k, "0") end
   msg(L["Quest loot sparkles switched off. Restart the game for it to take full effect."])
 end
 local function cvarChanged(name)
@@ -2980,21 +3392,22 @@ local function onEventSafe(_, event, ...)
     end
   elseif event == "PLAYER_ENTERING_WORLD" then
     thanksSettle()
+    if QoL.Get("hideErrors") then applyHideErrors(true) end
     if QoL.Get("buffReminder") then C_Timer.After(2, checkBuffs) end
     updateBagSlots(); checkDurability()
   elseif event == "PLAYER_LOGOUT" then
     QoL.SnapshotRecipes()
   elseif event == "ADDON_LOADED" then
-    setupMovable()
+    -- a moment later (6.2.10): a window addon can load inside a protected action of the game (Inspect from the player
+    -- menu loads Blizzard_InspectUI) - touching its window right there taints that action
+    if C_Timer and C_Timer.After then C_Timer.After(0, setupMovable) else setupMovable() end
   elseif event == "LOOT_READY" or event == "LOOT_OPENED" then
     lootSeq = lootSeq + 1
     quickLoot()
     -- the helper still shown from the last loot (a right-click on the open corpse reopens it): checked again at once,
     -- so it stays, sits at the new loot window and shows the loot (user 06.11. video: it blinked, and an early
     -- "Inventory is full" had switched it to "loot again" while the loot was open)
-    if event == "LOOT_OPENED" and helper and helper:IsShown() and C_Timer and C_Timer.After then
-      C_Timer.After(0.05, function() QoL.CheckBagsFull() end)
-    end
+    if event == "LOOT_OPENED" and helper and helper:IsShown() then QoL.ScheduleBagsFull(0.05) end
   elseif event == "MERCHANT_SHOW" then
     autoRepair(); sellJunk()
   elseif event == "QUEST_DETAIL" then questDetail()
@@ -3010,10 +3423,15 @@ local function onEventSafe(_, event, ...)
   elseif event == "UNIT_AURA" then playerAura(...); if (...) == "player" then buffAura() end
   elseif event == "MINIMAP_UPDATE_TRACKING" then buffAura()
   elseif event == "WEAPON_ENCHANT_CHANGED" or event == "UNIT_INVENTORY_CHANGED" then buffAura(true)
-  elseif event == "UNIT_SPELLCAST_SUCCEEDED" then QoL.BuffCast(select(3, ...))
+  elseif event == "UNIT_SPELLCAST_SUCCEEDED" then
+    local id = select(3, ...)
+    QoL.BuffCast(id)
+    -- Drain Soul started (its name: all ranks, any client language); the bags full helper skips its Soul Shard
+    if QoL._drainName == nil and GetSpellInfo then QoL._drainName = GetSpellInfo(1120) or false end
+    if QoL._drainName and id and GetSpellInfo and GetSpellInfo(id) == QoL._drainName then QoL._drainAt = GetTime() end
   elseif event == "UI_ERROR_MESSAGE" then errorMessage(...)
   elseif event == "LOOT_CLOSED" then
-    pendingLoot = nil
+    pendingLoot = nil; QoL._quickLootAt = nil
     -- 6.1.6 (CurseForge comment 06.11.): a right-click on an open corpse closes and reopens the loot, and the "Inventory
     -- is full" error showed the helper again - it blinked. Hidden a moment later, and not when the loot is open again
     -- (user 06.11. video: 0.3 s was too short - the server reopens the loot later; now 1.5 s and only when no loot
@@ -3081,12 +3499,17 @@ on("mapFog", function() if FLT.RefreshMapFog then FLT.RefreshMapFog() end end)
 on("mapFogAlpha", function() if FLT.RefreshMapFog then FLT.RefreshMapFog() end end)
 on("durability", function() warnedDurability = false; checkDurability() end)
 
--- Alt+right-click on an item in the bags: on / off the junk list (only while "Sell junk" is on). Bag buttons
--- (and bag addons) pass modified clicks to HandleModifiedItemClick; a right-click with Alt does not use the item.
+-- the junk click (default Alt + right-click, "Junk list key") on an item in the bags: on / off the junk list (only while
+-- "Sell junk" is on). Bag buttons (and bag addons) pass modified clicks to HandleModifiedItemClick; a click with a modifier
+-- does not use the item. The modifiers must match exactly (Ctrl + Alt + right-click is not Alt + right-click).
 if type(HandleModifiedItemClick) == "function" then
   hooksecurefunc("HandleModifiedItemClick", function(link)
-    if not QoL.Get("sellJunk") or not (IsAltKeyDown and IsAltKeyDown()) then return end
-    if not (GetMouseButtonClicked and GetMouseButtonClicked() == "RightButton") then return end
+    if not QoL.Get("sellJunk") then return end
+    local want = QoL.JUNK_KEYS[QoL.Get("junkKey")] or QoL.JUNK_KEYS["alt-right"]
+    local function down(fn) return fn and fn() and true or false end
+    if down(IsAltKeyDown) ~= (want.alt or false) or down(IsControlKeyDown) ~= (want.ctrl or false)
+      or down(IsShiftKeyDown) ~= (want.shift or false) then return end
+    if not (GetMouseButtonClicked and GetMouseButtonClicked() == want.b) then return end
     local id = type(link) == "string" and tonumber(link:match("item:(%d+)"))
     local count = id and ((C_Item and C_Item.GetItemCount and C_Item.GetItemCount(id)) or (GetItemCount and GetItemCount(id))) or 0
     if (count or 0) > 0 then QoL.ToggleJunk(link) end -- items in your bags only

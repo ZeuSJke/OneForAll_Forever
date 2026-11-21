@@ -64,10 +64,10 @@ FLT.DUNGEON_REGISTRY["Upper Blackrock Spire"] = {
         {
             id = 5047,
             liveXPFallback = 6600,
-            name = "Finkle Einhorn, At Your Service!",
+            name = "Pip Quickwit, At Your Service!",
             level = 60,
             requires = 55,
-            pickup = "Finkle Einhorn, inside Upper Blackrock Spire",
+            pickup = "Pip Quickwit, inside Upper Blackrock Spire",
             objective = "Talk to Malyfous Darkhammer in Everlook.",
             turnin = "Malyfous Darkhammer, Winterspring (61.0, 38.8)",
         },

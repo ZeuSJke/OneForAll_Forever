@@ -99,12 +99,13 @@ FLT.DUNGEON_REGISTRY["Shadowfang Keep"] = {
         },
         {
             level = 23,
-            id = 78307,
+            id = 78261, -- the step done in the keep (78307 is the follow-up letter; same as The Eye of Bhossca)
             name = "The Horn of Xelthos",
             requires = 1,
             faction = "Both",
             class = "ROGUE",
-            objective = "Log",
+            pickup = "Dead Drop, Silverpine Forest",
+            objective = "Find The Horn of Xelthos inside of Shadowfang Keep. Then, return it to C's dead drop near Pyrewood Village. You must complete the job alone.",
             turnin = "Dead Drop, Silverpine Forest",
             rewardItems = {
             },
@@ -235,8 +236,6 @@ FLT.DUNGEON_REGISTRY["Shadowfang Keep"] = {
             name = "Sever",
             npcID = 14682,
             loot = {
-                {23171, "The Axe of Severing", "Two-Hand, Axe", 3},
-                {23173, "Abomination Skin Leggings", "Legs, Cloth", 3},
             },
         },
     },

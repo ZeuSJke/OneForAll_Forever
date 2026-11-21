@@ -121,6 +121,13 @@ local function onClick(pin)
     return
   end
   if e and e.to then -- zone transition: show the other zone
+    -- not with a controller (6.2.10, Discord carldini 14.11.): switching the map from our code tainted it, and closing /
+    -- opening it again hit "blocked from an action only available to the Blizzard UI" in the pad controls
+    -- 6.2.12-beta22: only when the controller cursor clicked (FLT.PadCursor) - a mouse click with a pad plugged in works again
+    if FLT.PadCursor and FLT.PadCursor() then
+      if FLT.Msg then FLT.Msg(L["With the controller the map is not switched from OneForAll (it would block the controller) - pick the zone on the map yourself."]) end
+      return
+    end
     if WorldMapFrame and WorldMapFrame.SetMapID then WorldMapFrame:SetMapID(e.to) end
     return
   end

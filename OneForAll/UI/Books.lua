@@ -23,7 +23,7 @@ local relayout
 local STATE = {
   -- mark = the symbol (UI.Mark, 6.2.3: shapes as well as colours, user 10.11.)
   done={text=N"Turned in", color={0.45,0.85,0.45}, mark="check"},
-  manual={text=N"Manual", color={0.72,0.58,0.90}, mark="pencil"},
+  manual={text=N"Manual", color={0.45,0.85,0.45}, mark="pencil"}, -- green like "Turned in": it counts as turned in (6.2.6)
   bag={text=N"Bag", color={0.92,0.78,0.35}, mark="bag"},
   bank={text=N"Bank", color={0.45,0.68,0.92}, mark="bank"},
   questflag={text=N"Quest flagged", color={0.92,0.58,0.28}, mark="bang"},
@@ -62,7 +62,7 @@ local function showBookTooltip(row, book)
   if apiDone and not OneForAllCharDB.confirmedDone[book.itemId] then
     GameTooltip:AddLine(L["Unverified: the server reports this quest completed, but this addon did not observe the turn-in."], 1, 0.55, 0.15, true)
   end
-  GameTooltip:AddLine(L["Right-click: toggle a manual ownership/completion note"], 0.7, 0.7, 0.7, true)
+  GameTooltip:AddLine(L["Right-click: mark as turned in (counts) or undo"], 0.7, 0.7, 0.7, true)
   GameTooltip:Show()
 end
 
@@ -72,7 +72,7 @@ local function showBookRewardsPopup(frame)
   if not bookRewardsPopup then
     local p = CreateFrame("Frame", "OneForAllLibraryInfoPopup", frame)
     bookRewardsPopup = p
-    p:SetSize(640, 500)
+    p:SetSize(640, 580) -- 6.2.7-beta14: +80 for the librarian rows
     p:SetPoint("CENTER", frame, "CENTER", 0, 8)
     p:SetFrameStrata("DIALOG")
     p:SetFrameLevel((frame:GetFrameLevel() or 1) + 30)
@@ -93,12 +93,33 @@ local function showBookRewardsPopup(frame)
     local sub=FLT.NewFS(p, nil,"OVERLAY","GameFontHighlightSmall"); sub:SetPoint("TOPLEFT",78,-43); sub:SetText(L["Turn-ins, rewards and librarian locations"]); sub:SetTextColor(FLT.SkinC(0.78,0.76,0.70))
     local line=makeTexture(p,"ARTWORK",0.72,0.50,0.12,0.52); line:SetPoint("TOPLEFT",18,-78); line:SetPoint("TOPRIGHT",-18,-78); line:SetHeight(1)
 
-    local body=FLT.NewFS(p, nil,"OVERLAY","GameFontHighlightSmall"); body:SetPoint("TOPLEFT",24,-90); body:SetPoint("TOPRIGHT",-24,-90); body:SetJustifyH("LEFT"); body:SetJustifyV("TOP"); body:SetSpacing(3)
-    body:SetText(FLT.SkinHex("ffd35a") .. L["Turn in:"] .. "|r  " .. L["Alliance: Garion Wendell, Stormwind Mage Quarter (37.6, 80.8)   |   Horde: Owen Thadd, Undercity Magic Quarter (73.4, 33.0)"] .. "\n" .. L["Every different book is its own turn-in. Each reward tier is a separate quest at the librarian - pick one item per tier. Mages can also unlock Research Access / Study."])
-    body:SetTextColor(FLT.SkinC(0.86,0.84,0.78))
+    -- 6.2.7-beta14 (user 13.11.: "der teil wirkt unuebersichtlich, auch fehlt dort ein map button"): one row per librarian
+    -- (crest, name, place, Map button), the notes below in small grey text
+    local head0=FLT.NewFS(p, nil,"OVERLAY","GameFontNormal"); head0:SetPoint("TOPLEFT",24,-90)
+    head0:SetText((L["Turn in:"]:gsub(":%s*$",""))); head0:SetTextColor(FLT.SkinC(1,0.82,0.20))
+    local LIBRARIANS={
+      { side="Alliance", tc={0,0.25}, npc="Garion Wendell", place=N"Stormwind City, Mage Quarter", zone="Stormwind City", x=37.6, y=80.8 },
+      { side="Horde", tc={0.25,0.5}, npc="Owen Thadd", place=N"Undercity, Magic Quarter", zone="Undercity", x=73.4, y=33.0 },
+    }
+    local ry=-112
+    for _,lib in ipairs(LIBRARIANS) do
+      local row=CreateFrame("Frame",nil,p); row:SetPoint("TOPLEFT",24,ry); row:SetPoint("RIGHT",-24,0); row:SetHeight(40)
+      local rbg=makeTexture(row,"BACKGROUND",0.07,0.06,0.045,0.95); rbg:SetAllPoints()
+      local crest=row:CreateTexture(nil,"ARTWORK"); crest:SetSize(26,26); crest:SetPoint("LEFT",8,0)
+      FLT.SetTex(crest, UI.ASSET_ROOT.."faction_crests"); crest:SetTexCoord(lib.tc[1],lib.tc[2],0,1)
+      local nm=FLT.NewFS(row, nil,"OVERLAY","GameFontNormal"); nm:SetPoint("TOPLEFT",44,-5)
+      nm:SetText((FLT.Name and FLT.Name(lib.npc) or lib.npc) .. "  |cff9d9480(" .. L[lib.side] .. ")|r"); nm:SetTextColor(FLT.SkinC(0.95,0.93,0.88))
+      local pl=FLT.NewFS(row, nil,"OVERLAY","GameFontHighlightSmall"); pl:SetPoint("TOPLEFT",44,-22)
+      pl:SetText(L[lib.place] .. string.format("  |cff9d9480%.1f, %.1f|r", lib.x, lib.y)); pl:SetTextColor(FLT.SkinC(0.78,0.76,0.70))
+      local map=UI.GoldButton(row,L["Map"],74,22,UI.ASSET_ROOT.."icon_map",12); map:SetPoint("RIGHT",-8,0)
+      map:SetScript("OnClick",function() FLT:ShowOnMap({ zone=lib.zone, x=lib.x, y=lib.y, name=FLT.Name and FLT.Name(lib.npc) or lib.npc }) end)
+      ry=ry-44
+    end
+    local body=FLT.NewFS(p, nil,"OVERLAY","GameFontDisableSmall"); body:SetPoint("TOPLEFT",24,ry-4); body:SetPoint("RIGHT",-24,0); body:SetJustifyH("LEFT"); body:SetJustifyV("TOP"); body:SetSpacing(2)
+    body:SetText(L["Every different book is its own turn-in. Each reward tier is a separate quest at the librarian - pick one item per tier. Mages can also unlock Research Access / Study."])
 
     local H=FLT.UI.DungeonHelpers
-    local y=-90-math.max(40,(body:GetStringHeight() or 40))-16
+    local y=ry-4-math.max(28,(body:GetStringHeight() or 28))-14
     for _,tier in ipairs(FLT.BOOK_REWARD_TIERS or {}) do
       local head=FLT.NewFS(p, nil,"OVERLAY","GameFontNormal"); head:SetPoint("TOPLEFT",24,y)
       head:SetText(string.format("%s  |cffbbbbbb- %s%s|r", string.format(L["%d books"], tonumber(tier.books:match("%d+")) or 0) .. (tier.books:find("?", 1, true) and " (?)" or ""), (FLT.Name and FLT.Name(tier.quest) or tier.quest), (tier.req and tier.req>1) and (", " .. string.format(L["requires level %d"], tier.req)) or ""))
@@ -180,7 +201,7 @@ local function createBooksPanel(frame)
   local navY = ny
 
   -- the "Nearby book alerts" option lives in the Settings tab
-  local legendKeys = { "done", "bag", "bank", "manual", "questflag", "missing" }
+  local legendKeys = { "done", "manual", "bag", "bank", "questflag", "missing" }
   local legendHolds = {} -- ht8: the legend at the bottom of the side list (placed once the sets are listed)
   for i = 1, #legendKeys do
     local st = STATE[legendKeys[i]]
@@ -341,7 +362,7 @@ local function createBooksPanel(frame)
       local tc = CREST_TC[territory] or CREST_TC.Contested
       row.crest:SetTexCoord(tc[1], tc[2], 0, 1)
       local c = perSet[row.book.set] or { done = 0, n = 0 }; perSet[row.book.set] = c
-      c.n = c.n + 1; if st == "done" then c.done = c.done + 1 end
+      c.n = c.n + 1; if st == "done" or st == "manual" then c.done = c.done + 1 end -- 6.2.13: like GetCounts (Discord)
     end
     for _, section in ipairs(sections) do
       local c = perSet[section.id] or { done = 0, n = #section.rows }

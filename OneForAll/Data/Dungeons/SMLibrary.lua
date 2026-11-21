@@ -47,6 +47,7 @@ FLT.DUNGEON_REGISTRY["Scarlet Monastery: Library"] = {
             name = "Compendium of the Fallen",
             requires = 28,
             faction = "Horde",
+            races = 162, -- Orc, Tauren, Troll (QuestieDB)
             pickup = "Sage Truthseeker, Thunder Bluff (34.4, 46.9)",
             objective = "Retrieve the Compendium of the Fallen from the Monastery in Tirisfal Glades and return to Sage Truthseeker in Thunder Bluff.",
             turnin = "Sage Truthseeker, Thunder Bluff",
@@ -73,12 +74,13 @@ FLT.DUNGEON_REGISTRY["Scarlet Monastery: Library"] = {
         },
         {
             level = 35,
-            id = 78699,
+            id = 78676, -- the step done in the Monastery (78699 is the follow-up letter; Discord cralic 12.11.)
             name = "The Eye of Bhossca",
             requires = 25,
             faction = "Both",
             class = "ROGUE",
-            objective = "Log",
+            pickup = "Dead Drop, Silverpine Forest",
+            objective = "Find The Eye of Bhossca inside of the Scarlet Monastery. Then, return it to C's dead drop near Pyrewood Village. You must complete the job alone.",
             turnin = "Dead Drop, Silverpine Forest",
             rewardItems = {
             },
@@ -98,17 +100,21 @@ FLT.DUNGEON_REGISTRY["Scarlet Monastery: Library"] = {
                 {6806, "Dancing Flame", 2},
             },
         },
+        -- 6.2.13 (Discord lobarne 21.11.): "Brother Anton" is only the optional first step in Stormwind - the chain goes on with
+        -- "Down the Scarlet Path" (Desolace) to this quest, which needs Houndmaster Loksey here (like the Cathedral / Armory entry)
         {
-            level = 39,
-            id = 6141,
-            name = "Brother Anton",
+            id = 1053,
+            liveXPFallback = 4700,
+            name = "In the Name of the Light",
+            level = 40,
             requires = 34,
             faction = "Alliance",
-            pickup = "Brother Crowley, Stormwind City (52.6, 43.2)",
-            objective = "Speak with Brother Anton in Desolace.",
-            turnin = "Brother Anton, Desolace",
-            rewardItems = {
-            },
+            pickup = "Raleigh the Devout, Hillsbrad Foothills (51.5, 58.4)",
+            objective = "Kill High Inquisitor Whitemane, Scarlet Commander Mograine, Herod, the Scarlet Champion and Houndmaster Loksey and then report back to Raleigh the Devout in Southshore.",
+            turnin = "Raleigh the Devout, Hillsbrad Foothills",
+            rewardItems = {{6829, "Sword of Serenity", 3}, {6830, "Bonebiter", 3}, {6831, "Black Menace", 3}, {11262, "Orb of Lorica", 3}},
+            rewardChoice = true,
+            note = "Covers bosses in three wings: Houndmaster Loksey (Library), Herod (Armory), Scarlet Commander Mograine and High Inquisitor Whitemane (Cathedral).",
         },
     },
     bosses = {

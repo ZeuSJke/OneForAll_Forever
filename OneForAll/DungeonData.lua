@@ -18,30 +18,37 @@ local META = {
   ["Blackfathom Deeps"] = {key="bfd", instanceID=48, territory="Contested", mapZone="Ashenvale", mapX=14.5, mapY=14.2, minLevel=22},
   ["Excavation Site: Wetlands"] = {key="excavation", short="Excavation Site", territory="Contested", mapZone="Wetlands", mapX=47.79, mapY=56.16, betaNew=true, minLevel=26, coordsUnverified=true},
   ["The Stockade"] = {key="stockade", instanceID=34, territory="Alliance", mapZone="Stormwind City", mapX=52.41, mapY=70.01, minLevel=25, coordsUnverified=true},
-  ["City of Dalaran"] = {key="dalaran", territory="Contested", mapZone="Alterac Mountains", mapX=8.46, mapY=59.21, betaNew=true, minLevel=28, dataStatus="partial", coordsUnverified=true},
+  ["City of Dalaran"] = {key="dalaran", territory="Contested", mapZone="Alterac Mountains", mapX=8.46, mapY=59.21, betaNew=true, minLevel=28, coordsUnverified=true},
   ["Gnomeregan"] = {key="gnomeregan", instanceID=90, territory="Alliance", mapZone="Dun Morogh", mapX=24.3, mapY=39.8, minLevel=29, coordsUnverified=true, openToBoth=true},
   ["Razorfen Kraul"] = {key="rfk", instanceID=47, territory="Horde", mapZone="The Barrens", mapX=42.9, mapY=90.2, minLevel=29, coordsUnverified=true},
   ["Scarlet Monastery: Library"] = {key="smlib", instanceID=189, short="SM: Library", uiMaps={303}, territory="Horde", mapZone="Tirisfal Glades", mapX=82.6, mapY=33.8, minLevel=33, coordsUnverified=true},
   ["Scarlet Monastery: Graveyard"] = {key="smgy", instanceID=189, uiMaps={302}, short="SM: Graveyard", territory="Horde", mapZone="Tirisfal Glades", mapX=82.6, mapY=33.8, minLevel=30, coordsUnverified=true},
-  ["The Drowned City"] = {key="drowned", short="Drowned City", territory="Contested", mapZone="Stranglethorn Vale", betaNew=true, minLevel=35, dataStatus="partial"},
+  ["The Drowned City"] = {key="drowned", short="Drowned City", territory="Contested", mapZone="Stranglethorn Vale", mapX=21.4, mapY=27.9, coordsUnverified=true, betaNew=true, minLevel=35},
   ["Scarlet Monastery: Armory"] = {key="smarm", instanceID=189, short="SM: Armory", uiMaps={304}, territory="Horde", mapZone="Tirisfal Glades", mapX=82.6, mapY=33.8, minLevel=36, coordsUnverified=true},
   ["Razorfen Downs"] = {key="rfd", instanceID=129, territory="Horde", mapZone="The Barrens", mapX=49.0, mapY=93.9, minLevel=37, coordsUnverified=true},
   ["Scarlet Monastery: Cathedral"] = {key="smcath", instanceID=189, short="SM: Cathedral", uiMaps={305}, territory="Horde", mapZone="Tirisfal Glades", mapX=82.6, mapY=33.8, minLevel=38, coordsUnverified=true},
-  ["Krol'dok Stronghold"] = {key="kroldok", territory="Contested", mapZone="Riverglades", betaNew=true, minLevel=40, dataStatus="partial"},
+  -- entrances (all unverified in game): Krol'dok 37.5, 39.0 (6.2.13, Discord tovox 20.11. with a screenshot at the real entrance;
+  -- before foreverchanges.pro "a fortress on a hill at about 48.6, 26.3"); 6.2.7-beta16
+  -- (user's list 13.11., checked against warcrafttavern.com): Alcaz the portal in the basement of the northern prison building
+  -- (mmonster 75.5, 13.7; Warcraft Tavern "around 75, 15"), Drowned City underwater off Stranglethorn past the Vile Reef
+  -- (Sunken Hollow, about 21.4, 27.9), Blackmaw Hold the furbolg tunnel with the meeting stone in Azshara (38.4, 32.6; Warcraft
+  -- Tavern 38.7, 33.4 - the portal itself is deep inside, Winterspring 66.6, 84.4), Shaper's Terrace the titan gate on the
+  -- hill above Marshal's Refuge (48.1, 6.1)
+  ["Krol'dok Stronghold"] = {key="kroldok", territory="Contested", mapZone="Riverglades", mapX=37.5, mapY=39.0, betaNew=true, minLevel=40},
   ["Uldaman"] = {key="uldaman", instanceID=70, territory="Contested", mapZone="Badlands", mapX=44.6, mapY=12.1, minLevel=41, coordsUnverified=true},
   ["Zul'Farrak"] = {key="zf", instanceID=209, territory="Contested", mapZone="Tanaris", mapX=38.7, mapY=20.1, minLevel=44, coordsUnverified=true},
   ["Maraudon"] = {key="maraudon", instanceID=349, territory="Contested", mapZone="Desolace", mapX=29.1, mapY=62.5, minLevel=46, coordsUnverified=true},
-  ["Alcaz Prison"] = {key="alcaz", territory="Contested", mapZone="Dustwallow Marsh", betaNew=true, minLevel=48, dataStatus="partial"},
+  ["Alcaz Prison"] = {key="alcaz", territory="Contested", mapZone="Dustwallow Marsh", mapX=75.5, mapY=13.7, coordsUnverified=true, betaNew=true, minLevel=48},
   ["The Temple of Atal'Hakkar"] = {key="st", instanceID=109, short="Sunken Temple", territory="Contested", mapZone="Swamp of Sorrows", mapX=69.9, mapY=53.5, minLevel=50, coordsUnverified=true},
   ["Blackrock Depths"] = {key="brd", instanceID=230, territory="Contested", mapZone="Searing Gorge", mapX=34.8, mapY=85.3, minLevel=52, coordsUnverified=true},
   ["Dire Maul: East"] = {key="dme", instanceID=429, short="DM: East", territory="Contested", mapZone="Feralas", mapX=59.2, mapY=45.1, minLevel=54, coordsUnverified=true},
   ["Lower Blackrock Spire"] = {key="lbrs", instanceID=229, short="LBRS", territory="Contested", mapZone="Searing Gorge", mapX=34.8, mapY=85.3, minLevel=55, coordsUnverified=true},
-  ["Blackmaw Hold"] = {key="blackmaw", territory="Contested", mapZone="Azshara", betaNew=true, minLevel=55, dataStatus="partial"},
+  ["Blackmaw Hold"] = {key="blackmaw", territory="Contested", mapZone="Azshara", mapX=38.4, mapY=32.6, coordsUnverified=true, betaNew=true, minLevel=55},
   ["Dire Maul: West"] = {key="dmw", instanceID=429, short="DM: West", territory="Contested", mapZone="Feralas", mapX=59.2, mapY=45.1, minLevel=56, coordsUnverified=true},
   ["Dire Maul: North"] = {key="dmn", instanceID=429, short="DM: North", territory="Contested", mapZone="Feralas", mapX=59.2, mapY=45.1, minLevel=56, coordsUnverified=true},
   ["Scholomance"] = {key="scholo", instanceID=289, territory="Contested", mapZone="Western Plaguelands", mapX=69.7, mapY=73.2, minLevel=58, coordsUnverified=true},
   ["Stratholme"] = {key="strat", instanceID=329, territory="Contested", mapZone="Eastern Plaguelands", mapX=26.5, mapY=10.4, minLevel=58, coordsUnverified=true},
-  ["Shaper's Terrace"] = {key="shapers", territory="Contested", mapZone="Un'Goro Crater", betaNew=true, minLevel=58, dataStatus="partial"},
+  ["Shaper's Terrace"] = {key="shapers", territory="Contested", mapZone="Un'Goro Crater", mapX=48.1, mapY=6.1, coordsUnverified=true, betaNew=true, minLevel=58},
   ["Upper Blackrock Spire"] = {key="ubrs", instanceID=229, short="UBRS", territory="Contested", mapZone="Searing Gorge", mapX=34.8, mapY=85.3, minLevel=59, coordsUnverified=true},
   -- Raids (Raids view of the Dungeons tab): size = players, raidStatus as announced by Blizzard,
   -- attunement "unknown" = not known yet (Onyxia's comes from Data\RaidAttunements.lua)
@@ -74,6 +81,8 @@ end
 local function convertQuest(q)
   local rewards={}
   for _,it in ipairs(q.rewardItems or {}) do rewards[#rewards+1]=itemRec(it) end
+  local alsoRewards={} -- given on top of the chosen one (6.2.8, Wowhead Forever "You will also receive")
+  for _,it in ipairs(q.rewardAlso or {}) do alsoRewards[#alsoRewards+1]=itemRec(it) end
   local noteRewards={}
   for _,it in ipairs(q.noteRewardItems or {}) do noteRewards[#noteRewards+1]=itemRec(it) end
   local class=q.class or q.classOnly
@@ -84,6 +93,7 @@ local function convertQuest(q)
     level=q.level,
     required=q.requires or q.level,
     side=q.faction or "Both",
+    races=q.races, -- race mask (QuestieDB requiredRaces), only for quests not open to every race of the side (6.2.6)
     class=class,
     starts=q.pickup,
     objective=q.objective,
@@ -91,6 +101,7 @@ local function convertQuest(q)
     prereq=q.prerequisite or q.prereq,
     note=q.note,
     rewards=rewards,
+    alsoRewards=alsoRewards,
     noteRewards=noteRewards,
     rewardChoice=q.rewardChoice,
     rewardSummary=q.rewardSummary or q.rewards,
@@ -111,6 +122,7 @@ local function convertBoss(b)
     icon=b.icon,
     customIcon=b.customIcon,
     customPortrait=b.customPortrait,
+    fallbackIcon=b.fallbackIcon,
     displayID=b.displayID,
     worldDropsOnly=b.worldDropsOnly,
     aliases=b.aliases,
@@ -473,4 +485,51 @@ FLT.BOSS_LEVELS = {
   [246008] = "31", -- Mana Devourer
   [246003] = "32", -- Fel Ancient
   [246020] = "33", -- Shade of the Archmage
+  -- The Drowned City (6.2.7-beta8, user 13.11.2026: values from screenshots / another AI, source not known - the user's
+  -- decision, see CLAUDE.md; a level learned in game by targeting the boss is shown instead once known)
+  [270882] = "37", -- Zul'Alai
+  [270883] = "38", -- Var'Taka
+  [270884] = "38", -- Captain Dreadrise
+  [270885] = "39", -- Deathless Marrow
+  [270887] = "38", -- Primeval Elemental
+  [270888] = "38", -- Gill (rare)
+  [264172] = "38", -- Umbra (rare)
+  [260468] = "38", -- "Pyromancer" Braxton (rare)
+  [270886] = "40", -- Min'loth the Serpent
+  -- Krol'dok Stronghold (6.2.7-beta9, user 13.11.2026: "bei kroldok stronghold auch noch die Boss level eintragen" - same
+  -- source and decision as The Drowned City above)
+  [258966] = "42", -- Slavecrusher Grox
+  [258972] = "43", -- Twilight Commander Zarmok
+  [259281] = "43", -- War Handler Ashka
+  [258964] = "44", -- Nar'gurk
+  [264773] = "42", -- Bossman Toof
+  [258968] = "45", -- Overlord Mugg
+  [262716] = "41", -- Kroog (rare)
+  -- Blackmaw Hold, Shaper's Terrace, Alcaz Prison (6.2.7-beta10, user 13.11.2026 08:28: "blackmaw hold komplett ohne level
+  -- ebenso shapers terrace" - same source and decision as above)
+  [247195] = "58", -- Withermaw
+  [247206] = "57", -- Impaan the Imprisoner
+  [247209] = "59", -- Elder Shaman Bloodmane
+  [247198] = "58", -- Bonesnout the Unbroken
+  [247234] = "60", -- Varrox Bleakhoof
+  [247207] = "59", -- Blackmaw Behemoth
+  [247231] = "59", -- Unbound Spirit
+  [269104] = "55", -- Moontouched Wanderer (rare)
+  [269111] = "55", -- Gortek the Apprentice (rare)
+  [250034] = "55", -- Tunnelweb Matriarch (rare)
+  [253201] = "61", -- Titanosaur
+  [261811] = "61", -- Ravasaur Hunters (Izha'Rel and Tor'Rel)
+  [261812] = "61", -- Thunderhoof
+  [261813] = "61", -- Venomridge
+  [262127] = "61", -- Direhorn Matriarch
+  [261974] = "61", -- Cinder
+  [262297] = "62", -- Snowtalon
+  [262081] = "62", -- Bolt
+  [272561] = "62", -- Vitrix
+  [261809] = "62", -- Nanaya
+  [255391] = "50", -- Overseer Wrex
+  [255997] = "50", -- Tidemistress Ca'zass
+  [257016] = "52", -- Katerina the Cleaner
+  [256236] = "51", -- The Questioner
+  [255702] = "53", -- Blazeroar
 }

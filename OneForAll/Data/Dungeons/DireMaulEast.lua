@@ -17,7 +17,12 @@ FLT.DUNGEON_REGISTRY["Dire Maul: East"] = {
             pickup = "Talo Thornhoof, Feralas (76.2, 43.8)",
             objective = "Bring Lethtendris's Web to Talo Thornhoof at Camp Mojache in Feralas.",
             turnin = "Talo Thornhoof, Feralas",
-            rewardItems = {{18491, "Lorespinner", 3}},
+            rewardChoice = true,
+            rewardItems = {
+                {18491, "Lorespinner", 3},
+                {270124, "Warpwood Bracers", 3},
+                {270125, "Satyrhide Armbands", 3},
+            },
         },
         {
             id = 7488,
@@ -29,7 +34,12 @@ FLT.DUNGEON_REGISTRY["Dire Maul: East"] = {
             pickup = "Latronicus Moonspear, Feralas (30.4, 46.2)",
             objective = "Bring Lethtendris' Web to Latronicus Moonspear at the Feathermoon Stronghold in Feralas.",
             turnin = "Latronicus Moonspear, Feralas",
-            rewardItems = {{18491, "Lorespinner", 3}},
+            rewardChoice = true,
+            rewardItems = {
+                {18491, "Lorespinner", 3},
+                {270124, "Warpwood Bracers", 3},
+                {270125, "Satyrhide Armbands", 3},
+            },
         },
         {
             id = 7441,
@@ -40,8 +50,12 @@ FLT.DUNGEON_REGISTRY["Dire Maul: East"] = {
             pickup = "Azj'Tordin, Feralas (76.9, 37.4)",
             objective = "Travel to Dire Maul and locate the Imp, Pusillin. Convince Pusillin to give you Azj'Tordin's Book of Incantations through any means necessary.  Return to Azj'Tordin at the Lariss Pavilion in Feralas should you recover the Book of Incantations.",
             turnin = "Azj'Tordin, Feralas",
-            rewardItems = {{18410, "Sprinter's Sword", 2}, {18411, "Spry Boots", 2}},
             rewardChoice = true,
+            rewardItems = {
+                {18411, "Spry Boots", 2},
+                {18410, "Sprinter's Sword", 2},
+                {270127, "Incanter's Pantaloons", 2},
+            },
             note = "Chase Pusillin through the quarter until he gives up the Crescent Key.",
         },
         {
@@ -66,6 +80,32 @@ FLT.DUNGEON_REGISTRY["Dire Maul: East"] = {
             pickup = "Lorekeeper Lydros, inside Dire Maul",
             objective = "Travel to the Warpwood Quarter of Dire Maul and slay the water elemental, Hydrospawn. Return to Lorekeeper Lydros in the Athenaeum with the Hydrospawn Essence.",
             turnin = "Lorekeeper Lydros, inside Dire Maul",
+        },
+        {
+            level = 60,
+            id = 96076,
+            name = "In Demand - Ancient Elven Curiosities",
+            requires = 60,
+            faction = "Both",
+            pickup = "Pix Xizzix, Stranglethorn Vale (28.5, 75.9)",
+            objective = "Travel to Dire Maul to acquire a Felvine Seed from Alzzin the Wildshaper, an Ancient Memento from Prince Tortheldrin, and an Earthstone Diamond Pinky Ring from King Gordok, and bring them to Pix Xizzix in Booty Bay.",
+            turnin = "Pix Xizzix, Stranglethorn Vale",
+            rewardItems = {
+                {271994, "Undermine Satchel", 1},
+            },
+        },
+        {
+            level = 60,
+            id = 7581,
+            name = "The Prison's Bindings",
+            requires = 60,
+            faction = "Both",
+            class = "WARLOCK",
+            pickup = "Daio the Decrepit, Blasted Lands (34.1, 50.1)",
+            objective = "Travel to Dire Maul in Feralas and recover 15 Satyr Blood from the Wildspawn Satyr that inhabit the Warpwood Quarter. Return to Daio in the Tainted Scar when this is done. ",
+            turnin = "Daio the Decrepit, Blasted Lands",
+            rewardItems = {
+            },
         },
     },
     bosses = {

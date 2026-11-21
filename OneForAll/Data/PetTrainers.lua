@@ -20,5 +20,5 @@ FLT.PET_TRAINERS = {
   { npc = 3624, name = "Zudd", side = "H", map = 1434, x = 31.1, y = 28.9, city = "Stranglethorn Vale" },
   { npc = 3622, name = "Grokor", side = "H", map = 1435, x = 47.4, y = 52.9, city = "Swamp of Sorrows" },
   { npc = 3306, name = "Keldas", side = "A", map = 1438, x = 56.8, y = 59.8, city = "Teldrassil" },
-  { npc = 254411, name = "Quel'dora Quickgale", side = "AH", map = 2521, x = 59.9, y = 72.9, city = "Zephras Isle" },
+  { npc = 254411, name = "Quel'dora Quickgale", side = "AH", map = 2521, x = 59.7, y = 72.8, city = "Zephras Isle" },
 }

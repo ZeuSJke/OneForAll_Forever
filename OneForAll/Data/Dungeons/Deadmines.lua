@@ -65,7 +65,7 @@ FLT.DUNGEON_REGISTRY["The Deadmines"] = {
             level = 20,
             id = 167,
             liveXPFallback = 1550,
-            name = "Oh Brother...",
+            name = "Oh Brother. . .",
             requires = 15,
             faction = "Alliance",
             pickup = "Wilder Thistlenettle, Stormwind City (70.3, 40.8)",
@@ -140,11 +140,13 @@ FLT.DUNGEON_REGISTRY["The Deadmines"] = {
             name = "Old Fire-Eye",
             requires = 20,
             faction = "Horde",
+            races = 16, -- Undead (QuestieDB)
             class = "PALADIN",
             pickup = "Lumina Windsinger, Silverpine Forest (43.4, 41.0)",
             objective = "Use the Moonsilver Blade to destroy Old-Fire Eye in Silverpine Forest.",
             turnin = "Lumina Windsinger, Silverpine Forest",
             rewardItems = {
+                {267369, "Wolfsbane", 3},
             },
         },
     },

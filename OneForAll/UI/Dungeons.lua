@@ -17,6 +17,25 @@ local getDungeonQuestStatus = H.getDungeonQuestStatus
 local getQuestLogInfo = H.getQuestLogInfo
 local questLogButton = H.questLogButton
 local getChainProgress = H.getChainProgress
+local getUnavailableReason = H.getUnavailableReason
+-- a place text without its "(x, y)": coordinates are shown only next to a Map button (6.2.6, user 11.11.)
+local function noCoords(s) return type(s) == "string" and (s:gsub("%s*%(%-?[%d%.]+, %-?[%d%.]+%)", "")) or s end
+-- why a dungeon quest is unavailable, as text (nil = no known reason)
+local function unavailableText(q)
+  local kind, a, b = getUnavailableReason(q)
+  if kind == "side" then return string.format(L["%s only"], L[a]) end
+  if kind == "class" then
+    return string.format(L["%s only"], (type(LOCALIZED_CLASS_NAMES_MALE) == "table" and LOCALIZED_CLASS_NAMES_MALE[a]) or (a:sub(1,1)..a:sub(2):lower()))
+  end
+  if kind == "race" then return string.format(L["%s only"], a) end
+  if kind == "level" then return string.format(L["Requires level %d (you are level %d)"], a, b) end
+  if kind == "step" then
+    local t = string.format(L["First: %s"], NM(a.name) or (L["Quest"].." "..tostring(a.id)))
+    local detail = a.id and FLT.QUEST_PREREQ_DETAILS and FLT.QUEST_PREREQ_DETAILS[a.id]
+    if detail and detail.pickup then t = t.."\n"..string.format(L["Start: %s"], PT(noCoords(detail.pickup))) end
+    return t
+  end
+end
 local dungeonSideColor = H.dungeonSideColor
 local normalizeDungeonItem = H.normalizeDungeonItem
 local colorDungeonItemText = H.colorDungeonItemText
@@ -25,44 +44,9 @@ local handleDungeonItemClick = H.handleDungeonItemClick
 local dungeonItemIcon = H.dungeonItemIcon
 local setBossPortrait = UI.setBossPortrait
 
+-- own pictures (thumbnail, "_bg", "_hdr") for a dungeon without an entry in Data/DungeonLoadscreens.lua - none since
+-- 6.2.10-beta17 (all dungeons and raids use the loading screens or our ls_*.tga there); kept for a new dungeon
 local DUNGEON_ART = {
-  hall=ASSET_ROOT.."Dungeons\\hall_of_thanes",
-  rfc=ASSET_ROOT.."Dungeons\\ragefire_chasm",
-  lordaeron=ASSET_ROOT.."Dungeons\\ruins_of_lordaeron",
-  deadmines=ASSET_ROOT.."Dungeons\\deadmines",
-  wc=ASSET_ROOT.."Dungeons\\wailing_caverns",
-  sfk=ASSET_ROOT.."Dungeons\\shadowfang_keep",
-  bfd=ASSET_ROOT.."Dungeons\\blackfathom_deeps",
-  stockade=ASSET_ROOT.."Dungeons\\the_stockade",
-  excavation=ASSET_ROOT.."Dungeons\\excavation_site",
-  dalaran=ASSET_ROOT.."Dungeons\\city_of_dalaran",
-  gnomeregan=ASSET_ROOT.."Dungeons\\gnomeregan",
-  smgy=ASSET_ROOT.."Dungeons\\sm_graveyard",
-  smlib=ASSET_ROOT.."Dungeons\\sm_library",
-  rfk=ASSET_ROOT.."Dungeons\\razorfen_kraul",
-  smarm=ASSET_ROOT.."Dungeons\\sm_armory",
-  drowned=ASSET_ROOT.."Dungeons\\drowned_city",
-  rfd=ASSET_ROOT.."Dungeons\\razorfen_downs",
-  smcath=ASSET_ROOT.."Dungeons\\sm_cathedral",
-  kroldok=ASSET_ROOT.."Dungeons\\kroldok_stronghold",
-  uldaman=ASSET_ROOT.."Dungeons\\uldaman",
-  zf=ASSET_ROOT.."Dungeons\\zul_farrak",
-  maraudon=ASSET_ROOT.."Dungeons\\maraudon",
-  alcaz=ASSET_ROOT.."Dungeons\\alcaz_prison",
-  st=ASSET_ROOT.."Dungeons\\sunken_temple",
-  brd=ASSET_ROOT.."Dungeons\\blackrock_depths",
-  dme=ASSET_ROOT.."Dungeons\\dire_maul_east",
-  lbrs=ASSET_ROOT.."Dungeons\\lower_blackrock_spire",
-  blackmaw=ASSET_ROOT.."Dungeons\\blackmaw_hold",
-  dmw=ASSET_ROOT.."Dungeons\\dire_maul_west",
-  dmn=ASSET_ROOT.."Dungeons\\dire_maul_north",
-  scholo=ASSET_ROOT.."Dungeons\\scholomance",
-  strat=ASSET_ROOT.."Dungeons\\stratholme",
-  shapers=ASSET_ROOT.."Dungeons\\shapers_terrace",
-  ubrs=ASSET_ROOT.."Dungeons\\upper_blackrock_spire",
-  barrow=ASSET_ROOT.."Dungeons\\barrow_deeps",
-  hyjal=ASSET_ROOT.."Dungeons\\hyjal_summit",
-  onyxia=ASSET_ROOT.."Dungeons\\onyxias_lair",
 }
 
 -- Collapsible level brackets for the browse list (grouped by minimum level).
@@ -144,45 +128,11 @@ local KEY_ICON_NO = "Interface\\RaidFrame\\ReadyCheck-NotReady"
 -- Accent colour per dungeon art (computed from the thumbnail: its bright,
 -- saturated pixels) - used for small details on the detail page.
 local ART_ACCENT = {
-  blackfathom_deeps={0.14,0.53,0.75},
-  city_of_dalaran={0.47,0.30,0.75},
-  deadmines={0.75,0.59,0.36},
-  excavation_site={0.75,0.56,0.08},
-  gnomeregan={0.46,0.75,0.40},
-  hall_of_thanes={0.39,0.52,0.75},
-  ragefire_chasm={0.76,0.20,0.00},
-  razorfen_kraul={0.75,0.30,0.16},
-  ruins_of_lordaeron={0.47,0.71,0.75},
-  shadowfang_keep={0.43,0.47,0.75},
-  sm_graveyard={0.53,0.57,0.75},
-  sm_library={0.75,0.39,0.13},
-  the_stockade={0.75,0.34,0.03},
-  wailing_caverns={0.43,0.75,0.29},
-  alcaz_prison={0.75,0.55,0.30},
-  drowned_city={0.34,0.74,0.75},
-  kroldok_stronghold={0.75,0.39,0.28},
-  maraudon={0.61,0.75,0.74},
-  razorfen_downs={0.75,0.50,0.43},
-  sm_armory={0.75,0.41,0.20},
-  sm_cathedral={0.75,0.46,0.21},
-  sunken_temple={0.44,0.75,0.43},
-  uldaman={0.75,0.49,0.25},
-  zul_farrak={0.75,0.52,0.25},
-  blackmaw_hold={0.55,0.35,0.75},
-  blackrock_depths={0.75,0.33,0.13},
-  dire_maul_east={0.45,0.75,0.25},
-  dire_maul_north={0.75,0.53,0.35},
-  dire_maul_west={0.31,0.40,0.75},
-  lower_blackrock_spire={0.75,0.29,0.08},
-  scholomance={0.40,0.75,0.35},
-  shapers_terrace={0.30,0.55,0.75},
-  stratholme={0.75,0.45,0.21},
-  upper_blackrock_spire={0.75,0.34,0.14},
-  barrow_deeps={0.39,0.54,0.75},
-  hyjal_summit={0.46,0.59,0.75},
-  onyxias_lair={0.75,0.27,0.08},
 }
 local function dungeonAccent(key)
+  -- ls6: the main colour of the loading screen picture (Data/DungeonLoadscreens.lua, entries 10-12)
+  local e=FLT.DUNGEON_LOADSCREENS and FLT.DUNGEON_LOADSCREENS[key]
+  if e and e[12] then return e[10],e[11],e[12] end
   local path=DUNGEON_ART[key]
   local base=path and path:match("([%w_]+)$")
   local c=base and ART_ACCENT[base]
@@ -194,6 +144,42 @@ end
 local function dungeonBackdrop(key,kind)
   local path=DUNGEON_ART[key]
   return path and (path.."_"..kind) or nil
+end
+-- Loading screen test (user 16.11.2026, test version only): the dungeon pictures come from the game's own loading
+-- screens (Data/DungeonLoadscreens.lua, FileDataID + the picture inside the file); w / h = the place it fills,
+-- focus = where the cut sits vertically (0 top .. 1 bottom). Dungeons without a loading screen keep their own art.
+-- e[7], e[8], e[9]: focus x / y and zoom of the entry (wings of one instance show different parts of one picture)
+local function loadscreenCrop(key,aspect,focus)
+  local e=FLT.DUNGEON_LOADSCREENS and FLT.DUNGEON_LOADSCREENS[key]
+  if not e then return nil end
+  local fid,u0,u1,v0,v1,a=e[1],e[2],e[3],e[4],e[5],e[6]
+  local fx,fy,z=e[7] or 0.5,focus or e[8] or 0.5,e[9] or 1
+  if z<1 then -- the used part: z of the width and height, around the focus, inside the picture
+    local w,h=(u1-u0)*z,(v1-v0)*z
+    local cu=math.max(u0+w/2,math.min(u1-w/2,u0+(u1-u0)*fx))
+    local cv=math.max(v0+h/2,math.min(v1-h/2,v0+(v1-v0)*fy))
+    u0,u1,v0,v1,fx,fy=cu-w/2,cu+w/2,cv-h/2,cv+h/2,0.5,0.5
+  end
+  if aspect>=a then
+    local dv=(v1-v0)*a/aspect
+    local t=math.max(v0,math.min(v1-dv,v0+(v1-v0)*fy-dv/2))
+    return fid,u0,u1,t,t+dv
+  end
+  local du=(u1-u0)*aspect/a
+  local c=math.max(u0+du/2,math.min(u1-du/2,u0+(u1-u0)*fx))
+  return fid,c-du/2,c+du/2,v0,v1
+end
+local function setLoadscreen(tex,key,w,h,focus)
+  local fid,l,r,t,b=loadscreenCrop(key,w/h,focus)
+  if not fid then return false end
+  tex:SetTexture(fid); tex:SetTexCoord(l,r,t,b)
+  return true
+end
+-- a fade made with the texture's own alpha (no extra picture); false when the client cannot do it
+local function alphaFade(tex,orient,a1,a2)
+  if tex.SetGradient and CreateColor and pcall(tex.SetGradient,tex,orient,CreateColor(1,1,1,a1),CreateColor(1,1,1,a2)) then return true end
+  if tex.SetGradientAlpha then tex:SetGradientAlpha(orient,1,1,1,a1,1,1,1,a2); return true end
+  return false
 end
 
 
@@ -272,6 +258,7 @@ local function createDungeonPanel(parent)
 
   -- Column positions inside a row (rows sit BOX_PAD px inside their box).
   local SECTION_H, ROW_H, ROW_GAP, BOX_PAD = 32, 46, 0, 0
+  local THUMB_W, THUMB_FADE, THUMB_FADE_L = 110, 34, 18 -- loading screen thumbnail: width, fading part right / left (ls4)
   local ROW_INNER = ROW_W - 2*BOX_PAD
   -- ht8: narrower columns, the faction crest right next to the level
   -- beta43 (user 07.11.: "Territory" ran into "Level" in English): level narrower, its head right-aligned into the free
@@ -466,6 +453,7 @@ local function createDungeonPanel(parent)
   local ROW_BORDER_HI={0.86,0.66,0.26,1}
 
   local browseRows={}
+  local browseOrder={}
   for di,d in ipairs(FLT.DUNGEONS or {}) do
     local dungeon=d
     local partial=d.dataStatus=="partial"
@@ -474,18 +462,33 @@ local function createDungeonPanel(parent)
     local card=UI.QuietRow(row) -- ht8: no frame, a fine line under the row
 
     -- thumbnail with rounded corners and a thin gold frame
-    local art=row:CreateTexture(nil,"ARTWORK"); art:SetSize(96,36); art:SetPoint("LEFT",4,0)
+    local art=row:CreateTexture(nil,"ARTWORK")
     local artPath=dungeonArt(d.key)
-    if artPath then FLT.SetTex(art, artPath); art:SetTexCoord(0,1,0.1,0.9)
+    local lsKey=FLT.DUNGEON_LOADSCREENS and FLT.DUNGEON_LOADSCREENS[d.key] and d.key
+    -- loading screen (user 16.11.: "Rand aussen weg ... ganze Hoehe der Zeile"): the row's full height, no frame
+    -- ls3 (user 16.11.: "einen kleinen Uebergang vom Bild" to the name): the last THUMB_FADE px are a second texture
+    -- with the rest of the picture that fades out (its own alpha, so it works with the window opacity)
+    local artFade,artFadeL
+    if lsKey then
+      -- ls4 (user 16.11.: "links am Bild auch noch einen Fade"): a third texture with the left edge, fading in
+      artFadeL=row:CreateTexture(nil,"ARTWORK"); artFadeL:SetPoint("TOPLEFT",0,0); artFadeL:SetPoint("BOTTOMLEFT",0,1); artFadeL:SetWidth(THUMB_FADE_L)
+      art:SetPoint("TOPLEFT",artFadeL,"TOPRIGHT"); art:SetPoint("BOTTOMLEFT",artFadeL,"BOTTOMRIGHT"); art:SetWidth(THUMB_W-THUMB_FADE-THUMB_FADE_L)
+      artFade=row:CreateTexture(nil,"ARTWORK"); artFade:SetPoint("TOPLEFT",art,"TOPRIGHT"); artFade:SetPoint("BOTTOMLEFT",art,"BOTTOMRIGHT"); artFade:SetWidth(THUMB_FADE)
+    else art:SetSize(96,36); art:SetPoint("LEFT",4,0) end
+    -- loading screen: set only while the row is in view (each file is a few MB of video memory; loadVisibleArt)
+    if lsKey then art:SetColorTexture(FLT.SkinC(0.10,0.08,0.05,1))
+    elseif artPath then FLT.SetTex(art, artPath); art:SetTexCoord(0,1,0.1,0.9)
     else art:SetColorTexture(FLT.SkinC(0.10,0.08,0.05,1)) end
-    if art.AddMaskTexture and row.CreateMaskTexture then
+    if not lsKey and art.AddMaskTexture and row.CreateMaskTexture then
       local m=row:CreateMaskTexture()
       FLT.SetTex(m, ASSET_ROOT.."thumb_wide_mask","CLAMPTOBLACKADDITIVE","CLAMPTOBLACKADDITIVE"); m:SetAllPoints(art)
       art:AddMaskTexture(m)
     end
     -- ht9 (user 30.10.): the thinnest frame - a 1 px line round the picture
-    local afh=CreateFrame("Frame",nil,row); afh:SetPoint("TOPLEFT",art,"TOPLEFT",-1,1); afh:SetPoint("BOTTOMRIGHT",art,"BOTTOMRIGHT",1,-1)
-    UI.RoundRect(row,afh,"OVERLAY",0,8,0,0.62,0.48,0.26,0.9,ASSET_ROOT.."window_ring")
+    if not lsKey then
+      local afh=CreateFrame("Frame",nil,row); afh:SetPoint("TOPLEFT",art,"TOPLEFT",-1,1); afh:SetPoint("BOTTOMRIGHT",art,"BOTTOMRIGHT",1,-1)
+      UI.RoundRect(row,afh,"OVERLAY",0,8,0,0.62,0.48,0.26,0.9,ASSET_ROOT.."window_ring")
+    end
 
     local nm=FLT.NewFS(row, nil,"OVERLAY","GameFontNormal"); nm:SetPoint("LEFT",COL.name,0); nm:SetJustifyH("LEFT"); nm:SetWidth(COL_W.name+4); nm:SetWordWrap(false); nm:SetText(DN(d.name) ~= d.name and DN(d.name) or (d.short or d.name)); nm:SetTextColor(FLT.SkinC(unpack(GOLD)))
     do local font,_,flags=nm:GetFont(); if font then nm:SetFont(font,14,flags) end end
@@ -612,7 +615,7 @@ local function createDungeonPanel(parent)
       questSelection[dungeon.key]=questSelection[dungeon.key] or 1
       if detail._render then detail._render() end
     end)
-    local entry={dungeon=d,row=row,questText=qc,levelText=lv,keyIcon=keyIcon,keyText=keyText,order=di,openQuests=0,
+    local entry={dungeon=d,row=row,art=art,artFade=artFade,artFadeL=artFadeL,lsKey=lsKey,questText=qc,levelText=lv,keyIcon=keyIcon,keyText=keyText,order=di,openQuests=0,
       sortName=(d.short or d.name or ""):lower(),sortSide=sideName,sortZone=zoneText:lower()}
     do -- search text: names, zone and bosses (built once)
       local parts={d.name or "",DN(d.name or ""),d.short or "",zoneText,d.mapZone or ""}
@@ -651,6 +654,46 @@ local function createDungeonPanel(parent)
     end)
   end
 
+  -- loading screen thumbnails only for the rows in view (+ one row above / below); all let go when the list closes
+  local function loadVisibleArt()
+    local top,bottom=sf:GetTop(),sf:GetBottom()
+    if not top then return end
+    for _,entry in ipairs(browseRows) do
+      if entry.lsKey and not entry.artOn and entry.row:IsShown() then
+        local rt,rb=entry.row:GetTop(),entry.row:GetBottom()
+        if rt and rb and rb<top+ROW_H and rt>bottom-ROW_H then
+          local fid,l,r,t,b=loadscreenCrop(entry.lsKey,THUMB_W/(ROW_H-1))
+          if fid then
+            local mid=l+(r-l)*(THUMB_W-THUMB_FADE)/THUMB_W
+            local midL=l+(r-l)*THUMB_FADE_L/THUMB_W
+            entry.artFadeL:SetTexture(fid); entry.artFadeL:SetTexCoord(l,midL,t,b)
+            if not entry.artFadeL._ofaFade then entry.artFadeL._ofaFade=alphaFade(entry.artFadeL,"HORIZONTAL",0,1) end
+            entry.artFadeL:Show()
+            entry.art:SetTexture(fid); entry.art:SetTexCoord(midL,mid,t,b); entry.art:SetVertexColor(1,1,1,1)
+            entry.artFade:SetTexture(fid); entry.artFade:SetTexCoord(mid,r,t,b)
+            if not entry.artFade._ofaFade then entry.artFade._ofaFade=alphaFade(entry.artFade,"HORIZONTAL",1,0) end
+            entry.artFade:Show(); entry.artOn=true
+          end
+        end
+      end
+    end
+  end
+  local artPending
+  local function queueArt()
+    if artPending then return end
+    artPending=true
+    C_Timer.After(0.05,function() artPending=nil; if browse:IsVisible() then loadVisibleArt() end end)
+  end
+  sf:HookScript("OnVerticalScroll",queueArt)
+  browse:HookScript("OnHide",function()
+    for _,entry in ipairs(browseRows) do
+      if entry.artOn then
+        entry.art:SetTexture(nil); entry.art:SetColorTexture(FLT.SkinC(0.10,0.08,0.05,1))
+        entry.artFade:SetTexture(nil); entry.artFade:Hide(); entry.artFadeL:SetTexture(nil); entry.artFadeL:Hide(); entry.artOn=nil
+      end
+    end
+  end)
+
   local function relayout(fromSearch)
     local cfg=dungeonSettings()
     local raids=cfg.view=="raids"
@@ -679,6 +722,7 @@ local function createDungeonPanel(parent)
     local highFirst=cfg.highFirst and true or false
     local brackets=raids and RAID_BRACKETS or BRACKETS
     local secs=raids and raidSections or sections
+    wipe(browseOrder) -- the dungeons in the order the list shows them (< > on the detail page, 6.2.7-beta12)
     for step=1,#brackets do
       local bi=highFirst and (#brackets-step+1) or step
       local sec=secs[bi]
@@ -695,6 +739,7 @@ local function createDungeonPanel(parent)
           elseif raids or not onlyFit or fitsPlayer(entry.dungeon) then visible[#visible+1]=entry end
         end
         sortEntries(visible,s,highFirst)
+        for _,entry in ipairs(visible) do browseOrder[#browseOrder+1]=entry.dungeon end
         for _,entry in ipairs(sec.rows) do entry.row:Hide() end
         if #visible==0 then
           sec.header:Hide(); sec.box:Hide(); sec.y=nil
@@ -726,6 +771,7 @@ local function createDungeonPanel(parent)
     emptyText:SetShown(shownSections==0)
     child:SetHeight(math.max(1,-y+10))
     if browse._paintNav then browse._paintNav() end
+    queueArt()
   end
   browse._setView=function(kind)
     local cfg=dungeonSettings()
@@ -806,6 +852,30 @@ local function createDungeonPanel(parent)
   if detailBanner then OrnateFrame(detailBanner, detailBanner, 18, 4, "OVERLAY", 2) end
   local back=UI.GoldButton(detail,L["Dungeons"],112,24,ASSET_ROOT.."icon_back",12); back:SetPoint("TOPLEFT",8,-74)
   back:SetScript("OnClick",function() detail:Hide(); browse:Show() end)
+  -- 6.2.7-beta12 (user 13.11.: "zwei button < und > wo man die dungeon durchschalten kann"): previous / next dungeon in
+  -- the order of the list (its sorting and filters), round at the ends; the view (bosses / quests) stays
+  local function neighbour(step)
+    local list=browseOrder
+    if #list==0 then list={}; for _,d in ipairs(FLT.DUNGEONS or {}) do if (not d.raid)==(not (selectedDungeon and selectedDungeon.raid)) then list[#list+1]=d end end end
+    local n=#list; if n==0 or not selectedDungeon then return nil end
+    local at=1; for i,d in ipairs(list) do if d==selectedDungeon then at=i break end end
+    return list[(at-1+step)%n+1]
+  end
+  local function stepButton(step)
+    -- the gold arrow of the "Dungeons" button (user 13.11.: "den < links neben Dungeons finde ich schoener"), mirrored for next
+    local b=UI.GoldButton(detail,"",28,24,ASSET_ROOT.."icon_back",12)
+    b.iconGap=0
+    if b.icon then b.icon:ClearAllPoints(); b.icon:SetPoint("CENTER"); if step>0 then b.icon:SetTexCoord(1,0,0,1) end end
+    b:SetScript("OnClick",function() local d=neighbour(step); if d and d~=selectedDungeon then UI.OpenDungeon(d,nil,(mode=="quests" and "quests") or nil) end end)
+    b:SetScript("OnEnter",function(self)
+      local d=neighbour(step); if not d then return end
+      GameTooltip:SetOwner(self,"ANCHOR_BOTTOM"); GameTooltip:SetText(DN(d.name or "")); GameTooltip:Show()
+    end)
+    b:SetScript("OnLeave",function() GameTooltip:Hide() end)
+    return b
+  end
+  local prevBtn=stepButton(-1); prevBtn:SetPoint("LEFT",back,"RIGHT",6,0)
+  local nextBtn=stepButton(1); nextBtn:SetPoint("LEFT",prevBtn,"RIGHT",4,0)
   -- ht9 (user 30.10.): the band over the full width again (ht8 had made it as narrow as the list), a 1 px line
   local dband=CreateFrame("Frame",nil,detail); dband:SetPoint("TOPLEFT",8,-8); dband:SetSize(FULL_W,58)
   local dbandBg=makeTexture(dband,"BACKGROUND",0.045,0.045,0.058,0.96); dbandBg:SetPoint("TOPLEFT",1,-1); dbandBg:SetPoint("BOTTOMRIGHT",-1,1)
@@ -930,9 +1000,19 @@ local function createDungeonPanel(parent)
   -- Atmospheric backdrop behind the detail header of the right panel.
   local function detailBackdrop(f,d,strength)
     local path=dungeonBackdrop(d.key,"bg")
-    if path then
+    local lsKey=FLT.DUNGEON_LOADSCREENS and FLT.DUNGEON_LOADSCREENS[d.key] and d.key
+    if path or lsKey then
       local art=f:CreateTexture(nil,"BORDER",nil,0); art:SetPoint("TOPLEFT",3,-3); art:SetPoint("TOPRIGHT",-3,-3); art:SetHeight(112)
-      FLT.SetTex(art, path); art:SetAlpha(strength or 0.85)
+      -- ls6 (user 16.11.: "die Hauptfarbe aus dem Dungeonbild ... einfarbig"): with a loading screen the background is
+      -- the picture's main colour, fading out downwards (no second copy of the picture)
+      if lsKey then
+        local r,g,b=dungeonAccent(d.key)
+        local top=0.42*((strength or 0.85)/0.85)
+        art:SetColorTexture(1,1,1,1)
+        if not (art.SetGradient and CreateColor and pcall(art.SetGradient,art,"VERTICAL",CreateColor(r,g,b,0),CreateColor(r,g,b,top))) then
+          art:SetColorTexture(r,g,b,top*0.5)
+        end
+      else FLT.SetTex(art, path); art:SetAlpha(strength or 0.85) end
       -- painted look: leather grain over the blur, dark vignette behind the portrait
       local lea=f:CreateTexture(nil,"BORDER",nil,1); lea:SetAllPoints(art); FLT.SetTex(lea, ASSET_ROOT.."leather"); lea:SetVertexColor(FLT.SkinC(0.5,0.45,0.4)); lea:SetAlpha(0.15)
       local sh=f:CreateTexture(nil,"BORDER",nil,2); sh:SetPoint("TOPLEFT",art,"TOPLEFT"); sh:SetPoint("BOTTOMLEFT",art,"BOTTOMLEFT"); sh:SetWidth(260); FLT.SetTex(sh, ASSET_ROOT.."shade_lr")
@@ -994,6 +1074,8 @@ local function createDungeonPanel(parent)
       colorDungeonItemText(it.text,it.rec,it.r,it.g,it.b)
       if it.rec.id and FLT.ItemName then it.text:SetText(FLT.ItemName(it.rec.id,it.rec.name)) end -- German once loaded
       if it.icon then FLT.SetTex(it.icon, dungeonItemIcon(it.rec)) end
+      -- green arrow on upgrades (user 16.11.), like the bags and the game's quest rewards
+      if it.icon and it.rec.id and FLT.GearMarks then FLT.GearMarks.IconArrow(it.icon, it.rec.id) end
     end
   end
 
@@ -1057,7 +1139,7 @@ local function createDungeonPanel(parent)
       t.num=num
       -- small ornate corners mark the selected boss
       local orn=OrnateFrame(b,b,10,1,"OVERLAY",2); for _,o in ipairs(orn) do o:Hide() end
-      rows[i]={button=b,bg=bg,text=t,icon=icon,boss=boss,orn=orn}
+      rows[i]={button=b,bg=bg,text=t,icon=icon,boss=boss,orn=orn,lv=lv}
     end
     if #trashLoot>0 then
       local i=#bosses+1
@@ -1104,6 +1186,16 @@ local function createDungeonPanel(parent)
       end
 
       for i,pane in pairs(detailPanes) do if i~=newIdx then pane:Hide() end end
+      -- 6.2.7-beta7 (user 13.11.: a friend targeted the bosses and still saw "Level ?"): a pane built before the level /
+      -- type was learned in game is built again, and the list row shows the learned level
+      local rb=rows[newIdx] and rows[newIdx].boss
+      if rb and rows[newIdx].lv and FLT.GetBossLevel then
+        local lvNow=FLT:GetBossLevel(rb); if lvNow then rows[newIdx].lv:SetText(string.format(L["Level %s"],lvNow)) end
+      end
+      local stale=detailPanes[newIdx]
+      if stale and stale.needsInfo and stale.boss and FLT.GetBossLevel and FLT:GetBossLevel(stale.boss) and FLT.GetBossType and FLT:GetBossType(stale.boss) then
+        stale:Hide(); detailPanes[newIdx]=nil
+      end
       if detailPanes[newIdx] then
         local pane=detailPanes[newIdx]
         pane:Show()
@@ -1140,20 +1232,22 @@ local function createDungeonPanel(parent)
         local rank=FLT.GetBossRank and FLT:GetBossRank(boss)
         if rank=="Rare" then parts[#parts+1]="|cff4fa3ff"..L["Rare"].."|r" elseif rank then parts[#parts+1]=L[rank] end
         local t=table.concat(parts,"  |  ")
-        if not bossLevel or not ctype then t=t.."  |cff8f8f8f"..L["(target the boss once to learn the rest)"].."|r" end
+        if not bossLevel or not ctype then t=t.."  |cff8f8f8f"..L["(target the boss once to learn the rest)"].."|r"; host.needsInfo=true end
         sub:SetText(t)
       end
       if isTrash then
-        local desc=dtext(host,"GameFontHighlightSmall"); desc:SetPoint("TOPLEFT",18,-80); desc:SetWidth(500); desc:SetJustifyH("LEFT"); desc:SetText(L["Rare+ dungeon drops plus selected notable set/progression items. Generic green world drops are omitted."])
+        -- 6.2.7-beta11: no extra line here - it ran into the header (user screenshot 13.11.); the subtitle says it
       elseif boss.description then
-        local desc=dtext(host,"GameFontHighlightSmall"); desc:SetPoint("TOPLEFT",18,-80); desc:SetWidth(500); desc:SetJustifyH("LEFT"); desc:SetText(boss.description)
+        -- right of the portrait, under the divider (Discord qithulien 16.11.: under the portrait it was covered by it)
+        local desc=dtext(host,"GameFontHighlightSmall"); desc:SetPoint("TOPLEFT",113,-84); desc:SetWidth(405); desc:SetJustifyH("LEFT"); desc:SetText(boss.description)
+        host.descH=desc.GetStringHeight and desc:GetStringHeight() or 12
       end
 
       -- thin decorative gold divider that closes the header
       -- ornate gold divider that closes the boss header
       local dv=host:CreateTexture(nil,"ARTWORK"); FLT.SetTex(dv, ASSET_ROOT.."divider_ornate")
       dv:SetPoint("TOPLEFT",108,-66); dv:SetPoint("TOPRIGHT",-24,-66); dv:SetHeight(20)
-      local lsf=dframe("ScrollFrame",host,"UIPanelScrollFrameTemplate"); lsf:SetPoint("TOPLEFT",12,-106); lsf:SetPoint("BOTTOMRIGHT",-2,8); tidyScroll(lsf,right)
+      local lsf=dframe("ScrollFrame",host,"UIPanelScrollFrameTemplate"); lsf:SetPoint("TOPLEFT",12,math.min(-106,-90-(host.descH or 0))); lsf:SetPoint("BOTTOMRIGHT",-2,8); tidyScroll(lsf,right)
       local lchild=dframe("Frame",lsf); lchild:SetSize(515,1); lsf:SetScrollChild(lchild)
       local ly=-2
       if #loot==0 then
@@ -1167,7 +1261,8 @@ local function createDungeonPanel(parent)
           local hi=makeTexture(row,"HIGHLIGHT",0.30,0.36,0.44,0.10); hi:SetPoint("TOPLEFT",1,-1); hi:SetPoint("BOTTOMRIGHT",-1,1)
           local ic=row:CreateTexture(nil,"ARTWORK"); ic:SetSize(30,30); ic:SetPoint("LEFT",9,0); FLT.SetTex(ic, dungeonItemIcon(rec))
           -- Classic drop chance on the right (Data\DungeonDropChance.lua)
-          local chance=FLT.GetDropChance and FLT.GetDropChance(d.name,isTrash and "Trash" or (boss and boss.name),rec.id)
+          local chance,kills,scaled
+          if FLT.GetDropChance then chance,kills,scaled=FLT.GetDropChance(d.name,isTrash and "Trash" or (boss and boss.name),rec.id) end
           local textW=340 -- same for every row, so the stars line up (user 07.11.)
           local nm=FLT.NewFS(row, nil,"OVERLAY","GameFontNormal"); nm:SetPoint("TOPLEFT",50,-8); nm:SetWidth(textW); nm:SetJustifyH("LEFT"); nm:SetText(FLT.ItemName and FLT.ItemName(rec.id,rec.name) or rec.name); colorDungeonItemText(nm,rec,0.55,0.78,1.00)
           host.items[#host.items+1]={text=nm,icon=ic,rec=rec,r=0.55,g=0.78,b=1.00}
@@ -1178,7 +1273,12 @@ local function createDungeonPanel(parent)
             local chHover=CreateFrame("Frame",nil,row); chHover:SetPoint("RIGHT",-42,0); chHover:SetSize(52,30)
             chHover:SetScript("OnEnter",function(self)
               GameTooltip:SetOwner(self,"ANCHOR_RIGHT"); GameTooltip:AddLine(L["Drop chance"],1,0.82,0.20)
-              GameTooltip:AddLine(L["Classic drop chance - Forever can differ."],1,1,1,true); GameTooltip:Show()
+              -- measured in Forever (Wowhead Forever, 6.2.12-beta10) or the Classic chance
+              if kills and kills>0 then GameTooltip:AddLine(string.format(L["Drop chance in WoW Forever, from %d kills on Wowhead."],kills),1,1,1,true)
+              elseif kills then GameTooltip:AddLine(L["Drop chance in WoW Forever, from Wowhead."],1,1,1,true)
+              else GameTooltip:AddLine(L["Classic drop chance - Forever can differ."],1,1,1,true) end
+              if scaled then GameTooltip:AddLine(L["Wowhead counts more kills than drops for this boss: scaled so that its loot adds up to about one item per kill."],0.7,0.7,0.7,true) end
+              GameTooltip:Show()
             end)
             chHover:SetScript("OnLeave",function() GameTooltip:Hide() end)
           end
@@ -1261,6 +1361,7 @@ local function createDungeonPanel(parent)
           end
         end
       end
+      if FLT.GearMarks then for _,it in ipairs(host.items) do if it.rec.id then FLT.GearMarks.IconArrow(it.icon,it.rec.id) end end end
       lchild:SetHeight(math.max(1,-ly+2))
     end
 
@@ -1302,6 +1403,44 @@ local function createDungeonPanel(parent)
     local h=FLT.NewFS(parent,nil,"OVERLAY","GameFontNormalSmall"); h:SetPoint("TOPLEFT",10,y); h:SetWidth(86); h:SetJustifyH("LEFT"); h:SetText(L[label]); h:SetTextColor(FLT.SkinC(1,0.82,0.20))
     local b=FLT.NewFS(parent,nil,"OVERLAY","GameFontHighlightSmall"); b:SetPoint("TOPLEFT",100,y); b:SetWidth(valueW or 330); b:SetJustifyH("LEFT"); b:SetText(text or L["Unknown"]); b:SetWordWrap(true)
     return y-math.max(16,b:GetStringHeight() or 16)-8, b
+  end
+  -- 6.2.7 (user 13.11.: "das muss alles gepflegt sein"): "Starts at" / "Turn in" with a Map button whenever the place is known;
+  -- an NPC or drop inside the dungeon points to its entrance
+  local function entranceLoc(d,text)
+    if not (d and d.mapZone and d.mapX and d.mapY and type(text)=="string") then return nil end
+    if not (text:find(" inside ",1,true) or text:find("dropped by ",1,true)) then return nil end
+    return {zone=d.mapZone,x=d.mapX,y=d.mapY,label=string.format(L["%s entrance"],DN(d.name)),entrance=true}
+  end
+  local function placeRow(parent,y,label,text,loc)
+    local yStart=y
+    -- no text in our data but a known place (QuestieDB pin): its NPC and zone instead of "Unknown" (6.2.8, user screenshot 13.11.)
+    local shown=text and PT(noCoords(text)) or (loc and not loc.entrance and loc.label) or L["Unknown"]
+    local ny=infoRow(parent,y,label,shown,loc and 250 or 330)
+    if loc then
+      local b=UI.GoldButton(parent,L["Map"],62,20,ASSET_ROOT.."icon_map",11)
+      b:SetPoint("TOPRIGHT",parent,"TOPLEFT",446,yStart+3)
+      b:SetScript("OnClick",function() FLT:ShowOnMap(loc) end)
+      b:SetScript("OnEnter",function(self)
+        GameTooltip:SetOwner(self,"ANCHOR_RIGHT")
+        GameTooltip:SetText(L[label],1,0.82,0.20)
+        if loc.entrance and text then GameTooltip:AddLine(PT(noCoords(text)),0.92,0.90,0.84,true) end
+        GameTooltip:AddLine(loc.label or loc.name or "",0.92,0.90,0.84,true)
+        GameTooltip:AddLine(L["Open the world map and mark this location with the golden OneForAll pin."],0.72,0.72,0.72,true)
+        GameTooltip:Show()
+      end)
+      b:SetScript("OnLeave",function() GameTooltip:Hide() end)
+    end
+    return ny
+  end
+  local function who(text) return type(text)=="string" and text:match("^([^,]+),") or nil end
+  -- start and turn-in place of a quest (or a key step): the text's coordinates, our checked starts, the pin data, the
+  -- same NPC as the other end, else the dungeon entrance
+  local function questPlaces(d,id,starts,turnin)
+    local s=FLT.QuestLoc and FLT:QuestLoc(id,starts)
+    if turnin=="" then turnin=nil end
+    local e=FLT.QuestEndLoc and FLT:QuestEndLoc(id,turnin) or nil -- also without a text: the pin data (6.2.8)
+    if turnin and who(turnin) and who(turnin)==who(starts) then e=e or s; s=s or e end
+    return s or entranceLoc(d,starts), e or (turnin and entranceLoc(d,turnin)) or nil
   end
   -- framed box with a gold title; returns the box, the y where content starts
   -- and a function that closes the box at the given y (returns the next y)
@@ -1384,7 +1523,6 @@ local function createDungeonPanel(parent)
       eye.iconGap=0 -- no text: the plate centres the icon on every redraw (else it moved left after a click)
       if eye.icon then eye.icon:ClearAllPoints(); eye.icon:SetSize(18,18); eye.icon:SetPoint("CENTER",0,0); eye.icon:SetTexCoord(showAll and 0 or 0.5,showAll and 0.5 or 1,0,1) end
       eye:SetActive(showAll)
-      do local m=UI.NewMark(eye,L["New in this version."]); m:SetPoint("CENTER",eye,"TOPRIGHT",-2,-2) end -- 6.2.x (TODO.md "Neu-Markierungen")
       eye:SetScript("OnClick",function()
         if type(OneForAllCharDB)=="table" then OneForAllCharDB.dqShowAll=not showAll or nil end
         questSelection[d.key]=1; GameTooltip:Hide(); renderQuests(d)
@@ -1428,9 +1566,9 @@ local function createDungeonPanel(parent)
         row.status=questStatus
         local req=quest.required or quest.level or "?"; local m=string.format(L["Req. %s"],tostring(req)).."  |  "..L[quest.side or "Both"]
         if quest.class then m=m.." / "..((type(LOCALIZED_CLASS_NAMES_MALE)=="table" and LOCALIZED_CLASS_NAMES_MALE[quest.class]) or quest.class) end -- the class name, not "PRIEST" (6.2.4)
-        m=m.."  |  "..L[QUEST_STATUS_LABELS[questStatus] or questStatus]
+        local stepIdx, stepTotal, stepInLog = getChainProgress(quest)
+        m=m.."  |  "..((questStatus=="chain" and not stepInLog) and L["Chain started"] or L[QUEST_STATUS_LABELS[questStatus] or questStatus])
         if quest.id and FLT.QUEST_PREREQ_CHAINS and FLT.QUEST_PREREQ_CHAINS[quest.id] then
-          local stepIdx, stepTotal = getChainProgress(quest)
           if (questStatus=="inlog" or questStatus=="ready") and not stepIdx and stepTotal then stepIdx = stepTotal end
           m=m.."  |  "..(stepIdx and string.format(L["Chain %d/%d"],stepIdx,stepTotal) or L["Chain"])
         end
@@ -1524,26 +1662,17 @@ local function createDungeonPanel(parent)
       local ry=-4
       local statusValue
       do
-        local loc=FLT.QuestLoc and FLT:QuestLoc(q.id,q.starts)
-        local yStart=ry
-        ry=infoRow(rchild,ry,N"Starts at",q.starts and PT(q.starts) or L["Unknown"],loc and 250 or 330)
-        if loc then
-          local mapBtn=UI.GoldButton(rchild,L["Map"],62,20,ASSET_ROOT.."icon_map",11)
-          mapBtn:SetPoint("TOPRIGHT",rchild,"TOPLEFT",446,yStart+3)
-          mapBtn:SetScript("OnClick",function() if FLT.ShowQuestStartOnMap then FLT:ShowQuestStartOnMap(q) end end)
-          mapBtn:SetScript("OnEnter",function(self)
-            GameTooltip:SetOwner(self,"ANCHOR_RIGHT")
-            GameTooltip:SetText(L["Quest start"],1,0.82,0.20)
-            GameTooltip:AddLine(loc.label or (q.starts and PT(q.starts) or NM(q.name)),0.92,0.90,0.84,true)
-            GameTooltip:AddLine(L["Open the world map and mark this location with the golden OneForAll pin."],0.72,0.72,0.72,true)
-            GameTooltip:Show()
-          end)
-          mapBtn:SetScript("OnLeave",function() GameTooltip:Hide() end)
-        end
+        local sLoc,eLoc=questPlaces(d,q.id,q.starts,q.turnin)
+        ry=placeRow(rchild,ry,N"Starts at",q.starts,sLoc)
+        if (q.turnin and q.turnin~="") or eLoc then ry=placeRow(rchild,ry,N"Turn in",q.turnin~="" and q.turnin or nil,eLoc) end
       end
-      if q.turnin and q.turnin~="" then ry=infoRow(rchild,ry,N"Turn in",PT(q.turnin)) end
       ry=infoRow(rchild,ry,N"Dungeon",DN(d.name))
       ry,statusValue=infoRow(rchild,ry,N"Status","")
+      -- why it is unavailable, under the status (6.2.6, user 11.11.); the pane is rebuilt when the reason changes
+      local builtReason=getDungeonQuestStatus(d, q)=="unavailable" and unavailableText(q) or nil
+      if builtReason then
+        local rv; ry,rv=infoRow(rchild,ry,N"Reason",builtReason); rv:SetTextColor(FLT.SkinC(0.80,0.74,0.62))
+      end
       -- next to "In log": open the quest in the quest log (user 06.11.; chain quests have it per step below)
       local statusLog=questLogButton(rchild); statusLog:SetQuest(q.id,q.name)
       local chain=q.id and FLT.QUEST_PREREQ_CHAINS and FLT.QUEST_PREREQ_CHAINS[q.id]
@@ -1594,9 +1723,9 @@ local function createDungeonPanel(parent)
             GameTooltip:SetOwner(self,"ANCHOR_RIGHT")
             GameTooltip:SetText(NM(step.name) or (L["Quest"].." "..tostring(step.id or "?")),1,0.82,0.20)
             if detail then
-              if detail.pickup then GameTooltip:AddLine(string.format(L["Start: %s"],PT(detail.pickup)),0.92,0.90,0.84,true) end
+              if detail.pickup then GameTooltip:AddLine(string.format(L["Start: %s"],PT(noCoords(detail.pickup))),0.92,0.90,0.84,true) end
               if detail.objective then GameTooltip:AddLine(NM(detail.objective),1,1,1,true) end
-              if detail.turnin then GameTooltip:AddLine(string.format(L["Turn in: %s"],PT(detail.turnin)),0.76,0.76,0.72,true) end
+              if detail.turnin then GameTooltip:AddLine(string.format(L["Turn in: %s"],PT(noCoords(detail.turnin))),0.76,0.76,0.72,true) end
               if step.optional then GameTooltip:AddLine(L["Optional lead-in: not required to accept the quest."],0.62,0.60,0.56,true) end
             elseif isCurrent then
               GameTooltip:AddLine(q.objective and NM(q.objective) or L["The dungeon quest on this page"],0.92,0.90,0.84,true)
@@ -1639,6 +1768,10 @@ local function createDungeonPanel(parent)
           ry=cy-math.max(14,summary:GetStringHeight() or 14)
         else
           rewardRows(rewards,N"Quest reward")
+          if q.alsoRewards and #q.alsoRewards>0 then
+            local al=dtext(rchild,"GameFontHighlightSmall"); al:SetPoint("TOPLEFT",18,ry-2); al:SetText(L["You will also receive:"]); al:SetTextColor(FLT.SkinC(0.80,0.78,0.72)); ry=ry-20
+            rewardRows(q.alsoRewards,N"Quest reward")
+          end
           if q.rewardSummary then
             local sum=dtext(rchild,"GameFontHighlightSmall"); sum:SetPoint("TOPLEFT",18,ry-2); sum:SetWidth(420); sum:SetJustifyH("LEFT"); sum:SetText(q.rewardSummary); sum:SetTextColor(FLT.SkinC(0.80,0.78,0.72)); ry=ry-20
           end
@@ -1652,8 +1785,10 @@ local function createDungeonPanel(parent)
 
       pane.update=function()
         local questStatus=getDungeonQuestStatus(d, q)
-        local statusLabel=L[QUEST_STATUS_LABELS[questStatus] or questStatus]
-        local stepIdx, stepTotal = getChainProgress(q)
+        local reason=questStatus=="unavailable" and unavailableText(q) or nil
+        if reason~=builtReason then pane:Hide(); detailPanes[newIdx]=nil; if questSelection[d.key]==newIdx then selectQuest(newIdx) end; return end
+        local stepIdx, stepTotal, stepInLog = getChainProgress(q)
+        local statusLabel=(questStatus=="chain" and not stepInLog) and L["Chain started"] or L[QUEST_STATUS_LABELS[questStatus] or questStatus]
         local col=STATUS_COLOR[questStatus] or STATUS_COLOR.available
         statusChip:Set(statusLabel,col); layoutChips(chips,18,-44)
 
@@ -1832,19 +1967,19 @@ local function createDungeonPanel(parent)
       local y=-4
       if step then
         if step.pickup then
-          local yStart=y
-          y=infoRow(c,y,N"Starts at",PT(step.pickup),step.map and 250 or 330)
-          if step.map then
-            local mb=UI.GoldButton(c,L["Map"],62,20,ASSET_ROOT.."icon_map",11); mb:SetPoint("TOPRIGHT",c,"TOPLEFT",446,yStart+3)
-            mb:SetScript("OnClick",function() FLT:ShowOnMap({mapID=step.map.mapID,x=step.map.x,y=step.map.y,name=step.name}) end)
-          end
+          local sLoc=step.map and {mapID=step.map.mapID,x=step.map.x,y=step.map.y,label=PT(noCoords(step.pickup))} or nil
+          local s2,e2=questPlaces(d,step.quest,step.pickup,step.turnin)
+          y=placeRow(c,y,N"Starts at",step.pickup,sLoc or s2)
+          if step.turnin then y=placeRow(c,y,N"Turn in",step.turnin,e2) end
+        elseif step.turnin then
+          local _,e2=questPlaces(d,step.quest,nil,step.turnin)
+          y=placeRow(c,y,N"Turn in",step.turnin,e2)
         end
-        if step.turnin then y=infoRow(c,y,N"Turn in",PT(step.turnin)) end
         if step.loot then
           -- an item the step needs and where it lies, with its own Map button (6.2.4, user 10.11.: the Grimy Key in
           -- "Key to the City")
           local yStart=y
-          y=infoRow(c,y,N"Loot",NM(step.loot.name)..": "..PT(step.loot.place),step.loot.map and 250 or 330)
+          y=infoRow(c,y,N"Loot",NM(step.loot.name)..": "..PT(step.loot.map and step.loot.place or noCoords(step.loot.place)),step.loot.map and 250 or 330)
           if step.loot.map then
             local lb=UI.GoldButton(c,L["Map"],62,20,ASSET_ROOT.."icon_map",11); lb:SetPoint("TOPRIGHT",c,"TOPLEFT",446,yStart+3)
             lb:SetScript("OnClick",function() FLT:ShowOnMap({mapID=step.loot.map.mapID,x=step.loot.map.x,y=step.loot.map.y,name=step.loot.name}) end)
@@ -1944,7 +2079,12 @@ local function createDungeonPanel(parent)
     local d=selectedDungeon; if not d then return end
     dtitle:SetText(DN(d.name))
     local ap=dungeonBackdrop(d.key,"hdr")
-    if ap then
+    if FLT.DUNGEON_LOADSCREENS and FLT.DUNGEON_LOADSCREENS[d.key] and setLoadscreen(detailArt,d.key,300,54) then
+      -- loading screen: fades out to the right like the "_hdr" picture, so the title stays readable
+      if not detailArt._ofaFade then detailArt._ofaFade=alphaFade(detailArt,"HORIZONTAL",1,0) end
+      detailArt:Show(); detailArtFrame:Show()
+    elseif ap then
+      if detailArt._ofaFade then alphaFade(detailArt,"HORIZONTAL",1,1); detailArt._ofaFade=nil end
       FLT.SetTex(detailArt, ap); detailArt:SetTexCoord(0,1,0,1); detailArt:Show(); detailArtFrame:Show()
     else
       detailArt:Hide(); detailArtFrame:Hide()
@@ -1992,6 +2132,7 @@ local function createDungeonPanel(parent)
   -- bossName (optional): select that boss ("trash mobs" = the trash loot entry).
   -- openMode (optional): "map" opens the dungeon map.
   -- questID (6.2.2, Gear Planner, user 09.11.): open the Quests view on that quest, in your faction's list
+  UI.SelectedDungeon=function() return selectedDungeon end -- FLT.DungeonToOpen (QuestShare.lua)
   UI.OpenDungeon=function(target, bossName, openMode, questID)
     if not target then return end
     selectedDungeon=target; mode=openMode or "bosses"; browse:Hide(); detail:Show()

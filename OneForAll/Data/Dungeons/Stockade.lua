@@ -67,7 +67,7 @@ FLT.DUNGEON_REGISTRY["The Stockade"] = {
             level = 26,
             id = 387,
             liveXPFallback = 5550,
-            name = "Quell the Uprising",
+            name = "Quell The Uprising",
             requires = 22,
             faction = "Alliance",
             pickup = "Warden Thelwater, Stormwind City (51.5, 69.4)",
@@ -125,10 +125,6 @@ FLT.DUNGEON_REGISTRY["The Stockade"] = {
                 {273817, "Graverobber's Shovel", "Two-Hand, Mace", 3},
                 {273819, "Boneslicer", "Two-Hand, Polearm", 3},
                 {273820, "Nightskulker Ring", "Finger", 3},
-                {252514, "Stormrider's Leather Helm", "Head, Leather", 3},
-                {252515, "Wisdom's Leather Helm", "Head, Leather", 3},
-                {252512, "Brawler's Leather Helm", "Head, Leather", 3},
-                {252456, "Totemic Leather Helm", "Head, Leather", 3},
             },
         },
         {
@@ -140,10 +136,6 @@ FLT.DUNGEON_REGISTRY["The Stockade"] = {
                 {2280, "Kam's Walking Stick", "Two-Hand, Staff", 3},
                 {273807, "Demolition Girdle", "Waist, Leather", 3},
                 {273808, "Bridgebreaker Bindings", "Wrist, Cloth", 3},
-                {252515, "Wisdom's Leather Helm", "Head, Leather", 3},
-                {252455, "Defender's Leather Helm", "Head, Leather", 3},
-                {252512, "Brawler's Leather Helm", "Head, Leather", 3},
-                {252513, "Trapper's Leather Helm", "Head, Leather", 3},
             },
         },
         {
@@ -154,7 +146,6 @@ FLT.DUNGEON_REGISTRY["The Stockade"] = {
                 {273809, "Hamhock's Cleaver", "Main Hand, Axe", 3},
                 {273810, "Ogre Grips", "Hands, Mail", 3},
                 {273811, "Repurposed Rack", "Off Hand, Shield", 3},
-                {252513, "Trapper's Leather Helm", "Head, Leather", 3},
             },
         },
         {
@@ -166,9 +157,6 @@ FLT.DUNGEON_REGISTRY["The Stockade"] = {
                 {273825, "Red Wool Cloak", "Back", 3},
                 {273827, "Debt Collector", "Main Hand, Sword", 3},
                 {273829, "Concealed Hand Crossbow", "Ranged, Crossbow", 3},
-                {252455, "Defender's Leather Helm", "Head, Leather", 3},
-                {252456, "Totemic Leather Helm", "Head, Leather", 3},
-                {252515, "Wisdom's Leather Helm", "Head, Leather", 3},
             },
         },
         {

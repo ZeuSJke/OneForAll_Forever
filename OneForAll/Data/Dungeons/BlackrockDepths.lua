@@ -39,8 +39,16 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             pickup = "Shadowmage Vivian Lagrave, Badlands (2.9, 47.8)",
             objective = "Bring the Lost Thunderbrew Recipe to Vivian Lagrave in Kargath.",
             turnin = "Shadowmage Vivian Lagrave, Badlands",
-            rewardItems = {{3928, "Superior Healing Potion", 1}, {6149, "Greater Mana Potion", 1}, {11964, "Swiftstrike Cudgel", 3}, {12000, "Limb Cleaver", 3}},
             rewardChoice = true,
+            rewardItems = {
+                {11964, "Swiftstrike Cudgel", 2},
+                {12000, "Limb Cleaver", 2},
+                {270123, "Ragnar's Favorite Hat", 2},
+            },
+            rewardAlso = {
+                {3928, "Superior Healing Potion", 1},
+                {6149, "Greater Mana Potion", 1},
+            },
         },
         {
             id = 4063,
@@ -100,7 +108,11 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             pickup = "Shadowmage Vivian Lagrave, Badlands (2.9, 47.8)",
             objective = "Travel to Blackrock Depths and recover 10 Essence of the Elements. Your first inclination is to search the golems and golem makers. You remember Vivian Lagrave also muttering something about elementals. ",
             turnin = "Shadowmage Vivian Lagrave, Badlands",
-            rewardItems = {{12038, "Lagrave's Seal", 2}},
+            rewardChoice = true,
+            rewardItems = {
+                {12038, "Lagrave's Seal", 2},
+                {270119, "Dark Iron Signet", 2},
+            },
         },
         {
             id = 4132,
@@ -160,7 +172,9 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             pickup = "Oralius, Burning Steppes (84.6, 68.7)",
             objective = "Travel to Blackrock Depths and recover 20 Dark Iron Fanny Packs. Return to Oralius when you have completed this task. You assume that the Dark Iron dwarves inside Blackrock Depths carry these 'fanny pack' contraptions. ",
             turnin = "Oralius, Burning Steppes",
-            rewardItems = {{11883, "A Dingy Fanny Pack", 1}},
+            rewardItems = {
+                {11883, "A Dingy Fanny Pack", 1},
+            },
         },
         {
             id = 4126,
@@ -172,8 +186,15 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             pickup = "Ragnar Thunderbrew, Dun Morogh (46.8, 52.4)",
             objective = "Bring the Lost Thunderbrew Recipe to Ragnar Thunderbrew in Kharanos.",
             turnin = "Ragnar Thunderbrew, Dun Morogh",
-            rewardItems = {{11964, "Swiftstrike Cudgel", 3}, {12000, "Limb Cleaver", 3}, {12003, "Dark Dwarven Lager", 1}},
             rewardChoice = true,
+            rewardItems = {
+                {11964, "Swiftstrike Cudgel", 2},
+                {12000, "Limb Cleaver", 2},
+                {270123, "Ragnar's Favorite Hat", 2},
+            },
+            rewardAlso = {
+                {12003, "Dark Dwarven Lager", 1},
+            },
         },
         {
             id = 4341,
@@ -219,8 +240,14 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             pickup = "Marshal Windsor, inside Blackrock Depths",
             objective = "Help Marshal Windsor get his gear back and free his friends. Return to Marshal Maxwell if you succeed.",
             turnin = "Marshal Maxwell, Burning Steppes (84.7, 69.0)",
-            rewardItems = {{12061, "Blade of Reckoning", 3}, {12062, "Skilled Fighting Blade", 3}, {12065, "Ward of the Elements", 2}},
             rewardChoice = true,
+            rewardItems = {
+                {12061, "Blade of Reckoning", 2},
+                {12062, "Skilled Fighting Blade", 2},
+            },
+            rewardAlso = {
+                {12065, "Ward of the Elements", 2},
+            },
         },
         {
             id = 4136,
@@ -264,7 +291,9 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             pickup = "Franclorn Forgewright, inside Blackrock Depths",
             objective = "Slay Fineous Darkvire and recover the great hammer, Ironfel. Take Ironfel to the Shrine of Thaurissan and place it on the statue of Franclorn Forgewright.",
             turnin = "Monument of Franclorn Forgewright, inside Blackrock Depths",
-            rewardItems = {{11000, "Shadowforge Key", 1}},
+            rewardItems = {
+                {11000, "Shadowforge Key", 1},
+            },
         },
         {
             id = 4201,
@@ -275,8 +304,13 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             pickup = "Mistress Nagmara, inside Blackrock Depths",
             objective = "Bring 4 Gromsblood, 10 Giant Silver Veins and Nagmara's Filled Vial to Mistress Nagmara in Blackrock Depths.",
             turnin = "Mistress Nagmara, inside Blackrock Depths",
-            rewardItems = {{11866, "Nagmara's Whipping Belt", 3}, {11962, "Manacle Cuffs", 3}},
             rewardChoice = true,
+            rewardItems = {
+                {11962, "Manacle Cuffs", 3},
+                {11866, "Nagmara's Whipping Belt", 3},
+                {270120, "Boots of Requite", 3},
+                {270121, "Private Rocknot's Spare Bracers", 3},
+            },
         },
         {
             id = 4083,
@@ -321,6 +355,18 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             turnin = "Lokhtos Darkbargainer, inside Blackrock Depths",
             rewardItems = {
                 {18592, "Plans: Sulfuron Hammer", 4},
+            },
+        },
+        {
+            level = 55,
+            id = 97197,
+            name = "Fragment of the Firelands",
+            requires = 46,
+            faction = "Horde",
+            pickup = "Alaana Stormwalker, Mulgore (33.4, 22.6)",
+            objective = "Recover a Fragment of the Firelands from Blackrock Depths for Alaana Stormwalker in Mulgore.",
+            turnin = "Alaana Stormwalker, Mulgore",
+            rewardItems = {
             },
         },
     },
@@ -404,6 +450,7 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
                 {11703, "Stonewall Girdle", "Waist, Plate", 3},
                 {11722, "Dregmetal Spaulders", "Shoulder, Mail", 3},
                 {22270, "Entrenching Boots", "Feet, Plate", 3},
+                {277117, "Savage Gladiator Shoulders", "Shoulder, Mail", 3},
             },
         },
         {
@@ -472,6 +519,7 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             loot = {
                 {11755, "Verek's Collar", "Neck", 3},
                 {22242, "Verek's Leash", "Waist, Mail", 3},
+                {276884, "Verek's Loyal Wraps", "Wrist, Cloth", 3},
             },
         },
         {
@@ -538,6 +586,7 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
                 {11744, "Bloodfist", "One-Hand, Fist Weapon", 3},
                 {11745, "Fists of Phalanx", "Hands, Plate", 3},
                 {22212, "Golem Fitted Pauldrons", "Shoulder, Mail", 3},
+                {276879, "Backroom Bulwark", "Off Hand, Shield", 3},
             },
         },
         {
@@ -546,6 +595,7 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             loot = {
                 {12791, "Barman Shanker", "Main Hand, Dagger", 3},
                 {12793, "Mixologist's Tunic", "Chest, Leather", 3},
+                {276877, "Brewmancer Nightcap", "Head, Cloth", 3},
             },
         },
         {

@@ -1,3 +1,17 @@
 <Bindings>
-  <Binding name="ONEFORALL_TOGGLECHAT" header="ONEFORALL">OneForAll_ToggleChat()</Binding>
+  <Binding name="ONEFORALL_WINDOW" header="ONEFORALL" category="BINDING_HEADER_ONEFORALL">OneForAll_Binding("window")</Binding>
+  <Binding name="ONEFORALL_TAB_DUNGEONS" category="BINDING_HEADER_ONEFORALL">OneForAll_Binding("dungeons")</Binding>
+  <Binding name="ONEFORALL_TAB_ARMORY" category="BINDING_HEADER_ONEFORALL">OneForAll_Binding("armory")</Binding>
+  <Binding name="ONEFORALL_TAB_PROFESSIONS" category="BINDING_HEADER_ONEFORALL">OneForAll_Binding("professions")</Binding>
+  <Binding name="ONEFORALL_TAB_QOL" category="BINDING_HEADER_ONEFORALL">OneForAll_Binding("qol")</Binding>
+  <Binding name="ONEFORALL_TAB_TALENTS" category="BINDING_HEADER_ONEFORALL">OneForAll_Binding("talents")</Binding>
+  <Binding name="ONEFORALL_TAB_BOOKS" category="BINDING_HEADER_ONEFORALL">OneForAll_Binding("books")</Binding>
+  <Binding name="ONEFORALL_TAB_PETS" category="BINDING_HEADER_ONEFORALL">OneForAll_Binding("pets")</Binding>
+  <Binding name="ONEFORALL_TAB_SETTINGS" category="BINDING_HEADER_ONEFORALL">OneForAll_Binding("settings")</Binding>
+  <Binding name="ONEFORALL_SKILLUP" category="BINDING_HEADER_ONEFORALL">OneForAll_Binding("skillup")</Binding>
+  <Binding name="ONEFORALL_GUIDE" category="BINDING_HEADER_ONEFORALL">OneForAll_Binding("guide")</Binding>
+  <Binding name="ONEFORALL_PROFIT" category="BINDING_HEADER_ONEFORALL">OneForAll_Binding("profit")</Binding>
+  <Binding name="ONEFORALL_CRAFTLIST" category="BINDING_HEADER_ONEFORALL">OneForAll_Binding("craftlist")</Binding>
+  <Binding name="ONEFORALL_GAMES" category="BINDING_HEADER_ONEFORALL">OneForAll_Binding("games")</Binding>
+  <Binding name="ONEFORALL_TOGGLECHAT" category="BINDING_HEADER_ONEFORALL">OneForAll_ToggleChat()</Binding>
 </Bindings>

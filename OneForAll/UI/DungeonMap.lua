@@ -209,6 +209,19 @@ function UI.CreateDungeonMap(parent)
       p.disc:Hide(); p.ring:Hide(); p:SetSize(42, 42)
       p:SetScript("OnClick", nil)
     end
+    -- numbered marks (Data/DungeonMapExtras.lua, 6.2.13-beta13, user 20.11.: the Sunken Temple statues 1-6 "ohne symbol"):
+    -- the number on the dark disc, no ring and no icon
+    local mk = m.marks
+    for _, e in ipairs(mk or {}) do
+      n = n + 1
+      local p = pin(n); p:Show()
+      p.u, p.v = e[2], e[3]
+      p.title = mk.title and string.format(L[mk.title], e[1]) or e[1]
+      p.tip = mk.tip and L[mk.tip] or nil
+      p.icon:Hide(); p.label:SetText(""); if p.boss then p.boss:Hide() end
+      p.ring:Hide(); p.disc:Show(); p.num:Show(); p.num:SetText(e[1]); p:SetSize(20, 20)
+      p:SetScript("OnClick", nil)
+    end
     note:SetText(#(m.bosses or {}) == 0 and L["Boss positions are not known yet for this dungeon."] or "")
     layout()
   end
@@ -283,13 +296,19 @@ function FLT.ApplyDungeonMapKey()
 end
 
 -- test (/ofa dmap): any dungeon with a map when you are not in one
-function FLT.ToggleDungeonMap(test)
+function FLT.ToggleDungeonMap(test, prepared)
   if UI.IsWindowShown and UI.IsWindowShown() then FLT:ToggleUI(); return end
   local d = currentMapDungeon()
   if not d and test and FLT.DUNGEONS and FLT.DUNGEON_MAPS then
     for _, x in ipairs(FLT.DUNGEONS) do if FLT.DUNGEON_MAPS[x.name] then d = x; break end end
   end
   if not d then if ToggleWorldMap then ToggleWorldMap() end return end
+  -- 6.2.12-beta6 (Discord 18.11.: "script ran too long" on M in a dungeon): window, page and map one frame after the other
+  if not prepared and UI.PrepareWindow then
+    UI.PrepareWindow("dungeons", function() FLT.SafeCall("DungeonMapKey", FLT.ToggleDungeonMap, test, true) end)
+    return
+  end
+  if not test and FLT.DungeonToOpen then d = FLT.DungeonToOpen() or d end -- the wing already shown stays (Scarlet Monastery)
   FLT:OpenPanel("dungeons")
   if UI.OpenDungeon then UI.OpenDungeon(d, nil, "map") end
 end

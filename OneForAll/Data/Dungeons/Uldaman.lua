@@ -50,20 +50,26 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
             pickup = "Baelog, inside Uldaman",
             objective = "Read Baelog's Journal, explore the hidden chamber, then report to Prospector Stormpike.",
             turnin = "Prospector Stormpike, Ironforge (74.6, 11.7)",
-            rewardItems = {{9626, "Dwarven Charge", 2}, {9627, "Explorer's League Lodestar", 2}},
             rewardChoice = true,
+            rewardItems = {
+                {9626, "Dwarven Charge", 2},
+                {9627, "Explorer's League Lodestar", 2},
+                {270078, "Guardian Staff", 2},
+            },
         },
         {
             id = 17,
             liveXPFallback = 3450,
             name = "Uldaman Reagent Run",
             level = 42,
-            requires = 36,
+            requires = 38,
             faction = "Alliance",
             pickup = "Ghak Healtouch, Loch Modan (37.1, 49.4)",
             objective = "Bring 12 Magenta Fungus Caps to Ghak Healtouch in Thelsamar.",
             turnin = "Ghak Healtouch, Loch Modan",
-            rewardItems = {{9030, "Restorative Potion", 1}},
+            rewardItems = {
+                {250947, "Greater Mender's Potion", 1},
+            },
         },
         {
             id = 2202,
@@ -75,7 +81,9 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
             pickup = "Jarkal Mossmeld, Badlands (2.4, 46.1)",
             objective = "Bring 12 Magenta Fungus Caps to Jarkal Mossmeld in Kargath.",
             turnin = "Jarkal Mossmeld, Badlands",
-            rewardItems = {{9030, "Restorative Potion", 1}},
+            rewardItems = {
+                {250947, "Greater Mender's Potion", 1},
+            },
         },
         {
             id = 704,
@@ -87,8 +95,12 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
             pickup = "Prospector Ironband, Loch Modan (65.9, 65.6)",
             objective = "Bring 4 Carved Stone Urns to Prospector Ironband in Loch Modan.",
             turnin = "Prospector Ironband, Loch Modan",
-            rewardItems = {{4980, "Prospector Gloves", 2}, {270059, "Restorer's Fine Gloves", 2}, {270060, "Excavator Gauntlets", 2}},
             rewardChoice = true,
+            rewardItems = {
+                {4980, "Prospector Gloves", 2},
+                {270059, "Restorer's Fine Gloves", 2},
+                {270060, "Excavator Gauntlets", 2},
+            },
         },
         {
             id = 1139,
@@ -100,7 +112,11 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
             pickup = "Advisor Belgrum, Ironforge (77.3, 9.7)",
             objective = "Find the Tablet of Will, and return them to Advisor Belgrum in Ironforge.",
             turnin = "Advisor Belgrum, Ironforge",
-            rewardItems = {{6723, "Medal of Courage", 2}},
+            rewardChoice = true,
+            rewardItems = {
+                {6723, "Medal of Courage", 2},
+                {270095, "Medal of Valor", 2},
+            },
         },
         {
             id = 2198,
@@ -130,7 +146,7 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
             liveXPFallback = 3600,
             name = "Find the Gems",
             level = 43,
-            requires = 40,
+            requires = 37,
             faction = "Alliance",
             pickup = "Remains of a Paladin, inside Uldaman",
             objective = "Find the ruby, sapphire, and topaz that are scattered throughout Uldaman. Once acquired, contact Talvash del Kissel remotely by using the Phial of Scrying he previously gave you.  From the journal, you know... * The ruby has been stashed in a barricaded Shadowforge area. * The topaz has been hidden in an urn in one of the Trogg areas, near some Alliance dwarves.  * The sapphire has been claimed by Grimlok, the trogg leader.",
@@ -261,6 +277,30 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
             objective = "Retrieve an Obsidian Power Source and bring it to Tabetha in Dustwallow Marsh.",
             turnin = "Tabetha, Dustwallow Marsh",
         },
+        {
+            level = 35,
+            id = 721,
+            name = "A Sign of Hope",
+            requires = 35,
+            faction = "Alliance",
+            pickup = "Prospector Ryedol, Badlands (53.4, 43.4)",
+            objective = "Find Hammertoe Grez in Uldaman.",
+            turnin = "Hammertoe Grez, Badlands",
+            rewardItems = {
+            },
+        },
+        {
+            level = 40,
+            id = 722,
+            name = "Amulet of Secrets",
+            requires = 35,
+            faction = "Alliance",
+            pickup = "Hammertoe Grez, Badlands (37.9, 10.6)",
+            objective = "Find Hammertoe's Amulet and return it to him in Uldaman.",
+            turnin = "Hammertoe Grez, Badlands",
+            rewardItems = {
+            },
+        },
     },
     bosses = {
         {
@@ -281,6 +321,7 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
             description = "One of the Lost Dwarves, together with Eric \"The Swift\" and Olaf.",
             loot = {
                 {9401, "Nordic Longshank", "One-Hand, Sword", 3},
+                {9400, "Baelog's Shortbow", "Ranged, Bow", 3},
             },
         },
         {
@@ -298,6 +339,7 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
             displayID = 5709,
             loot = {
                 {9404, "Olaf's All Purpose Shield", "Off Hand, Shield", 3},
+                {9403, "Battered Viking Shield", "Off Hand, Shield", 3},
             },
         },
         {
@@ -308,6 +350,7 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
                 {9407, "Stoneweaver Leggings", "Legs, Cloth", 3},
                 {9409, "Ironaya's Bracers", "Wrist, Mail", 3},
                 {9408, "Ironshod Bludgeon", "Two-Hand, Staff", 3},
+                {274484, "Axe of Inevitable Ruin", "Two-Hand, Axe", 3},
             },
         },
         {
@@ -323,6 +366,7 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
             loot = {
                 {9410, "Cragfists", "Hands, Plate", 3},
                 {9411, "Rockshard Pauldrons", "Shoulder, Mail", 3},
+                {274431, "Sandstorm Staff", "Two-Hand, Staff", 3},
             },
         },
         {
@@ -354,6 +398,7 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
                 {9413, "The Rockpounder", "Two-Hand, Mace", 3},
                 {9418, "Stoneslayer", "Two-Hand, Sword", 3},
                 {11118, "Archaedic Stone", "Finger", 3},
+                {274432, "Stone Keeper Spire", "Two-Hand, Staff", 3},
             },
         },
     },

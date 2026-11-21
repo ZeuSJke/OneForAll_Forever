@@ -4,7 +4,7 @@
 ## Notes-ruRU: Помощник для WoW Forever: подземелья, задания, добыча, комплекты и награды за репутацию, книги библиотеки, профессии, таланты, питомцы охотника и полезные мелочи. Русский перевод.
 ## Author: Smoergi
 ## X-License: GPL-3.0-or-later
-## Version: 6.2.5
+## Version: 6.2.13
 ## IconTexture: Interface\AddOns\OneForAll\Assets\minimap_icon
 ## OptionalDeps: Baganator
 ## SavedVariables: OneForAllDB, ForeverCompanionDB, ForeverLibraryTrackerDB
@@ -17,6 +17,8 @@ Locales\frFR.lua
 Locales\Names_frFR.lua
 Locales\esES.lua
 Locales\Names_esES.lua
+Locales\ptBR.lua
+Locales\Names_ptBR.lua
 Locales\ruRU.lua
 Locales\Names_ruRU.lua
 Data.lua
@@ -77,14 +79,19 @@ Data\RaidAttunements.lua
 Data\DungeonDropChance.lua
 Data\BossInfo.lua
 Data\HunterPets.lua
+Data\HunterPetSpells.lua
 Data\HunterPetTames.lua
 Data\TrainerSpells.lua
 Data\WeaponTrainers.lua
 Data\PetTrainers.lua
 Data\ClassQuests.lua
 Data\ProfessionTrainers.lua
+Data\ProfessionFees.lua
+Data\ProfessionTools.lua
 Data\Armory.lua
 Data\DungeonMaps.lua
+Data\DungeonMapExtras.lua
+Data\DungeonLoadscreens.lua
 Data\MapLandmarks.lua
 Data\SkyborneSpots.lua
 Data\ZoneTransitions.lua
@@ -96,6 +103,9 @@ Data\QuestPins.lua
 Data\QuestDrops.lua
 Data\GearWeights.lua
 Data\ItemSets.lua
+Data\BoeItems.lua
+Data\BisLists.lua
+Data\Disenchant.lua
 Data\Enchants.lua
 DungeonData.lua
 Core.lua
@@ -121,6 +131,10 @@ UI\Books.lua
 UI\ProfessionRecipes.lua
 Data\VendorReagents.lua
 UI\CraftList.lua
+SkillUp.lua
+AHScan.lua
+UI\SkillUpUI.lua
+UI\ProfitUI.lua
 UI\NodeGlow.lua
 UI\ProfessionGuild.lua
 UI\Professions.lua
@@ -143,5 +157,7 @@ MinimapCollector.lua
 UI\WhatsNew.lua
 UI\Welcome.lua
 UI\ChatHide.lua
+UI\KeyBindings.lua
 UI\VersionCheck.lua
 UI\InfoBar.lua
+UI\GuildGames.lua
