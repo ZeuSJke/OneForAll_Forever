@@ -47,7 +47,7 @@ local function createSettingsPanel(parent)
     if ic.AddMaskTexture and box.CreateMaskTexture then
       local m = box:CreateMaskTexture(); FLT.SetTex(m, UI.ASSET_ROOT .. "talent_icon_mask2", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE"); m:SetAllPoints(ic); ic:AddMaskTexture(m)
     end
-    local t = FLT.NewFS(box, nil, "OVERLAY", "GameFontNormal"); t:SetPoint("LEFT", ic, "RIGHT", 8, 0); t:SetText(label); t:SetTextColor(FLT.SkinC(unpack(GOLD)))
+    local t = FLT.NewFS(box, nil, "OVERLAY", "GameFontNormal"); t:SetPoint("LEFT", ic, "RIGHT", 8, 0); t:SetText(label); t:SetTextColor(FLT.TextC(unpack(GOLD)))
     -- yellow "!" for sections that are new since the last live release (NEW_SECTIONS)
     if NEW_SECTIONS[label] then local m = UI.NewMark(box, "New in OneForAll 5.6.1."); m:SetPoint("LEFT", t, "RIGHT", 5, 0) end
 
@@ -252,7 +252,7 @@ local function createSettingsPanel(parent)
   local function opacityRow(label, tip, minV, get, set)
     local box = win.box
     local l = FLT.NewFS(box, nil, "OVERLAY", "GameFontHighlight"); l:SetPoint("TOPLEFT", 14, win.y - 6); l:SetText(label)
-    local val = FLT.NewFS(box, nil, "OVERLAY", "GameFontHighlight"); val:SetTextColor(FLT.SkinC(1, 0.82, 0.2))
+    local val = FLT.NewFS(box, nil, "OVERLAY", "GameFontHighlight"); val:SetTextColor(FLT.TextC(1, 0.82, 0.2))
     local sl = UI.Slider(box, 200, minV, 100, 5, function(v)
       val:SetText(v .. " %")
       set(v / 100)
@@ -273,6 +273,32 @@ local function createSettingsPanel(parent)
   opacityRow(L["Window opacity"], L["Lets the world shine through the window's backgrounds. Text and pictures stay solid. Mouse wheel or drag."], 70,
     function() return UI.GetWindowAlpha and UI.GetWindowAlpha() end,
     function(a) if UI.SetWindowAlpha then UI.SetWindowAlpha(a) end end)
+  -- own background and text colour with Blizzard's colour picker (6.2.14, user 21.11.: community wish; "Default" = as before)
+  local function colorRow(label, tip, key, default)
+    local box = win.box
+    local l = FLT.NewFS(box, nil, "OVERLAY", "GameFontHighlight"); l:SetPoint("TOPLEFT", 14, win.y - 6); l:SetText(label)
+    local sw = UI.GoldButton(box, "", 60, 22, nil, 11); sw:SetPoint("TOPLEFT", 190, win.y - 2)
+    local chip = sw:CreateTexture(nil, "OVERLAY"); chip:SetSize(40, 12); chip:SetPoint("CENTER")
+    local function show()
+      local r, g, b = UI.GetWindowColor(key)
+      if r then chip:SetColorTexture(r, g, b, 1) else chip:SetColorTexture(default[1], default[2], default[3], 1) end
+    end
+    sw:SetScript("OnClick", function()
+      local r, g, b = UI.GetWindowColor(key)
+      UI.PickColor(r and { r, g, b } or default, function(cr, cg, cb) UI.SetWindowColor(key, cr, cg, cb); show() end)
+    end)
+    sw:SetScript("OnEnter", function(self)
+      GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:AddLine(label, 1, 0.82, 0)
+      GameTooltip:AddLine(tip, 1, 1, 1, true); GameTooltip:Show()
+    end)
+    sw:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    local def = UI.GoldButton(box, L["Default"], 70, 22, nil, 11); def:SetPoint("LEFT", sw, "RIGHT", 8, 0)
+    def:SetScript("OnClick", function() UI.SetWindowColor(key, nil); show() end)
+    refreshers[#refreshers + 1] = show
+    win.rowMax = math.min(win.rowMax, win.y - 30); win:nextRow()
+  end
+  colorRow(L["Background colour"], L["The colour of the window's dark backgrounds. Click to choose a colour."], "bgColor", { 0.065, 0.058, 0.048 })
+  colorRow(L["Text colour"], L["The colour of the white text. Click to choose a colour. Some texts take it after a /reload."], "textColor", { 1, 1, 1 })
   win:finish()
 
   -- Profiles (6.0.1, user 31.10.): Settings + Quality of Life options + shown tabs, chosen per character (UI/Profiles.lua)

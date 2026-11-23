@@ -238,7 +238,7 @@ local function line(y, o)
     b.mark:ClearAllPoints(); b.mark:SetPoint("LEFT", x, 0); b.mark:SetShown(o.done and true or false)
     if o.done then b.mark:SetKind("check"); b.mark:SetColor(0.35, 0.85, 0.40) end
     b.text:ClearAllPoints(); b.text:SetPoint("LEFT", x + (o.done and 18 or 0), 0); b.text:SetPoint("RIGHT", -4, 0)
-    b.text:SetFontObject("GameFontNormal"); b.text:SetText(o.head); b.text:SetTextColor(FLT.SkinC(unpack(GOLD)))
+    b.text:SetFontObject("GameFontNormal"); b.text:SetText(o.head); b.text:SetTextColor(FLT.TextC(unpack(GOLD)))
     b:SetHeight(24)
     return y - 26
   end
@@ -514,7 +514,7 @@ local function createGuide()
   for _, t in ipairs(UI.OrnateFrame(guide, guide, 16, 3, "OVERLAY", 4)) do t:SetVertexColor(FLT.SkinC(1, 1, 1, 1)) end
   local close = UI.CloseButton(guide); close:SetPoint("TOPRIGHT", -12, -12)
   gtitle = FLT.NewFS(guide, nil, "OVERLAY", "GameFontNormal"); gtitle:SetPoint("TOPLEFT", 18, -15); gtitle:SetPoint("RIGHT", close, "LEFT", -6, 0)
-  gtitle:SetJustifyH("LEFT"); gtitle:SetTextColor(FLT.SkinC(unpack(GOLD)))
+  gtitle:SetJustifyH("LEFT"); gtitle:SetTextColor(FLT.TextC(unpack(GOLD)))
   gsf = FLT.SkinBlizz(CreateFrame("ScrollFrame", nil, guide, "UIPanelScrollFrameTemplate"))
   gsf:SetPoint("TOPLEFT", 8, -36); gsf:SetPoint("BOTTOMRIGHT", -30, 40)
   gchild = CreateFrame("Frame", nil, gsf); gchild:SetSize(W - 38, 10); gsf:SetScrollChild(gchild)
@@ -730,7 +730,7 @@ function UI.CreateSkillUpPage(parent)
     t.label = FLT.NewFS(t, nil, "OVERLAY", "GameFontDisableSmall"); t.label:SetPoint("TOP", 0, -6); t.label:SetText(UI.Upper and UI.Upper(label) or label)
     t.value = FLT.NewFS(t, nil, "OVERLAY", big and "GameFontNormal" or "GameFontHighlight"); t.value:SetPoint("BOTTOM", 0, 8)
     do local font, _, flags = t.value:GetFont(); if font then t.value:SetFont(font, big and 14 or 12, flags) end end
-    if big then t.value:SetTextColor(FLT.SkinC(1, 0.82, 0.25)) end
+    if big then t.value:SetTextColor(FLT.TextC(1, 0.82, 0.25)) end
     t:EnableMouse(true)
     t:SetScript("OnEnter", function(self)
       if not self.tip then return end

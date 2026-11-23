@@ -16,6 +16,12 @@ General sources
   (Forever data, Classic data as fallback).
   New WoW Forever drops of all dungeons (November 2026): Wowhead Forever zone and NPC pages ("Dropped by").
 - Boss portraits (display IDs), level ranges and the boss levels of the Forever dungeons: foreverchanges.pro.
+  18 classic bosses without a portrait there (Ruuzlu, the Seven's Anger'rel / Doom'rel, Plugger Spazzring, Hurley
+  Blackbreath, Onyxia, Stratholme / Scholomance / Dire Maul / SFK / SM summoned and rare bosses, 2026-11-23): model IDs
+  from CMaNGOS classic-db creature_template (GPL-3.0), only IDs the Forever client has (CreatureDisplayInfo).
+- Wings of one instance (LBRS / UBRS, Dire Maul East / West / North, Scarlet Monastery, Data/DungeonWings.lua, 2026-11-23):
+  the creatures living in one wing only, from the CMaNGOS classic-db creature spawns (GPL-3.0) sorted into our own dungeon map
+  areas (tools/dungeon-gen/wings.py); Blackrock Spire room names from the Forever client (WMOAreaTable).
   Hall of Thanes boss levels (16, 2026-10-22): wowforeverguides.com and wow4ever.quest ("level 16"),
   foreverchanges.pro had none yet.
 - Boss and entrance positions on the maps of Hall of Thanes, Ruins of Lordaeron, Excavation Site and City of

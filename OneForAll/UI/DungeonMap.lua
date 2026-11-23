@@ -117,12 +117,16 @@ function UI.CreateDungeonMap(parent)
     -- boss portrait in the gold boss ring (same as Bosses & Loot), shown instead of the disc
     p.boss = UI.CreateBossFrame and UI.CreateBossFrame(p, 34, false, true)
     if p.boss then p.boss:SetPoint("CENTER"); p.boss:Hide() end
+    -- a boss killed in your current run (dungeon tracker, 6.2.14): red X like on the tracker (user 23.11.)
+    p.dead = p:CreateTexture(nil, "OVERLAY", nil, 3); p.dead:SetSize(24, 24); p.dead:SetPoint("CENTER")
+    p.dead:SetTexture("Interface\\RaidFrame\\ReadyCheck-NotReady"); p.dead:Hide()
     p.label = FLT.NewFS(p, nil, "OVERLAY", "GameFontHighlightSmall"); p.label:SetPoint("TOP", p, "BOTTOM", 0, -3)
     p.label:SetShadowColor(0, 0, 0, 1); p.label:SetShadowOffset(1, -1)
     local hl = p:CreateTexture(nil, "HIGHLIGHT"); hl:SetAllPoints(); hl:SetBlendMode("ADD")
     FLT.SetTex(hl, UI.ASSET_ROOT .. "ring_plain"); hl:SetVertexColor(FLT.SkinC(1, 0.85, 0.45, 0.8)) -- matches the plain boss ring
     p:SetScript("OnEnter", function(self)
       GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:AddLine(self.title, 1, 0.82, 0)
+      if self.killed then GameTooltip:AddLine(string.format(L["Killed after %s"], FLT.RunTracker.Clock(self.killed)), 0.45, 1, 0.5) end
       if self.tip then GameTooltip:AddLine(self.tip, 1, 1, 1, true) end
       GameTooltip:Show()
     end)
@@ -187,6 +191,7 @@ function UI.CreateDungeonMap(parent)
       p.tip = L["Click: show its loot in Bosses & Loot."]
       p.icon:Hide(); p.label:SetText(b[1])
       local boss = d and d.bosses and d.bosses[idx]
+      p.bossRec = boss
       if p.boss and boss and UI.setBossPortrait then
         UI.setBossPortrait(p.boss.portrait, d, boss)
         p.boss:Show(); p.disc:Hide(); p.ring:Hide(); p.num:Hide(); p:SetSize(34, 34)
@@ -199,7 +204,7 @@ function UI.CreateDungeonMap(parent)
     if m.entrance then
       n = n + 1
       local p = pin(n); p:Show()
-      p.u, p.v, p.title, p.tip = m.entrance[1], m.entrance[2], L["Entrance"], nil
+      p.u, p.v, p.title, p.tip, p.bossRec = m.entrance[1], m.entrance[2], L["Entrance"], nil, nil
       -- the dungeon / raid swirl of the world map (same as Map Landmarks, user 16.10.)
       p.num:Hide(); p.label:SetText(""); p.icon:Show(); p.icon:ClearAllPoints(); p.icon:SetAllPoints(p)
       if not (p.icon.SetAtlas and pcall(p.icon.SetAtlas, p.icon, (d and d.raid) and "raid" or "dungeon")) then
@@ -215,7 +220,7 @@ function UI.CreateDungeonMap(parent)
     for _, e in ipairs(mk or {}) do
       n = n + 1
       local p = pin(n); p:Show()
-      p.u, p.v = e[2], e[3]
+      p.u, p.v, p.bossRec = e[2], e[3], nil
       p.title = mk.title and string.format(L[mk.title], e[1]) or e[1]
       p.tip = mk.tip and L[mk.tip] or nil
       p.icon:Hide(); p.label:SetText(""); if p.boss then p.boss:Hide() end
@@ -223,9 +228,27 @@ function UI.CreateDungeonMap(parent)
       p:SetScript("OnClick", nil)
     end
     note:SetText(#(m.bosses or {}) == 0 and L["Boss positions are not known yet for this dungeon."] or "")
+    f.MarkKills()
     layout()
   end
-  f.Refresh = layout
+  -- the bosses dead in your current run of this dungeon (its open run in the dungeon tracker; gone after a reset)
+  function f.MarkKills()
+    local RT = FLT.RunTracker
+    local c = RT and RT.Current and RT.Current()
+    if c and not (dungeon and c.key == dungeon.key) then c = nil end
+    for _, p in ipairs(pins) do
+      local k = c and p.bossRec and RT.Killed(c, p.bossRec) or nil
+      p.killed = k
+      p.dead:SetShown(k and p:IsShown() and true or false)
+      if p.boss then p.boss.portrait:SetDesaturated(k and true or false) end
+    end
+  end
+  f.Refresh = function() f.MarkKills(); layout() end
+  if FLT.RunTracker then
+    local RT = FLT.RunTracker
+    RT.mapViews = RT.mapViews or setmetatable({}, { __mode = "k" })
+    RT.mapViews[f] = true
+  end
 
   vp:SetScript("OnSizeChanged", layout)
   vp:SetScript("OnMouseWheel", function(self, delta)

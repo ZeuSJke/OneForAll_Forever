@@ -96,7 +96,7 @@ local BIS_CLASSES = { "WARRIOR", "PALADIN", "HUNTER", "ROGUE", "PRIEST", "SHAMAN
 local BIS_SPECS = {
   WARRIOR = { { N"Arms", "Ability_Warrior_SavageBlow" }, { N"Fury", "Ability_Warrior_InnerRage" }, { N"Protection", "Ability_Warrior_DefensiveStance" } },
   PALADIN = { { N"Holy", "Spell_Holy_HolyBolt" }, { N"Protection", "Spell_Holy_DevotionAura" }, { N"Retribution", "Spell_Holy_AuraOfLight" }, { N"Shockadin", "Spell_Holy_SearingLight" } },
-  HUNTER = { { N"Beast Mastery", "Ability_Hunter_BeastTaming" }, { N"Marksmanship", "Ability_Marksmanship" }, { N"Survival", "Ability_Hunter_SwiftStrike" } },
+  HUNTER = { { N"Beast Mastery", "Ability_Hunter_BeastTaming" }, { N"Marksmanship", "Ability_Marksmanship" }, { N"Survival", "Ability_Hunter_SwiftStrike" }, { N"Survival Melee", "Ability_MeleeDamage" } }, -- melee: new on wowtbc.gg (6.2.14)
   ROGUE = { { N"Assassination", "Ability_Rogue_Eviscerate" }, { N"Combat", "Ability_BackStab" }, { N"Subtlety", "Ability_Stealth" } },
   PRIEST = { { N"Discipline", "Spell_Holy_WordFortitude" }, { N"Holy", "Spell_Holy_HolyBolt" }, { N"Shadow", "Spell_Shadow_ShadowWordPain" } },
   SHAMAN = { { N"Elemental", "Spell_Nature_Lightning" }, { N"Enhancement", "Spell_Nature_LightningShield" }, { N"Restoration", "Spell_Nature_MagicImmunity" } },
@@ -120,7 +120,11 @@ local WEAPONS = { -- weapon subclass IDs
 FLT.CLASS_WEAPONS = WEAPONS -- also for the weapon trainers in UI/TrainerSpells.lua
 local canWield = {}
 for cls, list in pairs(WEAPONS) do canWield[cls] = {}; for _, s in ipairs(list) do canWield[cls][s] = true end end
+-- weapons a class can learn but should not be offered as gear (6.2.14-beta6, user 21.11.: "thrown sollte beim hunter nicht
+-- erscheinen" - a hunter's ranged slot is for bows, guns and crossbows); the weapon trainers (CLASS_WEAPONS) keep them
+canWield.HUNTER[16] = nil
 
+local CLASS_BIT = { WARRIOR = 1, PALADIN = 2, HUNTER = 4, ROGUE = 8, PRIEST = 16, SHAMAN = 64, MAGE = 128, WARLOCK = 256, DRUID = 1024 }
 -- quests of the other faction / for other classes (quest rewards); set by refreshSlots
 local mySide, myClassBit
 local function hasBit(mask, b) return b and math.floor(mask / b) % 2 == 1 end
@@ -277,7 +281,9 @@ function FLT.QuestForMyRace(q)
   if not (q and q.races and q.races > 0) then return true end
   if raceBit == nil then
     local id = UnitRace and select(3, UnitRace("player"))
-    raceBit = id and 2 ^ (id - 1) or false
+    -- the Skyborne (race IDs 95 / 96) have the bits 32 / 33 of the masks (6.2.14, Discord mini_mimz 22.11.: their class quests
+    -- with a race mask never showed)
+    raceBit = id and 2 ^ (({ [95] = 32, [96] = 33 })[id] or (id - 1)) or false
   end
   return not raceBit or math.floor(q.races / raceBit) % 2 == 1
 end
@@ -383,6 +389,8 @@ local function buildIndex()
         local e = add(it.id, it.name, it.quality, string.format(L["Quest: %s"], NM(qu.name) or "?"), (qu.required or 0) > 0 and qu.required or qu.level, d)
         -- dq: a dungeon quest - its row opens the quest in Dungeons & Raids (user 09.11.)
         if e then e.qid = qu.id; e.side = SIDE[qu.side]; e.dq = true; if (qu.required or 0) > 0 then e.qreq = qu.required end
+          -- a class quest (6.2.14, Discord sgtkeeneye 22.11.: Ebon Mask of the rogue quest The Azure Key suggested to a hunter)
+          if qu.class and CLASS_BIT[qu.class] then e.cls = CLASS_BIT[qu.class] end
         else
           -- the same reward from the other faction's version of the quest (Blackfathom Villainy 1200 / 6561, Gravestone
           -- Scepter; user 09.11.: a Horde priest never got it suggested): for both sides, with the own side's quest
@@ -458,6 +466,21 @@ local function buildIndex()
       end
     end
   end
+  -- world drops (6.2.14-beta5, Discord Alex 21.11.: "the hurricane is a 3.2% upgrade for me ... doesnt appear"; user: "bitte auch
+  -- world drops aufnehmen in suggested, das ist wichtig"): the Bind on Equip gear of Data/BoeItems.lua that no source above has
+  -- (dungeon and crafted BoE came first), "World drop" - any mob around its level can drop it, or the auction house has it.
+  -- Only items with fixed stats: a random bonus item ("of the Eagle") has no stats of its own (those: Cheap Upgrades).
+  local B, SK = FLT.BOE_ITEMS, FLT.BOE_SKILL
+  for i = 1, #(B or {}) - 1, 2 do
+    local req = B[i + 1]
+    local e = add(B[i], nil, nil, L["World drop"], req > 0 and req or nil)
+    if e then
+      e.world = true
+      if req > 0 then e.req = req end
+      local sk = SK and SK[B[i]] -- engineering goggles ...: only with the skill (skillOK)
+      if sk then e.skProf, e.skRank = sk[1], sk[2] end
+    end
+  end
 end
 FLT.GearIndex = function(rebuild) if rebuild or not index then buildIndex() end return index, byId end
 -- "Cheap Upgrades" (6.2.13-beta17): the Bind on Equip gear of Data/BoeItems.lua as list entries (built once, when first shown)
@@ -502,9 +525,107 @@ local function skillOK(e)
 end
 
 -- required level / item level: from the game when it has the item, else the source level
+-- 6.2.14 (user 22.11., video of a warrior in Orgrimmar after a Cheap Upgrade Scan: the game froze every 1.5 s while the
+-- planner was open): the item IDs the planner waits for. The Armory redraws only when one of these arrives - in a full city
+-- the game loads item data all the time (other players' gear, chat links) and each redraw went through thousands of items.
+local PW = { ids = {}, all = true } -- one table: refreshList is at Lua 5.1's limit of 60 upvalues
+local function want(id) if id then PW.ids[id] = true end end
+PW.want = want
+function FLT.GearPlannerWants(id) return PW.all or id == nil or (PW.ids[id] and not (PW.loading and PW.loading[id])) or false end
+-- 6.2.14 (user 22.11. 23:17, the idea from how another auction addon avoids its lags - own code): when many listed items
+-- have no data yet (Cheap Upgrades after a scan, "All slots"), they are loaded first - asked in portions, no list pass while
+-- they come in, "Loading items (n)" in the list - and ONE pass runs when they are there (or after LOAD_WAIT s). A few
+-- missing items are asked and the list is drawn at once (the Armory redraws when they arrive). Each item is asked twice at most.
+local LOAD_MANY, LOAD_STEP, LOAD_WAIT = 20, 100, 8
+local loadFrame
+function PW.loadText()
+  PW.textDue = nil
+  if PW.loading and PW.empty then PW.empty:SetText(string.format(L["Loading items (%d)"], PW.left)) end
+end
+function PW.loadDone()
+  PW.loading, PW.loadToken = nil, nil
+  if loadFrame then loadFrame:UnregisterAllEvents() end
+  if PW.data then FLT.SafeCall("GearPlanner", PW.data) end
+end
+function PW.load(cand, unsure, failed)
+  local isCached = C_Item and C_Item.IsItemDataCachedByID
+  local req = C_Item and C_Item.RequestLoadItemDataByID
+  if not (isCached and req and C_Timer and C_Timer.After) then return nil end
+  if PW.loading then return PW.left end
+  local tries, need, seen = PW.tries or {}, {}, {}
+  PW.tries = tries
+  for _, l in ipairs({ cand, unsure }) do
+    for _, e in ipairs(l) do
+      PW.step()
+      local id = e.id
+      if not seen[id] and not (failed and failed[id]) and (tries[id] or 0) < 2 and not isCached(id) then seen[id] = true; need[#need + 1] = id end
+    end
+  end
+  if #need == 0 then return nil end
+  if #need <= LOAD_MANY then
+    for _, id in ipairs(need) do tries[id] = (tries[id] or 0) + 1; req(id); want(id) end
+    return nil
+  end
+  local pending = {}
+  for _, id in ipairs(need) do pending[id] = true end
+  PW.loading, PW.left = pending, #need
+  if not loadFrame then
+    loadFrame = CreateFrame("Frame")
+    loadFrame:SetScript("OnEvent", function(_, _, id, ok)
+      local p = PW.loading
+      if not (p and id and p[id]) then return end
+      p[id] = nil; PW.left = PW.left - 1
+      if ok == false then FLT.ItemLoadFailed = FLT.ItemLoadFailed or {}; FLT.ItemLoadFailed[id] = true end
+      if PW.left <= 0 then PW.loadDone()
+      elseif not PW.textDue then PW.textDue = true; C_Timer.After(0.25, PW.loadText) end
+    end)
+  end
+  pcall(loadFrame.RegisterEvent, loadFrame, "ITEM_DATA_LOAD_RESULT")
+  loadFrame:RegisterEvent("GET_ITEM_INFO_RECEIVED")
+  local i, token = 1, {}
+  PW.loadToken = token
+  local function portion()
+    if PW.loadToken ~= token then return end
+    for k = i, math.min(i + LOAD_STEP - 1, #need) do local id = need[k]; tries[id] = (tries[id] or 0) + 1; req(id) end
+    i = i + LOAD_STEP
+    if i <= #need then C_Timer.After(0.1, portion)
+    else C_Timer.After(LOAD_WAIT, function() if PW.loadToken == token then PW.loadDone() end end) end
+  end
+  portion()
+  return PW.left
+end
+-- 6.2.14 (user 22.11., second video: still a freeze every second in Gadgetzan): a pass over thousands of items (Cheap Upgrades
+-- after a scan, All slots) runs in steps of about 5 ms per frame instead of freezing the game. PW.step() in the item loops
+-- yields when the frame's time is used up; a request while a pass runs starts one more pass when it is done. Without
+-- debugprofilestop (tests) everything runs at once.
+local PASS_MS = 5
+function PW.run(body)
+  if PW.co then PW.again = true; return end
+  local co = coroutine.create(body)
+  PW.co = co
+  local function resume()
+    PW.t0, PW.n = debugprofilestop and debugprofilestop(), 0
+    local ok, err = coroutine.resume(co)
+    if not ok then PW.co, PW.again = nil, nil; error(debug and debug.traceback and debug.traceback(co, tostring(err)) or err, 0) end
+    if coroutine.status(co) ~= "dead" then
+      if C_Timer and C_Timer.After then C_Timer.After(0, function() FLT.SafeCall("GearPlanner", resume) end); return end
+      PW.t0 = nil; return resume() -- no timer: the rest at once
+    end
+    PW.co = nil
+    if PW.again then PW.again = nil; PW.run(body) end
+  end
+  resume()
+end
+function PW.step()
+  PW.n = (PW.n or 0) + 1
+  if PW.n % 64 == 0 and PW.t0 and PW.co and coroutine.running() == PW.co and debugprofilestop() - PW.t0 > PASS_MS then
+    coroutine.yield()
+  end
+end
+
 local function reqLevel(e)
   local name, _, q, ilvl, minLevel = GetItemInfo(e.link or e.id) -- with the bonus name ("... of the Eagle")
-  if name then e.name, e.q, e.ilvl, e.req = name, q or e.q, ilvl, minLevel end
+  if name then e.name, e.q, e.ilvl, e.req = name, q or e.q, ilvl, minLevel else want(e.id) end
   return e.req or e.lvl or 0
 end
 
@@ -574,9 +695,9 @@ function FLT.ShowQuestChain(qid)
     UI.FramedPanel(p)
     for _, t in ipairs(UI.OrnateFrame(p, p, 16, 3, "OVERLAY", 4)) do t:SetVertexColor(FLT.SkinC(1, 1, 1, 1)) end
     p.title = FLT.NewFS(p, nil, "OVERLAY", "GameFontNormalLarge"); p.title:SetPoint("TOPLEFT", 18, -16); p.title:SetPoint("RIGHT", -44, 0)
-    p.title:SetJustifyH("LEFT"); p.title:SetWordWrap(false); p.title:SetTextColor(FLT.SkinC(1, 0.82, 0.20))
+    p.title:SetJustifyH("LEFT"); p.title:SetWordWrap(false); p.title:SetTextColor(FLT.TextC(1, 0.82, 0.20))
     p.sub = FLT.NewFS(p, nil, "OVERLAY", "GameFontHighlightSmall"); p.sub:SetPoint("TOPLEFT", 18, -38)
-    p.sub:SetText(L["Quest chain - green: done, yellow: in your quest log"]); p.sub:SetTextColor(FLT.SkinC(0.80, 0.77, 0.70))
+    p.sub:SetText(L["Quest chain - green: done, yellow: in your quest log"]); p.sub:SetTextColor(FLT.TextC(0.80, 0.77, 0.70))
     UI.CloseButton(p):SetPoint("TOPRIGHT", -12, -12)
     local sf = FLT.SkinBlizz(CreateFrame("ScrollFrame", nil, p, "UIPanelScrollFrameTemplate"))
     sf:SetPoint("TOPLEFT", 14, -62); sf:SetPoint("BOTTOMRIGHT", -32, 16)
@@ -623,9 +744,9 @@ function FLT.ShowQuestChain(qid)
     if q and q.giver then parts[#parts + 1] = q.giver end
     if #ids > 1 then parts[#parts + 1] = #ids > 2 and string.format(L["or one of %d others"], #ids - 1) or L["or one other"] end
     r.sub:SetText(table.concat(parts, "  ·  "))
-    if state == "done" then r.card:SetFill(FLT.SkinC(0.035, 0.16, 0.055, 0.90)); r.name:SetTextColor(FLT.SkinC(0.35, 1, 0.45))
-    elseif state == "log" then r.card:SetFill(FLT.SkinC(0.22, 0.17, 0.04, 0.92)); r.name:SetTextColor(FLT.SkinC(1, 0.82, 0.20))
-    else r.card:SetFill(FLT.SkinC(0.055, 0.067, 0.080, 0.90)); r.name:SetTextColor(FLT.SkinC(0.92, 0.90, 0.84)) end
+    if state == "done" then r.card:SetFill(FLT.SkinC(0.035, 0.16, 0.055, 0.90)); r.name:SetTextColor(FLT.TextC(0.35, 1, 0.45))
+    elseif state == "log" then r.card:SetFill(FLT.SkinC(0.22, 0.17, 0.04, 0.92)); r.name:SetTextColor(FLT.TextC(1, 0.82, 0.20))
+    else r.card:SetFill(FLT.SkinC(0.055, 0.067, 0.080, 0.90)); r.name:SetTextColor(FLT.TextC(0.92, 0.90, 0.84)) end
     r.map.loc = FLT.QuestStart(show)
     r.map:SetShown(r.map.loc and true or false)
   end
@@ -644,7 +765,7 @@ function UI.CreateGearPlanner(parent)
   -- 6.2.10-beta2 (user 15.11.: a plate wearer with every armor type still had spikes): the judgement of an item (upgrade
   -- or not, gain) is kept until the Gear Value changes (GV.gen), and an item asked from the server 3 times without an
   -- answer is left out - else it kept the follow-up passes going forever
-  local judged, judgedGen, asked = {}, nil, {}
+  local judged, judgedGen = {}, nil
   local enchMode = false -- the right side shows the enchants of the selected slot
   local tab = "suggest"
   local search = ""
@@ -653,7 +774,7 @@ function UI.CreateGearPlanner(parent)
     local fs = FLT.NewFS(p, nil, "OVERLAY", template or "GameFontHighlightSmall")
     if w then fs:SetWidth(w) end
     fs:SetJustifyH("LEFT"); fs:SetWordWrap(false)
-    if color then fs:SetTextColor(FLT.SkinC(unpack(color))) end
+    if color then fs:SetTextColor(FLT.TextC(unpack(color))) end
     return fs
   end
   local function qcolor(q)
@@ -805,7 +926,7 @@ function UI.CreateGearPlanner(parent)
       e.icon = e:CreateTexture(nil, "ARTWORK"); e.icon:SetPoint("TOPLEFT", 2, -2); e.icon:SetPoint("BOTTOMRIGHT", -2, 2)
       e.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
       e.plus = FLT.NewFS(e, nil, "OVERLAY", "GameFontNormalSmall"); e.plus:SetPoint("CENTER", 0, 1); e.plus:SetText("+")
-      e.plus:SetTextColor(FLT.SkinC(0.80, 0.62, 0.28))
+      e.plus:SetTextColor(FLT.TextC(0.80, 0.62, 0.28))
       local hl = e:CreateTexture(nil, "HIGHLIGHT"); hl:SetAllPoints(e.icon); hl:SetTexture("Interface\\Buttons\\ButtonHilight-Square"); hl:SetBlendMode("ADD")
       e.slot = b.slot
       e:SetScript("OnClick", function(self)
@@ -901,6 +1022,9 @@ function UI.CreateGearPlanner(parent)
   -- "BiS List" (6.2.13-beta22, user 21.11.: in place of the warning sign, which went - "das brauchen wir nicht mehr")
   tabButton("bis", N"BiS List", 336, 70)
   tabButton("wish", N"Wishlist", 108)
+  -- 6.2.14 (Discord miti86 21.11., French "Liste de souhaits" / "Ameliorations bon marche" ran into each other): one after the
+  -- other, a smaller text when the row is wider than the panel
+  UI.ButtonRow(right, { tabs.suggest, tabs.wish, tabs.cheap, tabs.bis }, { 92, 92, 128, 70 }, 4, 12, -10, { 12, 11, 10 })
   for _, k in ipairs({ "cheap", "bis" }) do local m = UI.NewMark(tabs[k], L["New in this version."]); m:SetPoint("CENTER", tabs[k], "TOPRIGHT", -2, -2) end -- 6.2.13 (TODO.md "Neu-Markierungen")
   tabs.suggest:SetActive(true)
   -- Cheap Upgrades: how old the prices are (6.2.13-beta20, user 21.11.: "ein hinweis mit last scan"), above the tab (beta22)
@@ -934,8 +1058,9 @@ function UI.CreateGearPlanner(parent)
   -- { boe = true, quest = true, ... }, empty / nil = all sources. BoE comes from the client's item data (bind type 2),
   -- so an item counts once it is loaded. The button sits right of "All" (placed below, after the level row).
   local SOURCES = { { key = "boe", label = N"Bind on Equip" }, { key = "quest", label = N"Quest rewards" },
-    { key = "dungeon", label = N"Dungeon drops" }, { key = "raid", label = N"Raid drops" }, { key = "crafted", label = N"Crafted" } }
-  local SOURCE_SHORT = { boe = N"BoE", quest = N"Quests", dungeon = N"Dungeons", raid = N"Raids", crafted = N"Crafted" }
+    { key = "dungeon", label = N"Dungeon drops" }, { key = "raid", label = N"Raid drops" }, { key = "crafted", label = N"Crafted" },
+    { key = "world", label = N"World drops" } } -- 6.2.14-beta5
+  local SOURCE_SHORT = { boe = N"BoE", quest = N"Quests", dungeon = N"Dungeons", raid = N"Raids", crafted = N"Crafted", world = N"World" }
   -- armor type filter (6.2.3, user 10.11.): in the same menu, the armor types the class can wear; by default the ones
   -- it can wear now (mail / plate from level 40), the next one can be picked before. prefs.gearArmor = { pick = { [sub]
   -- = true }, b40 = level >= 40 when picked }; dropped when level 40 is crossed (then the new defaults apply), nil = defaults.
@@ -1104,7 +1229,9 @@ function UI.CreateGearPlanner(parent)
   -- a crafted item you could never get: Bind on Pickup from a profession you do not have
   local function craftedReachable(e)
     if not e.prof or myProfs[e.prof] then return true end
-    return select(14, GetItemInfo(e.id)) ~= 1
+    local bind = select(14, GetItemInfo(e.id))
+    if bind == nil then want(e.id) end
+    return bind ~= 1
   end
   local function sourceOK(e)
     if not craftedReachable(e) then return false end
@@ -1114,7 +1241,11 @@ function UI.CreateGearPlanner(parent)
     if t.dungeon and e.d ~= nil and not e.qid and not e.d.raid then return true end
     if t.raid and e.d ~= nil and not e.qid and e.d.raid then return true end
     if t.crafted and e.prof and not e.d and not e.qid then return true end
-    if t.boe and select(14, GetItemInfo(e.id)) == 2 then return true end
+    if t.boe then
+      local bind = select(14, GetItemInfo(e.id))
+      if bind == 2 then return true elseif bind == nil then want(e.id) end
+    end
+    if t.world and e.world then return true end
     return false
   end
 
@@ -1349,6 +1480,18 @@ function UI.CreateGearPlanner(parent)
   bisSrc:SetScript("OnLeave", function() GameTooltip:Hide() end)
   -- the list entries of a class and spec (made once each): our item entry (sources, maps) under a small wrapper with the slot
   -- group and the BiS mark, so nothing of the shared entry changes
+  -- the pieces of the Armory's PvP sets (Data/Armory.lua g="pvp"): marked "PvP" in the list (6.2.14-beta4, user 21.11.:
+  -- "in der BIS List waere ein Hinweis gut, dass es PVP Gegenstand ist")
+  local pvpItems
+  local function isPvP(id)
+    if not pvpItems then
+      pvpItems = {}
+      for _, st in ipairs(FLT.ARMORY_SETS or {}) do
+        if st.g == "pvp" then for _, it in ipairs(st.i or {}) do if it[1] then pvpItems[it[1]] = st.sub or true end end end
+      end
+    end
+    return pvpItems[id] or nil
+  end
   local function bisEntries(token, spec, ids)
     local key = token .. ":" .. spec
     if bisCache[key] then return bisCache[key] end
@@ -1371,7 +1514,8 @@ function UI.CreateGearPlanner(parent)
                 local _, _, _, loc, icon, cid, sub = GetItemInfoInstant(id)
                 base = { id = id, loc = loc, icon = icon, cid = cid, sub = sub }; ids[id] = base
               end
-              out[#out + 1] = setmetatable({ bisSlot = sl[2], bis = pass == 1 or nil, noValue = token ~= f.class or nil }, { __index = base })
+              out[#out + 1] = setmetatable({ bisSlot = sl[2], bis = pass == 1 or nil, noValue = token ~= f.class or nil, pvp = isPvP(id) },
+                { __index = base })
             end
           end
         end
@@ -1626,7 +1770,7 @@ function UI.CreateGearPlanner(parent)
       r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, y); r:SetPoint("RIGHT", child, "RIGHT", -2, 0); r:Show(); y = y - 44
       r.icon:SetTexture(enchantIcon(o) or "Interface\\Icons\\Trade_Engraving"); FLT.Desat(r.icon, o.st == 0)
       r.name:SetText(o.n or "")
-      if o.st == 0 then r.name:SetTextColor(0.62, 0.60, 0.56) else r.name:SetTextColor(FLT.SkinC(1, 0.93, 0.66)) end
+      if o.st == 0 then r.name:SetTextColor(0.62, 0.60, 0.56) else r.name:SetTextColor(FLT.TextC(1, 0.93, 0.66)) end
       local ce = FLT.ENCHANTS and FLT.ENCHANTS[o.e]
       local where
       if o.p then
@@ -1636,7 +1780,7 @@ function UI.CreateGearPlanner(parent)
         if known then where = where .. "  |cff40ff40" .. L["(you know it)"] .. "|r"
         elseif other then where = where .. "  |cff8fd0ff" .. L["(an alt knows it)"] .. "|r"
         elseif guild then where = where .. "  |cffffd35a" .. L["(your guild)"] .. "|r" end
-      elseif o.src then where = o.src .. (o.st == 0 and ("  |cff9d9d9d" .. L["(not in Forever yet)"] .. "|r") or "") end
+      elseif o.src then where = o.src end -- (no "not in Forever yet" note any more, 6.2.14-beta4)
       r.where = where
       local parts = {}
       if ce and not o.worn then parts[#parts + 1] = ce[1] end
@@ -1663,7 +1807,7 @@ function UI.CreateGearPlanner(parent)
   end
 
   local list = {} -- reused
-  refreshList = function()
+  local function refreshBody()
     if not f:IsShown() then return end
     readProfessions()
     srcBtn:SetShown(not (enchMode and search == ""))
@@ -1673,7 +1817,9 @@ function UI.CreateGearPlanner(parent)
     suggestAllBtn:SetShown(sa); title:ClearAllPoints(); title:SetPoint("TOPLEFT", sa and 90 or 16, -48); title:SetWidth(sa and 150 or 170)
     local bis = tab == "bis"
     if not bis then showBis(false) end
-    if enchMode and search == "" and not bis then refreshEnchants(); return end
+    -- the enchant list waits for any item (no list of its own); the item lists fill "wanted" anew on every pass
+    wipe(PW.ids); PW.all = enchMode and search == "" and not bis
+    if PW.all then refreshEnchants(); return end
     for _, r in ipairs(erows) do r:Hide() end
     local idx, ids = FLT.GearIndex()
     local cls = f.class
@@ -1691,7 +1837,7 @@ function UI.CreateGearPlanner(parent)
     local function offhandOK(e) return allSlots or selected ~= 17 or e.loc ~= "INVTYPE_WEAPON" or DUAL_WIELD[cls] end
     if bis then
       allSlots = false
-      for _, e in ipairs(bisEntries(bisView.class, bisSpec, ids)) do list[#list + 1] = e end
+      for _, e in ipairs(bisEntries(bisView.class, bisSpec, ids)) do list[#list + 1] = e; reqLevel(e) end
     elseif search ~= "" then
       title:SetText(L["Search: all slots"])
       for _, e in ipairs(idx) do
@@ -1720,10 +1866,9 @@ function UI.CreateGearPlanner(parent)
       end)
     else
       title:SetText(allSlots and L["All slots"] or slotName) -- without "Suggested:" so the sources fit (user 31.10.); the full text is on mouseover
-      -- 6.2.10 (user 15.11., video: "All slots" with a wide level range lagged without end): at most 120 items the client
-      -- does not have yet are asked from the server per pass; the others wait for the next pass (the Armory redraws when
-      -- items arrive). Items the server does not know (a failed load) are left out.
-      local budget, isCached, failed, waiting = 120, C_Item and C_Item.IsItemDataCachedByID, FLT.ItemLoadFailed, false
+      -- items the client does not have yet are loaded by PW.load (6.2.14, before: 120 per pass, 6.2.10); items the server does
+      -- not know (a failed load) are left out
+      local isCached, failed = C_Item and C_Item.IsItemDataCachedByID, FLT.ItemLoadFailed
       -- "Cheap Upgrades": Bind on Equip gear with a known auction price (Auctionator) up to the highest price; the source filter
       -- does not apply there (they are all from the auction house), the armor / weapon type filters do
       local cheap, SU, AS = tab == "cheap", FLT.SkillUp, FLT.AHScan
@@ -1732,22 +1877,53 @@ function UI.CreateGearPlanner(parent)
       -- prices: the Cheap Upgrade Scan when it is less than 3 days old (then an item missing in it is not on sale), else Auctionator's
       local ours = cheap and AS and AS.Age() and AS.Age() < 259200
       local best = cheap and {} -- one row per item and bonus name (two bonus lists can give the same "of the Eagle")
-      for _, e in ipairs(pool) do
-        local ask = (allSlots or fits(e)) and offhandOK(e) and usable(e, cls, 60) and armorOK(e) and weaponOK(e) and (e.lvl or 0) <= maxLevel
-          and (cheap or sourceOK(e)) and not (failed and failed[e.id]) and (not cheap or skillOK(e))
-        if ask and cheap then
-          local pr
-          if e.link then pr = ours and e.vprice or nil
-          elseif ours then pr = AS.Price(e.id)
-          else pr = SU and SU.AHPrice and SU.AHPrice(e.id) end
-          if pr and pr <= maxCopper then e.price = pr; e.src = "|cffffd27f" .. L["Auction house"] .. ":|r " .. money(pr) else ask = false end
+      -- 6.2.14 (user 22.11. 22:38, still small hiccups with "All slots"): the filters that need no item data (slot, class, armor /
+      -- weapon type, source, price, level of our data, skill) run only on a full pass (a click, other gear, bags, a new scan); a
+      -- pass because item data arrived (or the 2 s follow-up) goes only through the items that passed them last time, plus the
+      -- ones the source filter could not judge yet (their bind type was not loaded)
+      local sig = table.concat({ tab, selected, tostring(allSlots), tostring(cls), minLevel, maxLevel, maxCopper or 0,
+        tostring(ours), AS and AS.gen or 0, #pool }, ":")
+      local full = PW.full or PW.sig ~= sig or not PW.cand
+      PW.full = false
+      if full then
+        PW.sig = sig; PW.cand = PW.cand and wipe(PW.cand) or {}; PW.unsure = PW.unsure and wipe(PW.unsure) or {}
+        for _, e in ipairs(pool) do
+          PW.step()
+          local base = (allSlots or fits(e)) and offhandOK(e) and usable(e, cls, 60) and armorOK(e) and weaponOK(e)
+            and (e.lvl or 0) <= maxLevel and ((not cheap and not e.skProf) or skillOK(e))
+          local ok = base and (cheap or sourceOK(e))
+          if ok and cheap then
+            local pr
+            if e.link then pr = ours and e.vprice or nil
+            elseif ours then pr = AS.Price(e.id)
+            else pr = SU and SU.AHPrice and SU.AHPrice(e.id) end
+            if pr and pr <= maxCopper then e.price = pr; e.src = "|cffffd27f" .. L["Auction house"] .. ":|r " .. money(pr) else ok = false end
+          end
+          if ok then PW.cand[#PW.cand + 1] = e
+          elseif base and not cheap and isCached and not isCached(e.id) then PW.unsure[#PW.unsure + 1] = e end
         end
-        if ask and isCached and not isCached(e.id) then
-          local n = asked[e.id] or 0
-          if n >= 3 then ask = false
-          elseif budget > 0 then budget = budget - 1; asked[e.id] = n + 1
-          else ask = false; waiting = true end
+      else
+        local u, n = PW.unsure, 0
+        for _, e in ipairs(u) do
+          PW.step()
+          if sourceOK(e) then PW.cand[#PW.cand + 1] = e
+          elseif isCached and not isCached(e.id) then n = n + 1; u[n] = e end
         end
+        for i = #u, n + 1, -1 do u[i] = nil end
+      end
+      local left = PW.load(PW.cand, PW.unsure, failed)
+      if left then -- many items without data: "Loading items (n)", one pass when they are there (PW.loadDone)
+        for _, r in ipairs(rows) do r:Hide() end
+        for _, h in ipairs(heads) do h:Hide() end
+        child:SetHeight(1)
+        PW.empty = empty; empty:SetText(string.format(L["Loading items (%d)"], left)); empty:Show()
+        return
+      end
+      for _, e in ipairs(PW.cand) do
+        PW.step()
+        -- a crafted item turned out Bind on Pickup from a profession we lack (its data came later): out
+        local ask = not (failed and failed[e.id]) and (cheap or full or not e.prof or sourceOK(e))
+        if ask and isCached and not isCached(e.id) then ask = false end -- asked by PW.load (comes with a redraw) or no answer
         if ask then
           local lv = reqLevel(e)
           if e.qreq and e.qreq > lv then lv = e.qreq end -- quest rewards: not before the quest can be taken
@@ -1768,11 +1944,6 @@ function UI.CreateGearPlanner(parent)
         end
         for i = #list, n + 1, -1 do list[i] = nil end
       end
-      -- items still waiting: one more pass in 2 s, in case none of the asked ones arrives (no event, no redraw)
-      if waiting and not nextPass and C_Timer and C_Timer.After then
-        nextPass = true
-        C_Timer.After(2, function() nextPass = nil; if right:IsVisible() then FLT.SafeCall("GearPlanner", refreshList) end end)
-      end
       -- biggest Value gain first (items without data yet after them), then closest to the level limit,
       -- item level and quality
       local GV = FLT.GearValue
@@ -1782,6 +1953,7 @@ function UI.CreateGearPlanner(parent)
         if judgedGen ~= GV.gen then wipe(judged); judgedGen = GV.gen end
         local n, later = 0, false
         for _, e in ipairs(list) do
+          PW.step()
           local jk = e.link or e.id -- a bonus variant has its own Value
           local j = judged[jk]
           if j == nil then
@@ -1789,7 +1961,8 @@ function UI.CreateGearPlanner(parent)
             if kind == "up" or kind == "new" then local _, d = GV.Upgrade(e.id, e.link); j = d or 0
             elseif kind then j = false -- judged: no upgrade
             elseif GV.Upgrade(e.id, e.link) then later = true -- the item has a Value, the WORN gear's data is not there yet
-            elseif GetItemInfo(e.id) then j = false end -- no Value for us (kept only once the CLIENT has the item's data)
+            elseif GetItemInfo(e.id) then j = false -- no Value for us (kept only once the CLIENT has the item's data)
+            else PW.want(e.id) end
             -- (6.2.11-beta22, Discord Mith / Canadian Crippler 17.11.: "e.name" is our own data's name and always there, so
             -- every item the client had not loaded yet after a /reload was kept as "no upgrade" - dungeon items gone)
             -- (6.2.11, Discord floatinghead7 17.11.: with one worn item still loading, everything was judged "no upgrade"
@@ -1802,7 +1975,7 @@ function UI.CreateGearPlanner(parent)
         right.laterTries = later and (right.laterTries or 0) + 1 or 0 -- at most 5 more passes (lean)
         if later and right.laterTries <= 5 and not nextPass and C_Timer and C_Timer.After then
           nextPass = true
-          C_Timer.After(2, function() nextPass = nil; if right:IsVisible() then FLT.SafeCall("GearPlanner", refreshList) end end)
+          C_Timer.After(2, function() nextPass = nil; if right:IsVisible() then FLT.SafeCall("GearPlanner", PW.data) end end)
         end
       end
       table.sort(list, function(a, b)
@@ -1855,6 +2028,9 @@ function UI.CreateGearPlanner(parent)
       if e.qreq and (lv or 0) < e.qreq then lv = e.qreq end
       local parts = {}
       if e.bis then parts[1] = "|cffff8000" .. L["BiS"] .. "|r" end -- the list's pick for the slot (BiS List)
+      if e.pvp then -- a PvP set piece, with its honor rank ("Rank 12-13 (epic)")
+        parts[#parts + 1] = "|cffff5050" .. L["PvP"] .. "|r" .. (type(e.pvp) == "string" and ("  " .. L[e.pvp]) or "")
+      end
       if lv and lv > 0 then parts[#parts + 1] = string.format(L[e.req and N"lvl %d" or N"lvl ~%d"], lv) end
       if search ~= "" then parts[#parts + 1] = SW(SLOT_NAME[(LOC_SLOTS[e.loc] or {})[1]]) or "" end
       if e.src then parts[#parts + 1] = e.src end
@@ -1904,11 +2080,15 @@ function UI.CreateGearPlanner(parent)
     else empty:Hide() end
   end
 
+  refreshList = function() PW.full = true; PW.run(refreshBody) end -- a click / filter change: everything again
+  PW.data = function() PW.run(refreshBody) end -- item data arrived: only the items that passed the filters
+
   -- Refresh: list redraws (item data arriving, bags); the model only when the gear changed
-  function f:Refresh(gearChanged)
+  -- itemsOnly (6.2.14): only item data arrived since the last redraw - no full pass
+  function f:Refresh(gearChanged, itemsOnly)
     refreshSlots()
     if gearChanged then loadModel() end
-    refreshList()
+    if itemsOnly and not gearChanged then PW.data() else refreshList() end
   end
   f:SetScript("OnShow", function() loadModel(); refreshSlots(); refreshList() end)
   return f

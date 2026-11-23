@@ -594,7 +594,7 @@ local function showInvite(inv)
     UI.FramedPanel(f)
     for _, t in ipairs(UI.OrnateFrame(f, f, 16, 3, "OVERLAY", 4)) do t:SetVertexColor(FLT.SkinC(1, 1, 1, 1)) end
     f.title = FLT.NewFS(f, nil, "OVERLAY", "GameFontNormal"); f.title:SetPoint("TOP", 0, -14); f.title:SetText(L["Guild Games"])
-    f.title:SetTextColor(FLT.SkinC(unpack(UI.GOLD)))
+    f.title:SetTextColor(FLT.TextC(unpack(UI.GOLD)))
     f.text = FLT.NewFS(f, nil, "OVERLAY", "GameFontHighlight"); f.text:SetPoint("TOP", 0, -36); f.text:SetWidth(360); f.text:SetJustifyH("CENTER")
     f.no = UI.GoldButton(f, L["Decline"], 112, 24, nil, 13); f.no:SetPoint("BOTTOM", 0, 14)
     f.yes = UI.GoldButton(f, L["Accept"], 112, 24, nil, 13); f.yes:SetPoint("RIGHT", f.no, "LEFT", -8, 0)
@@ -905,7 +905,7 @@ local function text(parent, font, w, color)
   local fs = FLT.NewFS(parent, nil, "OVERLAY", font or "GameFontHighlight")
   if w then fs:SetWidth(w) end
   fs:SetJustifyH("LEFT")
-  if color then fs:SetTextColor(FLT.SkinC(unpack(color))) end
+  if color then fs:SetTextColor(FLT.TextC(unpack(color))) end
   return fs
 end
 local GREY, WHITE = { 0.62, 0.60, 0.56 }, { 0.92, 0.90, 0.86 }
@@ -1225,7 +1225,7 @@ local function layoutSeats()
       -- the name in the class colour (gg32; the class icon beside the portrait came out again in gg35, user 17.11. 23:52)
       local cls = classFor(name)
       local cc = cls and RAID_CLASS_COLORS and RAID_CLASS_COLORS[cls]
-      if cc then s.name:SetTextColor(cc.r, cc.g, cc.b) else s.name:SetTextColor(FLT.SkinC(unpack(i == mine and UI.GOLD or WHITE))) end
+      if cc then s.name:SetTextColor(cc.r, cc.g, cc.b) else s.name:SetTextColor(FLT.TextC(unpack(i == mine and UI.GOLD or WHITE))) end
       local tag = ""
       s.crown:SetShown(short(list[i]) == short(room.host)) -- the host's crown (gg13)
       if i > pl then tag = L["(watching)"] end
@@ -1337,7 +1337,7 @@ local function checkTurn()
     for _, t in ipairs(UI.OrnateFrame(f, f, 16, 3, "OVERLAY", 4)) do t:SetVertexColor(FLT.SkinC(1, 1, 1, 1)) end
     local close = UI.CloseButton(f); close:SetPoint("TOPRIGHT", -8, -8); close:SetScript("OnClick", function() f:Hide() end)
     f.title = FLT.NewFS(f, nil, "OVERLAY", "GameFontNormal"); f.title:SetPoint("TOP", 0, -14); f.title:SetText(L["Guild Games"])
-    f.title:SetTextColor(FLT.SkinC(unpack(UI.GOLD)))
+    f.title:SetTextColor(FLT.TextC(unpack(UI.GOLD)))
     f.text = FLT.NewFS(f, nil, "OVERLAY", "GameFontHighlight"); f.text:SetPoint("TOP", 0, -36); f.text:SetWidth(270); f.text:SetJustifyH("CENTER")
     f.ok = UI.GoldButton(f, L["OK"], 100, 24, nil, 13); f.ok:SetPoint("BOTTOM", 0, 14)
     f.ok:SetScript("OnClick", function() f:Hide(); GG.Open() end)
@@ -1364,7 +1364,7 @@ function GG.Refresh()
     -- the running game stays marked while another page is open (gg8): green name, dice on the right
     local live = room and room.game == key
     b.live:SetShown(live and true or false)
-    b.label:SetTextColor(FLT.SkinC(unpack(live and { 0.40, 1, 0.47 } or WHITE)))
+    b.label:SetTextColor(FLT.TextC(unpack(live and { 0.40, 1, 0.47 } or WHITE)))
   end
   -- hide everything, show what this view needs
   GG.unit = GG.unit or db().unit or "g"
@@ -1404,7 +1404,7 @@ function GG.Refresh()
       if i > 12 then break end
       local tb, g = e.tb, GAME[e.tb.game]
       local r = row(i); r:SetSize(rw - 10, 50); r.card:SetSelected(false); r:SetScript("OnClick", nil)
-      r.name:SetWidth(rw - 120); r.name:SetTextColor(FLT.SkinC(unpack(WHITE))); r.right:SetText("")
+      r.name:SetWidth(rw - 120); r.name:SetTextColor(FLT.TextC(unpack(WHITE))); r.right:SetText("")
       r.name:SetText(L[g.name] .. ((tb.stake or 0) > 0 and ("  ·  " .. coins(tb.stake, tb.unit)) or "") .. "\n|cff9d9d9d" ..
         string.format(L["%s's table, %d seated"], short(e.host), tb.n) .. "\n" ..
         (tb.phase == "play" and L["Game running"] or L["Waiting for players"]) .. "|r")
@@ -1435,7 +1435,7 @@ function GG.Refresh()
         fs:SetWordWrap(false)
         statCells[r][c] = fs
       end
-      fs:SetText(txt); fs:SetTextColor(FLT.SkinC(unpack(color or WHITE)))
+      fs:SetText(txt); fs:SetTextColor(FLT.TextC(unpack(color or WHITE)))
       return fs
     end
     local function g0(n) return n ~= 0 and money(n) or "0" end
@@ -1472,8 +1472,8 @@ function GG.Refresh()
     for i, e in ipairs(list) do
       if i > 14 then break end
       local r = row(i); r:SetSize(rw - 10, 26); r.card:SetSelected(false); r:SetScript("OnClick", nil)
-      if e.copper > 0 then sumIn = sumIn + e.copper; r.name:SetText(string.format(L["%s owes you %s"], e.name, money(e.copper))); r.name:SetTextColor(FLT.SkinC(0.40, 0.94, 0.50))
-      else sumOut = sumOut - e.copper; r.name:SetText(string.format(L["You owe %s %s"], e.name, money(e.copper))); r.name:SetTextColor(FLT.SkinC(1, 0.45, 0.38)) end
+      if e.copper > 0 then sumIn = sumIn + e.copper; r.name:SetText(string.format(L["%s owes you %s"], e.name, money(e.copper))); r.name:SetTextColor(FLT.TextC(0.40, 0.94, 0.50))
+      else sumOut = sumOut - e.copper; r.name:SetText(string.format(L["You owe %s %s"], e.name, money(e.copper))); r.name:SetTextColor(FLT.TextC(1, 0.45, 0.38)) end
       r.name:SetWidth(rw - 120); r.right:SetText("")
       r.btn:SetLabel(L["Settled"]); r.btn:SetWidth(80); r.btn:Show()
       r.btn:SetScript("OnClick", function() GG.Settle(e.name) end)
@@ -1626,7 +1626,7 @@ function GG.Refresh()
       k = k + 1; if k > fit then break end
       local r = row(20 + k); r:SetSize(LW, 24); r.right:SetText(""); r.card:SetSelected(false); r:SetScript("OnClick", nil)
       local st = room.invited and room.invited[name]
-      r.name:SetWidth(LW - 66); r.name:SetTextColor(FLT.SkinC(unpack(WHITE)))
+      r.name:SetWidth(LW - 66); r.name:SetTextColor(FLT.TextC(unpack(WHITE)))
       r.name:SetText(short(name) .. (st == "wait" and ("  |cff9d9d9d" .. L["invited"] .. "|r") or
         (st == "combat" or st == "instance" or st == "busy") and ("  |cffff6655" .. L["busy"] .. "|r") or
         st == "snooze" and ("  |cffff6655" .. L["snoozed"] .. "|r") or

@@ -56,6 +56,36 @@ end
 -- textures currently waiting for a boss to be seen in game, by NPC ID
 local waiting = {}
 
+-- 6.2.15 (user 23.11.2026): the game's own Encounter Journal knows the model of every boss fight it lists - asked once for a boss
+-- without a model in our data (the fight's ID from Data/DungeonEncounters.lua; the creature of that name, else the fight's first)
+local encOf, ejCache
+local function ejDisplay(dungeon, boss)
+  if type(EJ_GetCreatureInfo) ~= "function" or not (dungeon and boss and FLT.DUNGEON_ENCOUNTERS) then return nil end
+  if not encOf then
+    encOf, ejCache = {}, {}
+    for eid, e in pairs(FLT.DUNGEON_ENCOUNTERS) do
+      encOf[e[1] .. ":" .. e[2]] = eid
+      for _, n in ipairs(e.also or {}) do encOf[e[1] .. ":" .. n] = encOf[e[1] .. ":" .. n] or eid end
+    end
+  end
+  local key = (dungeon._real or dungeon).key
+  local k = tostring(key) .. ":" .. tostring(boss.name)
+  if ejCache[k] ~= nil then return ejCache[k] or nil end
+  local eid, found, first = encOf[k], nil, nil
+  local local_ = FLT.Name and FLT.Name(boss.name)
+  for i = 1, eid and 8 or 0 do
+    local ok, id, name, _, display = pcall(EJ_GetCreatureInfo, i, eid)
+    if not ok or not id then break end
+    if type(display) == "number" and display > 0 then
+      first = first or display
+      if name == boss.name or (local_ and name == local_) then found = display; break end
+    end
+  end
+  found = found or first
+  ejCache[k] = found or false
+  return found
+end
+
 local function setBossPortrait(tex, dungeon, boss)
   if not tex then return false end
   tex:SetTexCoord(0.04, 0.96, 0.04, 0.96)
@@ -70,6 +100,8 @@ local function setBossPortrait(tex, dungeon, boss)
   if showDisplay(tex, id) then note(dungeon, boss, "data", id); return true end
   id = learned(npc, "displayID")
   if showDisplay(tex, id) then note(dungeon, boss, "seen in game", id); return true end
+  id = ejDisplay(dungeon, boss)
+  if showDisplay(tex, id) then note(dungeon, boss, "encounter journal", id); return true end
   -- 6.2.7-beta10: a fitting icon instead of the "?" for bosses whose model the client cannot draw (Wowhead shows a
   -- server-only display); a portrait learned in game still replaces it
   if boss and boss.fallbackIcon then FLT.SetTex(tex, boss.fallbackIcon) else FLT.SetTex(tex, UNKNOWN_PORTRAIT) end
@@ -220,7 +252,7 @@ function UI.CreateBossFrame(parent, size, withBadge, plain)
     badge:SetSize(bs, bs); badge:SetPoint("CENTER", f, "TOPLEFT", 52 * k, -206 * k)
     FLT.SetTex(badge, ASSET .. "frame_badge")
     local lv = FLT.NewFS(f, nil, "OVERLAY", size >= 64 and "GameFontHighlight" or "GameFontHighlightSmall")
-    lv:SetPoint("CENTER", badge, "CENTER", 0, 0); lv:SetTextColor(FLT.SkinC(0.96, 0.94, 0.90))
+    lv:SetPoint("CENTER", badge, "CENTER", 0, 0); lv:SetTextColor(FLT.TextC(0.96, 0.94, 0.90))
     f.badge, f.level = badge, lv
     f.SetLevel = function(self, text)
       if text and text ~= "" then badge:Show(); lv:SetText(text); lv:Show() else badge:Hide(); lv:Hide() end

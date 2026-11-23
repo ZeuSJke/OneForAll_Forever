@@ -176,7 +176,7 @@ local function textPage(parent, first)
     local ok, res = pcall(logo.SetTexture, logo, FOREVER_LOGO)
     if ok and res ~= false and logo:GetTexture() then y = y - 150 else logo:Hide() end
   end
-  local h = FLT.NewFS(f, nil, "OVERLAY", "GameFontNormalLarge"); h:SetPoint("TOP", 0, y); h:SetTextColor(FLT.SkinC(1, 0.82, 0.20))
+  local h = FLT.NewFS(f, nil, "OVERLAY", "GameFontNormalLarge"); h:SetPoint("TOP", 0, y); h:SetTextColor(FLT.TextC(1, 0.82, 0.20))
   local b = FLT.NewFS(f, nil, "OVERLAY", "GameFontHighlight"); b:SetPoint("TOP", h, "BOTTOM", 0, -12); b:SetWidth(W - 120)
   b:SetJustifyH("CENTER"); b:SetSpacing(3)
   if first then

@@ -173,6 +173,7 @@ FLT.DUNGEON_REGISTRY["Dire Maul: West"] = {
         {
             name = "Revanchion",
             npcID = 14690,
+            displayID = 14695, -- CMaNGOS classic-db creature_template (user 23.11.2026)
             description = "Summoned with a brazier from the Tier 0.5 set quests.",
             loot = {
                 {23127, "Cloak of Revanchion", "Back", 3},

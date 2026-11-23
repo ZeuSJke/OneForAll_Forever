@@ -108,6 +108,7 @@ local function convertQuest(q)
     startItem=q.startItem and itemRec(q.startItem) or nil,
     noteItem=q.noteItem and itemRec(q.noteItem) or nil,
     liveXPFallback=q.liveXPFallback,
+    inside=q.inside, -- the chain step done in the dungeon when this quest is only the turn-in (6.2.14)
   }
 end
 

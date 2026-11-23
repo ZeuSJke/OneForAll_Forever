@@ -450,6 +450,7 @@ FLT.DUNGEON_REGISTRY["Stratholme"] = {
         {
             name = "Balzaphon",
             npcID = 14684,
+            displayID = 7919, -- CMaNGOS classic-db creature_template (user 23.11.2026)
             description = "Summoned with a brazier from the Tier 0.5 set quests.",
             loot = {
                 {23125, "Chains of the Lich", "Neck", 3},
@@ -459,6 +460,7 @@ FLT.DUNGEON_REGISTRY["Stratholme"] = {
             -- Scarlet side; Wowhead Forever zone drops 13.11.2026
             name = "Malor the Zealous",
             npcID = 11032,
+            displayID = 10458, -- CMaNGOS classic-db creature_template (user 23.11.2026)
             rare = true,
             loot = {
                 {276397, "Hand of the Zealous", "Two-Hand, Mace", 3},
@@ -470,6 +472,7 @@ FLT.DUNGEON_REGISTRY["Stratholme"] = {
             -- summoned (Blacksmith plans); Wowhead Forever zone drops 13.11.2026
             name = "Crimson Hammersmith",
             npcID = 11120,
+            displayID = 10637, -- CMaNGOS classic-db creature_template (user 23.11.2026)
             rare = true,
             loot = {
                 {276403, "Scarlet Bonebreaker", "Two-Hand, Mace", 3},
@@ -480,6 +483,7 @@ FLT.DUNGEON_REGISTRY["Stratholme"] = {
             -- summoned (Blacksmith plans); Wowhead Forever zone drops 13.11.2026
             name = "Black Guard Swordsmith",
             npcID = 11121,
+            displayID = 775, -- CMaNGOS classic-db creature_template (user 23.11.2026)
             rare = true,
             loot = {
                 {276434, "Black Guard Skullcap", "Head, Mail", 3},
@@ -491,6 +495,7 @@ FLT.DUNGEON_REGISTRY["Stratholme"] = {
             -- rare; Wowhead Forever zone drops 13.11.2026
             name = "Ezra Grimm",
             npcID = 11058,
+            displayID = 10475, -- CMaNGOS classic-db creature_template (user 23.11.2026)
             rare = true,
             loot = {
                 {276394, "Luxurious Smoking Jacket", "Chest, Cloth", 3},

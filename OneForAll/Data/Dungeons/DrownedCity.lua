@@ -15,6 +15,7 @@ FLT.DUNGEON_REGISTRY["The Drowned City"] = {
             level = 40,
             id = 96078,
             name = "A Tale Spun Around the Fire",
+            inside = 95775, -- the quest done in the dungeon: The Drowned City (rubbings of the tablets); this one is the turn-in (Discord 22.11.2026)
             requires = 30,
             faction = "Horde",
             objective = "Take the tablet etchings to Master Gadrin in Sen'jin Village in Durotar.",

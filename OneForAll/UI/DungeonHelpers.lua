@@ -111,6 +111,7 @@ local QUEST_STATUS_LABELS = {
   ready = N"Ready to turn in",
   available = N"Available",
   unavailable = N"Unavailable",
+  missed = N"No longer available", -- 6.2.14: closed by a quest that is done (Data/QuestMissable.lua)
 }
 
 -- If the quest has a known chain and one of its earlier steps is in the quest
@@ -139,6 +140,16 @@ local function getChainProgress(q)
   return nil, total
 end
 
+-- 6.2.14 (Discord mini_mimz 22.11.: "Trouble in the Deeps" stayed open after "The Essence of Aku'Mai" - "6 out of 7" for
+-- ever; fallenactual 22.11.: Zul'Farrak): a quest a done quest closes (a lead-in to it, or QuestieDB exclusiveTo) can no
+-- longer be taken - "No longer available", not counted
+local function missed(q)
+  local m = q.id and FLT.QUEST_MISSABLE and FLT.QUEST_MISSABLE[q.id]
+  if not m or not FLT.IsQuestDone then return false end
+  for id in m:gmatch("%d+") do if FLT:IsQuestDone(tonumber(id)) then return true end end
+  return false
+end
+
 local function getDungeonQuestStatus(d, q)
   if not q then return "unavailable" end
 
@@ -154,6 +165,7 @@ local function getDungeonQuestStatus(d, q)
   if not dungeonQuestEligible(q) then return "unavailable" end
 
   if q.id and FLT.IsQuestDone and FLT:IsQuestDone(q.id) then return "completed" end
+  if missed(q) then return "missed" end
   -- Working on an earlier step of this quest's chain: "chain" (6.2.2, user 08.11.: teal text, the quest itself in the
   -- log = green text)
   if getChainProgress(q) then return "chain" end
@@ -234,7 +246,7 @@ end
 local function colorDungeonItemText(fontString,item,dr,dg,db)
   local q=dungeonItemQuality(item)
   local c=q and ITEM_QUALITY_COLORS and ITEM_QUALITY_COLORS[q]
-  if c then fontString:SetTextColor(FLT.SkinC(c.r,c.g,c.b)) else fontString:SetTextColor(FLT.SkinC(dr or 0.92,dg or 0.90,db or 0.84)) end
+  if c then fontString:SetTextColor(FLT.TextC(c.r,c.g,c.b)) else fontString:SetTextColor(FLT.TextC(dr or 0.92,dg or 0.90,db or 0.84)) end
 end
 
 -- Items the client has not cached yet show "Retrieving item information".

@@ -18,27 +18,23 @@ local NEWS_AUTO = true -- set true (and a new NEWS_ID) for the next release with
 -- 6.2.12 (user 19.11.): Guild Games with special thanks to Gaelda, Ritter Roulade and Deaders, and "Smaller changes"
 -- (Skill-Up changes, low level quests, walking routes) - shown automatically once.
 -- 6.2.13 (user 21.11.): BiS List, Cheap Upgrades with the Cheap Upgrade Scan, the new stat weights - shown automatically once.
-local NEWS_ID = "6.2.13"
+-- 6.2.14 (user 23.11.): the dungeon tracker and OneForAll in colour (own window colours) - shown automatically once.
+local NEWS_ID = "6.2.14"
 
 -- images (optional): pictures in a row under the lines, each { tex, shown width, shown height, texcoord right,
 -- texcoord bottom } (made by tools/art/proc_news.py from the user's screenshots in source_images/news)
 -- qol = the Quality of Life group the button opens; shot = a screenshot behind a "Show me" button (user 09.11.):
 -- { texture, shown width, shown height, texcoord right, texcoord bottom } (tools/art/proc_news.py)
 local NEWS = {
-  { icon = "Interface\\Icons\\INV_Sword_39", title = N"BiS List", tab = "armory", button = N"Open Armory",
+  { icon = "Interface\\Icons\\INV_Misc_PocketWatch_01", title = N"Dungeon tracker", tab = "qol", qol = "iface", button = N"Open Quality of Life",
     lines = {
-      N"Armory > Gear Planner > BiS List: the best items per slot before raids for every class and spec, from the WoW Forever BiS lists of wowtbc.gg.",
-      N"Your class and spec are picked at first, and every item shows where you get it. More lists will follow.",
+      N"A small window in dungeons and raids: the run's time with your best time, the mobs' XP, the gold, the instances of this hour and every boss - crossed off when dead, with a green arrow when its loot has an upgrade for you.",
+      N"Left-click a boss: OneForAll on that boss, right-click: its loot. The cog sets what it shows; Quality of Life > Interface has the switch and a \"Test\" button.",
     } },
-  { icon = "Interface\\Icons\\INV_Misc_Coin_02", title = N"Cheap Upgrades", tab = "armory", button = N"Open Armory",
+  { icon = "Interface\\Icons\\INV_Misc_Gem_Variety_02", title = N"OneForAll in colour", tab = "settings", button = N"Open Settings",
     lines = {
-      N"Armory > Gear Planner > Cheap Upgrades: Bind on Equip gear from the auction house that improves your gear, up to a highest price you set.",
-      N"Click \"Cheap Upgrade Scan\" in the auction house: it reads all auctions, also items with a random bonus (\"of the Eagle\"), each with its own price.",
-    } },
-  { icon = "Interface\\Icons\\INV_Misc_Spyglass_02", title = N"New stat weights", tab = "qol", qol = "tips", button = N"Open Quality of Life",
-    lines = {
-      N"The Gear Value uses new stat weights for every class and spec (from Geared Forever).",
-      N"Quality of Life > Tooltips > \"Gear Value shows\": the change for your whole gear, item against item, or both.",
+      N"Settings > Window: your own background colour and text colour for the OneForAll windows, with the game's colour picker.",
+      N"\"Default\" brings back the usual look at any time.",
     } },
 }
 
@@ -110,7 +106,7 @@ local function create()
       end
       local icf = f:CreateTexture(nil, "OVERLAY"); FLT.SetTex(icf, UI.ASSET_ROOT .. "talent_frame"); icf:SetPoint("TOPLEFT", ic, -3, 3); icf:SetPoint("BOTTOMRIGHT", ic, 3, -3); icf:SetVertexColor(FLT.SkinC(0.98, 0.76, 0.30, 1))
       local h = FLT.NewFS(f, nil, "OVERLAY", "GameFontNormalLarge"); h:SetPoint("TOPLEFT", 82, y - 2)
-      h:SetText(L[entry.title] .. (entry.note and ("  |cff9d9d9d" .. L[entry.note] .. "|r") or "")); h:SetTextColor(FLT.SkinC(1, 0.82, 0.20))
+      h:SetText(L[entry.title] .. (entry.note and ("  |cff9d9d9d" .. L[entry.note] .. "|r") or "")); h:SetTextColor(FLT.TextC(1, 0.82, 0.20))
       -- the button only for characters that have that tab (Hunter Pets: hunters)
       if entry.tab and (not entry.buttonClass or entry.buttonClass == class) then
         local b = UI.GoldButton(f, L[entry.button], 180, 30, nil, 14); b:SetPoint("TOPRIGHT", -22, y)
@@ -134,7 +130,7 @@ local function create()
         local dot = FLT.NewFS(f, nil, "OVERLAY", "GameFontHighlight"); dot:SetPoint("TOPLEFT", 84, ly); dot:SetText(FLT.SkinHex("d9a63a") .. "•|r")
         local t = FLT.NewFS(f, nil, "OVERLAY", "GameFontHighlight"); t:SetPoint("TOPLEFT", 98, ly)
         -- the lines stay left of the buttons column (user 22.10.); full width only for entries without a button
-        t:SetWidth(entry.tab and 360 or 550); t:SetJustifyH("LEFT"); t:SetText(L[line]); t:SetTextColor(FLT.SkinC(0.90, 0.88, 0.82))
+        t:SetWidth(entry.tab and 360 or 550); t:SetJustifyH("LEFT"); t:SetText(L[line]); t:SetTextColor(FLT.TextC(0.90, 0.88, 0.82))
         ly = ly - math.max(18, (t:GetStringHeight() or 14) + 6)
       end
       if entry.images then

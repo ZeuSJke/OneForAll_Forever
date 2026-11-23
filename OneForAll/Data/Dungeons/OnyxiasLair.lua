@@ -51,6 +51,7 @@ FLT.DUNGEON_REGISTRY["Onyxia's Lair"] = {
         {
             name = "Onyxia",
             npcID = 10184,
+            displayID = 8570, -- CMaNGOS classic-db creature_template (user 23.11.2026)
             aliases = {"Onyxia"},
             loot = {
                 {17064, "Shard of the Scale", "Trinket", 4},

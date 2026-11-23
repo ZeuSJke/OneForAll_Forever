@@ -52,7 +52,9 @@ end
 
 -- st: 1 obtainable, 2 made for Forever but no source known yet, 0 not in Forever yet
 local STATUS = {
-  [0] = { text = N"Not in Forever yet", c = {0.62, 0.50, 0.46}, tip = N"This set exists in the game files, but its source (raid, battleground ranks, event, ...) is not part of WoW Forever yet." },
+  -- sets marked "not in Forever yet" show no note any more (6.2.14-beta4, user 21.11.: "den Hinweis Not in forever yet ...
+  -- bitte entfernen"); the colour stays for factions that are not in Forever yet
+  [0] = { c = {0.62, 0.50, 0.46} },
   [2] = { text = N"Source not known yet", c = {0.95, 0.70, 0.28}, tip = N"A set made for WoW Forever. Where its pieces drop is not known yet." },
 }
 local RANK_LABEL = { [3] = N"Neutral", [4] = N"Friendly", [5] = N"Honored", [6] = N"Revered", [7] = N"Exalted" }
@@ -238,7 +240,7 @@ local function newText(parent, template, w, color)
   local fs = FLT.NewFS(parent, nil, "OVERLAY", template or "GameFontHighlightSmall")
   if w then fs:SetWidth(w) end
   fs:SetJustifyH("LEFT"); fs:SetWordWrap(false)
-  if color then fs:SetTextColor(FLT.SkinC(unpack(color))) end
+  if color then fs:SetTextColor(FLT.TextC(unpack(color))) end
   return fs
 end
 local function setFontSize(fs, size)
@@ -405,11 +407,11 @@ local function createQuestView(body)
         if not isDone and logInfo then inLog, ready = logInfo({ id = id, name = q.name }) end
         r.num:SetText(i)
         r.name:SetText(FLT.Name and FLT.Name(q.name) or q.name)
-        if isDone or inLog then r.name:SetTextColor(FLT.SkinC(0.25, 1, 0.35)) else r.name:SetTextColor(FLT.SkinC(unpack(TEXT))) end
+        if isDone or inLog then r.name:SetTextColor(FLT.TextC(0.25, 1, 0.35)) else r.name:SetTextColor(FLT.TextC(unpack(TEXT))) end
         r.card:SetFill(isDone and 0.10 or 0.060, isDone and 0.34 or 0.062, isDone and 0.12 or 0.074, isDone and 0.42 or 0.97)
-        if isDone then r.state:SetText(L["Done"]); r.state:SetTextColor(FLT.SkinC(0.40, 0.94, 0.50))
-        elseif ready then r.state:SetText(L["Ready to turn in"]); r.state:SetTextColor(FLT.SkinC(1, 0.82, 0.20))
-        elseif inLog then r.state:SetText(L["In log"]); r.state:SetTextColor(FLT.SkinC(1, 0.82, 0.20))
+        if isDone then r.state:SetText(L["Done"]); r.state:SetTextColor(FLT.TextC(0.40, 0.94, 0.50))
+        elseif ready then r.state:SetText(L["Ready to turn in"]); r.state:SetTextColor(FLT.TextC(1, 0.82, 0.20))
+        elseif inLog then r.state:SetText(L["In log"]); r.state:SetTextColor(FLT.TextC(1, 0.82, 0.20))
         else r.state:SetText("") end
         local zone = zoneName(q.map)
         local who = q.giver and (FLT.Name and FLT.Name(q.giver) or q.giver) or "?"
@@ -475,7 +477,7 @@ local function createQuestView(body)
       local main = ids(c.r)[1]
       if main then setItemIcon(r.icon, main) else r.icon:SetTexture("Interface\\Icons\\INV_Misc_Note_01") end
       r.name:SetText(title(c))
-      r.name:SetTextColor(FLT.SkinC(unpack(mine(c) and TEXT or DIM)))
+      r.name:SetTextColor(FLT.TextC(unpack(mine(c) and TEXT or DIM)))
       FLT.Desat(r.icon, not mine(c))
       local done, total = doneCount(c)
       local sub = string.format(L["Level %d"], c.lv or 1)
@@ -552,12 +554,7 @@ local function createArmoryPanel(parent)
       b:SetScript("OnLeave", function() GameTooltip:Hide() end)
       classButtons[#classButtons + 1] = b
     end
-    local hide = FLT.SkinBlizz(CreateFrame("CheckButton", nil, filterBar, "UICheckButtonTemplate"))
-    hide:SetSize(24, 24); hide:SetPoint("RIGHT", -170, 0)
-    local hl = newText(filterBar, "GameFontHighlightSmall", 168, TEXT); hl:SetPoint("LEFT", hide, "RIGHT", 2, 0); hl:SetText(L["Hide sets not in Forever yet"])
-    hide:SetChecked(P.hideNotYet and true or false)
-    hide:SetScript("OnClick", function(self) P.hideNotYet = self:GetChecked() and true or false; if refreshSets then refreshSets() end end)
-    filterBar.hide, filterBar.hideLabel = hide, hl
+    -- (the switch "Hide sets not in Forever yet" went with the note, 6.2.14-beta4)
   end
   paintClassButtons()
 
@@ -588,11 +585,6 @@ local function createArmoryPanel(parent)
       end
     end
     return out
-  end
-  -- true when no set of these subs is in Forever yet (grey in the "Other Sets" drop-down)
-  local function notYet(group, subs)
-    for _, st in ipairs(FLT.ARMORY_SETS or {}) do if st.g == group and subs[st.sub] and st.st ~= 0 then return false end end
-    return true
   end
   local function paintTabs()
     local tabs = TABS[current]
@@ -626,10 +618,8 @@ local function createArmoryPanel(parent)
   otherB:SetScript("OnClick", function(self)
     local opts, longest = {}, 0
     for _, sub in ipairs(otherSubs(current)) do
-      local subs = { [sub] = true }
-      local dim = notYet(current, subs)
-      opts[#opts + 1] = { key = sub, label = dim and ("|cff9d9d9d" .. L[sub] .. "  " .. L["(not in Forever yet)"] .. "|r") or L[sub] }
-      longest = math.max(longest, #L[sub] + (dim and 20 or 0))
+      opts[#opts + 1] = { key = sub, label = L[sub] }
+      longest = math.max(longest, #L[sub])
     end
     -- wide enough for the longest name (the list was narrower than its text, user 22.10.)
     UI.OpenDropDown(self, opts, tabPick[current], function(k) tabPick[current] = k; paintTabs(); if refreshSets then refreshSets() end end,
@@ -665,7 +655,7 @@ local function createArmoryPanel(parent)
     r:SetScript("OnClick", function(self) selectedSet[current] = self.set.id; refreshSets(true) end)
     r:SetScript("OnEnter", function(self)
       local st = STATUS[self.set.st]
-      if not st then return end
+      if not (st and st.text) then return end
       GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:AddLine(self.set.n, 1, 0.82, 0)
       GameTooltip:AddLine(L[st.text], unpack(st.c)); GameTooltip:AddLine(L[st.tip], 1, 1, 1, true); GameTooltip:Show()
     end)
@@ -685,7 +675,7 @@ local function createArmoryPanel(parent)
   local function filteredSets(group)
     local out = {}
     for _, s in ipairs(FLT.ARMORY_SETS or {}) do
-      if s.g == group and setForClass(s, P.class or nil) and not (P.hideNotYet and s.st == 0) then
+      if s.g == group and setForClass(s, P.class or nil) then
         local tabs, pick = TABS[group], tabPick[group]
         local ok = true
         if tabs then
@@ -726,7 +716,6 @@ local function createArmoryPanel(parent)
       local d = findDungeon(raw)
       local sub = L[raw]
       if d and d.level then sub = sub .. "  |cff9d9d9d·  " .. d.level .. "|r" end
-      if s.st == 0 then sub = sub .. "  |cff9d9d9d" .. L["(not in Forever yet)"] .. "|r" end
       if sub ~= lastSub then
         nh = nh + 1; local h = headRow(nh); h:ClearAllPoints(); h:SetPoint("TOPLEFT", 0, y); h:Show(); y = y - 24
         h.text:SetText(sub); lastSub = sub
@@ -735,10 +724,10 @@ local function createArmoryPanel(parent)
       local r = setRow(nr); r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, y); r:Show(); y = y - 41
       r.set = s
       local first = setIcon(s)
-      setItemIcon(r.icon, first[1], first[5]); FLT.Desat(r.icon, s.st == 0); r.icon:SetAlpha(s.st == 0 and 0.6 or 1)
+      setItemIcon(r.icon, first[1], first[5]); FLT.Desat(r.icon, false); r.icon:SetAlpha(1)
       r.name:SetText(setName(s))
       local owned, _, total = setProgress(s)
-      if s.st == 0 then r.name:SetTextColor(FLT.SkinC(unpack(DIM))) else r.name:SetTextColor(qualityColor(first[4])) end
+      r.name:SetTextColor(qualityColor(first[4]))
       local info = string.format(L["%d / %d owned"], owned, total)
       if s.arm then info = info .. "  ·  " .. L[s.arm] end
       if s.lv then info = info .. "  ·  " .. string.format(L["Lvl %d"], s.lv) end
@@ -800,7 +789,8 @@ local function createArmoryPanel(parent)
     if #cls > 0 and #cls < 9 then parts[#parts + 1] = table.concat(cls, ", ") end
     dSub:SetText(table.concat(parts, "  ·  "))
     local st = STATUS[s.st]
-    if st then dStatus:SetText(L[st.text] .. ": " .. L[st.tip]); dStatus:SetTextColor(FLT.SkinC(unpack(st.c)))
+    if s.st == 0 then dStatus:SetText("") -- no note any more (6.2.14-beta4), and no "obtainable" claim either
+    elseif st then dStatus:SetText(L[st.text] .. ": " .. L[st.tip]); dStatus:SetTextColor(FLT.TextC(unpack(st.c)))
     else dStatus:SetText(L["Obtainable in WoW Forever"]); dStatus:SetTextColor(0.35, 0.85, 0.35) end
     local owned, equipped, total = setProgress(s)
     dProgress:SetText(string.format(L["Owned %d / %d"], owned, total) .. (equipped > 0 and ("   " .. string.format(L["(%d equipped)"], equipped)) or ""))
@@ -839,13 +829,13 @@ local function createArmoryPanel(parent)
     for _, b in ipairs(bonusLines) do b:Hide() end
     if #(s.b or {}) == 0 then
       local b = bonusLine(1); b:ClearAllPoints(); b:SetPoint("TOPLEFT", 8, y); b:Show()
-      b:SetText(L["Set bonuses are not known yet."]); b:SetTextColor(FLT.SkinC(unpack(DIM))); y = y - 18
+      b:SetText(L["Set bonuses are not known yet."]); b:SetTextColor(FLT.TextC(unpack(DIM))); y = y - 18
     end
     local cs = clientSet(s)
     for i, bonus in ipairs(s.b or {}) do
       local b = bonusLine(i); b:ClearAllPoints(); b:SetPoint("TOPLEFT", 8, y); b:Show()
       b:SetText(string.format(L["(%d) Set: %s"], bonus[1], cs and cs.b and cs.b[i] or bonus[2]))
-      if equipped >= bonus[1] then b:SetTextColor(0.35, 0.90, 0.35) else b:SetTextColor(FLT.SkinC(unpack(DIM))) end
+      if equipped >= bonus[1] then b:SetTextColor(0.35, 0.90, 0.35) else b:SetTextColor(FLT.TextC(unpack(DIM))) end
       y = y - (b:GetStringHeight() or 14) - 6
     end
     y = y - 6
@@ -910,7 +900,7 @@ local function createArmoryPanel(parent)
       local r = facRow(nr); r:ClearAllPoints(); r:SetPoint("TOPLEFT", 0, y); r:Show(); y = y - 41
       r.f = f
       r.name:SetText(factionName(f, select(4, standing(f.id))))
-      if f.st == 0 then r.name:SetTextColor(FLT.SkinC(unpack(DIM))) else r.name:SetTextColor(FLT.SkinC(unpack(TEXT))) end
+      if f.st == 0 then r.name:SetTextColor(FLT.TextC(unpack(DIM))) else r.name:SetTextColor(FLT.TextC(unpack(TEXT))) end
       local stid = standing(f.id)
       r.sub:SetText(string.format(L["%s  ·  %d rewards"], standingLabel(stid), #f.i))
       r.card:SetSelected(f == sel)
@@ -1004,11 +994,11 @@ local function createArmoryPanel(parent)
     fTitle:SetText(factionName(f, cname))
     if f.st == 0 then
       fStanding:SetText(L["Not in Forever yet: the content of this faction is not part of WoW Forever yet."])
-      fStanding:SetTextColor(FLT.SkinC(unpack(STATUS[0].c)))
+      fStanding:SetTextColor(FLT.TextC(unpack(STATUS[0].c)))
     else
       local txt = string.format(L["Your standing: %s"], standingLabel(stid))
       if stid and max and max > 0 then txt = txt .. string.format("  (%d / %d)", val or 0, max) end
-      fStanding:SetText(txt); fStanding:SetTextColor(FLT.SkinC(unpack(TEXT)))
+      fStanding:SetText(txt); fStanding:SetTextColor(FLT.TextC(unpack(TEXT)))
     end
     local frac = (stid and max and max > 0) and math.max(0, math.min(1, (val or 0) / max)) or 0
     barBg:SetShown(stid ~= nil and f.st ~= 0); bar:SetShown(stid ~= nil and f.st ~= 0 and frac > 0.02)
@@ -1143,13 +1133,13 @@ local function createArmoryPanel(parent)
   end
 
   -- Item names and ownership arrive later: redraw (throttled) while visible.
-  local pending, gearChanged, lastRedraw = false, false, 0
+  local pending, gearChanged, lastRedraw, otherEvent = false, false, 0, false
   local function redraw()
     pending = false
     lastRedraw = GetTime and GetTime() or 0
-    local changed = gearChanged; gearChanged = false
+    local changed, itemsOnly = gearChanged, not otherEvent; gearChanged, otherEvent = false, false
     if not panel:IsVisible() then return end
-    if current == "rep" then refreshRep(true) elseif current == "quests" then questView:Refresh(true) elseif current == "gear" then gear:Refresh(changed) elseif current then refreshSets(true) end
+    if current == "rep" then refreshRep(true) elseif current == "quests" then questView:Refresh(true) elseif current == "gear" then gear:Refresh(changed, itemsOnly) elseif current then refreshSets(true) end
   end
   local ev = CreateFrame("Frame", nil, panel)
   ev:RegisterEvent("GET_ITEM_INFO_RECEIVED")
@@ -1162,6 +1152,8 @@ local function createArmoryPanel(parent)
   pcall(ev.RegisterEvent, ev, "QUEST_REMOVED")
   ev:SetScript("OnEvent", function(_, event, id, success)
     if event == "PLAYER_EQUIPMENT_CHANGED" then gearChanged = true end
+    -- 6.2.14: bags, reputation, quests can change what the Gear Planner lists - a full pass; item data alone does not
+    if event ~= "GET_ITEM_INFO_RECEIVED" and event ~= "ITEM_DATA_LOAD_RESULT" and panel:IsVisible() then otherEvent = true end
     -- a failed load: no redraw (it would ask again). 6.2.10 (user 15.11., video: "All slots" lagged without end): the
     -- same for GET_ITEM_INFO_RECEIVED - items the server does not know failed, the redraw asked for them again, and so
     -- on forever. The Gear Planner leaves those items out (FLT.ItemLoadFailed).
@@ -1170,6 +1162,10 @@ local function createArmoryPanel(parent)
       return
     end
     if pending or not panel:IsVisible() then return end
+    -- 6.2.14 (user 22.11., video: the Gear Planner froze every 1.5 s in Orgrimmar): item data for items the planner does not
+    -- wait for (other players' gear, chat links) is no reason to go through its whole list again
+    if current == "gear" and (event == "GET_ITEM_INFO_RECEIVED" or event == "ITEM_DATA_LOAD_RESULT") and FLT.GearPlannerWants
+      and not FLT.GearPlannerWants(id) then return end
     pending = true
     -- while many items arrive the redraws come at most every 1.5 s (each one goes through the whole list)
     local now = GetTime and GetTime() or 0

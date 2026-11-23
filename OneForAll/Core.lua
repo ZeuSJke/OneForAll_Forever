@@ -345,6 +345,10 @@ SlashCmdList.ONEFORALL = function(cmd)
     FLT:Refresh()
   elseif cmd == "craft" then
     if FLT.CraftList then FLT.CraftList.Toggle() end
+  elseif cmd == "tracker" then
+    if FLT.RunTracker then FLT.RunTracker.Toggle() end
+  elseif cmd == "tracker test" then
+    if FLT.RunTracker then FLT.RunTracker.Test() end
   elseif cmd == "where" then
     -- Prints the current map and coordinates, to correct map pins in the data.
     local mapID = C_Map and C_Map.GetBestMapForUnit and C_Map.GetBestMapForUnit("player")

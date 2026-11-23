@@ -61,6 +61,12 @@ local SM_WINGS = {
   ["Huntsman's Cloister"] = "smlib", ["Gallery of Treasures"] = "smlib", ["Athenaeum"] = "smlib",
   ["Training Grounds"] = "smarm", ["Footman's Armory"] = "smarm", ["Crusader's Armory"] = "smarm", ["Hall of Champions"] = "smarm",
   ["Chapel Gardens"] = "smcath", ["Crusader's Chapel"] = "smcath",
+  -- Blackrock Spire (6.2.15-beta3, Discord: UBRS shown as LBRS): its rooms (the client's WMOAreaTable); the rest decide the
+  -- creatures you see (Data/DungeonWings.lua, UI/RunTracker.lua)
+  ["Hordemar City"] = "lbrs", ["Mok'Doom"] = "lbrs", ["Tazz'Alaor"] = "lbrs", ["Tazz'Alor"] = "lbrs", ["Skitterweb Tunnels"] = "lbrs",
+  ["The Storehouse"] = "lbrs", ["Chamber of Battle"] = "lbrs", ["Spire Throne"] = "lbrs", ["Halycon's Lair"] = "lbrs",
+  ["Hall of Binding"] = "ubrs", ["The Rookery"] = "ubrs", ["Hall of Blackhand"] = "ubrs", ["Blackrock Stadium"] = "ubrs",
+  ["Dragonspire Hall"] = "ubrs",
 }
 local function findCurrentDungeon()
   if not IsInInstance then return nil end
@@ -71,6 +77,11 @@ local function findCurrentDungeon()
   -- Scarlet Monastery wings share one instance ID: tell them apart by the map.
   local uiMap = C_Map and C_Map.GetBestMapForUnit and C_Map.GetBestMapForUnit("player")
   local byID
+  -- the wing the dungeon tracker found by the creatures you saw wins over a room's name (a room you pass on the way)
+  local rt = FLT.RunTracker
+  local tw, twSure
+  if rt and rt.WingDungeon and instanceID then tw, twSure = rt.WingDungeon(instanceID) end
+  if tw and twSure then return tw, true end
   local wing = SM_WINGS[(GetMinimapZoneText and GetMinimapZoneText()) or ""] or SM_WINGS[(GetSubZoneText and GetSubZoneText()) or ""]
   for _, d in ipairs(FLT.DUNGEONS or {}) do
     if d.instanceID and instanceID and d.instanceID == instanceID then
@@ -81,7 +92,11 @@ local function findCurrentDungeon()
       byID = byID or d
     end
   end
-  if byID then return byID, false end -- not sure: a Scarlet Monastery corridor without a known place name
+  if byID then
+    -- not sure (a corridor without a known place name, another language): the wing the dungeon tracker found by the creatures
+    -- you saw (above), or the wing of its open run (6.2.15-beta3)
+    return tw or byID, false
+  end
   for _, d in ipairs(FLT.DUNGEONS or {}) do
     local dn = normalize(d.name)
     if dn == wanted or (d.instanceName and normalize(d.instanceName) == wanted) then return d end
@@ -353,7 +368,7 @@ local function createPopup()
 
   local sub = FLT.NewFS(popup, nil, "OVERLAY", "GameFontHighlightSmall")
   sub:SetPoint("TOPLEFT", 14, -32); sub:SetWidth(440); sub:SetJustifyH("LEFT")
-  sub:SetTextColor(FLT.SkinC(0.80, 0.77, 0.68))
+  sub:SetTextColor(FLT.TextC(0.80, 0.77, 0.68))
   popup.sub = sub
 
   for i = 1, MAX_ROWS do

@@ -129,16 +129,16 @@ local function createProfessionPanel(parent)
   local ovIntro=FLT.NewFS(overview, nil,"OVERLAY","GameFontHighlightSmall")
   ovIntro:SetPoint("TOPLEFT",8,-31); ovIntro:SetWidth(790); ovIntro:SetJustifyH("LEFT")
   ovIntro:SetText(L["Waylaid Crates are world drops. Use a crate to reveal its shipment, provide one complete material bundle, then deliver the sealed crate to your faction's supply representative."])
-  ovIntro:SetTextColor(FLT.SkinC(0.85,0.82,0.75))
+  ovIntro:SetTextColor(FLT.TextC(0.85,0.82,0.75))
 
   -- Two columns, no inner scrolling: steps + trade hub on the left, the
   -- crate reward table on the right.
   local stepsBox=CreateFrame("Frame",nil,overview); stepsBox:SetPoint("TOPLEFT",0,-72); stepsBox:SetSize(395,190)
   UI.FramedPanel(stepsBox)
-  local sh=FLT.NewFS(stepsBox, nil,"OVERLAY","GameFontNormal"); sh:SetPoint("TOPLEFT",12,-10); sh:SetText(L["How it works"]); sh:SetTextColor(FLT.SkinC(1,0.82,0.20))
+  local sh=FLT.NewFS(stepsBox, nil,"OVERLAY","GameFontNormal"); sh:SetPoint("TOPLEFT",12,-10); sh:SetText(L["How it works"]); sh:SetTextColor(FLT.TextC(1,0.82,0.20))
   local stepY=-34
   for i,step in ipairs(FLT.CRATE_STEPS or {}) do
-    local num=FLT.NewFS(stepsBox, nil,"OVERLAY","GameFontNormal"); num:SetPoint("TOPLEFT",12,stepY); num:SetText(i.."."); num:SetTextColor(FLT.SkinC(1,0.76,0.20))
+    local num=FLT.NewFS(stepsBox, nil,"OVERLAY","GameFontNormal"); num:SetPoint("TOPLEFT",12,stepY); num:SetText(i.."."); num:SetTextColor(FLT.TextC(1,0.76,0.20))
     local fs=FLT.NewFS(stepsBox, nil,"OVERLAY","GameFontHighlightSmall"); fs:SetPoint("TOPLEFT",34,stepY-1); fs:SetWidth(348); fs:SetJustifyH("LEFT"); fs:SetText(L[step])
     stepY=stepY-math.max(20,(fs:GetStringHeight() or 14)+8)
   end
@@ -146,7 +146,7 @@ local function createProfessionPanel(parent)
 
   local hubBox=CreateFrame("Frame",nil,overview); hubBox:SetPoint("TOPLEFT",stepsBox,"BOTTOMLEFT",0,-10); hubBox:SetSize(395,70)
   UI.FramedPanel(hubBox)
-  local hf=FLT.NewFS(hubBox, nil,"OVERLAY","GameFontNormal"); hf:SetPoint("TOPLEFT",12,-10); hf:SetWidth(290); hf:SetJustifyH("LEFT"); hf:SetText((hub and hub.name or L["Trade hub"])); hf:SetTextColor(FLT.SkinC(1,0.82,0.20))
+  local hf=FLT.NewFS(hubBox, nil,"OVERLAY","GameFontNormal"); hf:SetPoint("TOPLEFT",12,-10); hf:SetWidth(290); hf:SetJustifyH("LEFT"); hf:SetText((hub and hub.name or L["Trade hub"])); hf:SetTextColor(FLT.TextC(1,0.82,0.20))
   local hw=FLT.NewFS(hubBox, nil,"OVERLAY","GameFontHighlightSmall"); hw:SetPoint("TOPLEFT",12,-32); hw:SetWidth(290); hw:SetJustifyH("LEFT")
   if hub then hw:SetText(string.format("%s, %s\n" .. L["Turn-in: %s"],L[hub.place or ""],ZN(hub.zone or ""),hub.handin and FLT.Name and FLT.Name(hub.handin) or hub.handin or L["supply representative"])) else hw:SetText(L["Location unavailable"]) end
   local hubMap=UI.GoldButton(hubBox,L["Map"],74,22,UI.ASSET_ROOT.."icon_map",12); hubMap:SetPoint("RIGHT",-12,0)
@@ -155,11 +155,11 @@ local function createProfessionPanel(parent)
   local rewards=CreateFrame("Frame",nil,overview); rewards:SetPoint("TOPLEFT",407,-72); rewards:SetPoint("TOPRIGHT",-22,-72); rewards:SetHeight(330)
   UI.FramedPanel(rewards)
   local rewardsTitle=FLT.NewFS(rewards, nil,"OVERLAY","GameFontNormal")
-  rewardsTitle:SetPoint("TOPLEFT",12,-10); rewardsTitle:SetText(L["Crate rewards"]); rewardsTitle:SetTextColor(FLT.SkinC(1,0.82,0.20))
+  rewardsTitle:SetPoint("TOPLEFT",12,-10); rewardsTitle:SetText(L["Crate rewards"]); rewardsTitle:SetTextColor(FLT.TextC(1,0.82,0.20))
   local rewardHead=CreateFrame("Frame",nil,rewards); rewardHead:SetPoint("TOPLEFT",0,-32); rewardHead:SetPoint("TOPRIGHT",0,-32); rewardHead:SetHeight(22)
   local rhbg=makeTexture(rewardHead,"BACKGROUND",0.075,0.062,0.040,0.96); rhbg:SetPoint("TOPLEFT",4,0); rhbg:SetPoint("BOTTOMRIGHT",-4,0)
   local headers={{12,N"Crate"},{214,N"Level"},{262,N"Reward"}}
-  for _,h in ipairs(headers) do local f=FLT.NewFS(rewardHead, nil,"OVERLAY","GameFontNormalSmall"); f:SetPoint("LEFT",h[1],0); f:SetText(L[h[2]]); f:SetTextColor(FLT.SkinC(0.90,0.78,0.53)) end
+  for _,h in ipairs(headers) do local f=FLT.NewFS(rewardHead, nil,"OVERLAY","GameFontNormalSmall"); f:SetPoint("LEFT",h[1],0); f:SetText(L[h[2]]); f:SetTextColor(FLT.TextC(0.90,0.78,0.53)) end
   local ry=-56
   for i,g in ipairs(FLT.FAVOR_GUIDE or {}) do
     local row=CreateFrame("Button",nil,rewards); row:SetPoint("TOPLEFT",5,ry); row:SetPoint("TOPRIGHT",-5,ry); row:SetHeight(36); ry=ry-38
@@ -167,7 +167,7 @@ local function createProfessionPanel(parent)
     local a=FLT.NewFS(row, nil,"OVERLAY","GameFontHighlightSmall"); a:SetPoint("TOPLEFT",12,-5); a:SetWidth(196); a:SetJustifyH("LEFT"); a:SetText(L[g.tier])
     local d=FLT.NewFS(row, nil,"OVERLAY","GameFontDisableSmall"); d:SetPoint("TOPLEFT",12,-20); d:SetWidth(196); d:SetJustifyH("LEFT"); d:SetWordWrap(false); d:SetText(g.note and L[g.note] or "")
     local b=FLT.NewFS(row, nil,"OVERLAY","GameFontHighlightSmall"); b:SetPoint("LEFT",214,0); b:SetWidth(44); b:SetJustifyH("LEFT"); b:SetText(g.level)
-    local c=FLT.NewFS(row, nil,"OVERLAY","GameFontNormalSmall"); c:SetPoint("LEFT",262,0); c:SetPoint("RIGHT",-6,0); c:SetJustifyH("LEFT"); c:SetText(LN(g.reward)); c:SetTextColor(FLT.SkinC(1,0.82,0.20))
+    local c=FLT.NewFS(row, nil,"OVERLAY","GameFontNormalSmall"); c:SetPoint("LEFT",262,0); c:SetPoint("RIGHT",-6,0); c:SetJustifyH("LEFT"); c:SetText(LN(g.reward)); c:SetTextColor(FLT.TextC(1,0.82,0.20))
     row:EnableMouse(true)
     row:SetScript("OnEnter",function(self)
       GameTooltip:SetOwner(self,"ANCHOR_RIGHT"); GameTooltip:AddLine(L[g.tier],1,0.82,0)
@@ -188,7 +188,7 @@ local function createProfessionPanel(parent)
   local campIntro=FLT.NewFS(campingView, nil,"OVERLAY","GameFontHighlightSmall")
   campIntro:SetPoint("TOPLEFT",8,-31); campIntro:SetWidth(790); campIntro:SetJustifyH("LEFT")
   campIntro:SetText(L["Choose a profession below to expand its camping objects. Sit/rest at a campfire to receive applicable buffs. Camping features share a 60-minute cooldown and beta values can change."])
-  campIntro:SetTextColor(FLT.SkinC(0.85,0.82,0.75))
+  campIntro:SetTextColor(FLT.TextC(0.85,0.82,0.75))
   local csf=FLT.SkinBlizz(CreateFrame("ScrollFrame",nil,campingView,"UIPanelScrollFrameTemplate"))
   csf:SetPoint("TOPLEFT",0,-66); csf:SetPoint("BOTTOMRIGHT",-22,0)
   local cchild=CreateFrame("Frame",nil,csf); cchild:SetSize(780,1); csf:SetScrollChild(cchild)
@@ -209,7 +209,7 @@ local function createProfessionPanel(parent)
     local picon=ph:CreateTexture(nil,"ARTWORK"); picon:SetSize(22,22); picon:SetPoint("LEFT",36,0)
     FLT.SetTex(picon, PROFESSION_ICONS[prof.profession] or "Interface\\Icons\\INV_Misc_QuestionMark")
     local pt=FLT.NewFS(ph, nil,"OVERLAY","GameFontNormal")
-    pt:SetPoint("LEFT",66,0); pt:SetText(L[prof.profession]); pt:SetTextColor(FLT.SkinC(1,0.82,0.20))
+    pt:SetPoint("LEFT",66,0); pt:SetText(L[prof.profession]); pt:SetTextColor(FLT.TextC(1,0.82,0.20))
     local count=FLT.NewFS(ph, nil,"OVERLAY","GameFontDisableSmall")
     count:SetPoint("RIGHT",-14,0); count:SetText(string.format(L["%d camping objects"], #(prof.items or {})))
     ph:SetScript("OnClick",function()
@@ -236,7 +236,7 @@ local function createProfessionPanel(parent)
           if H and H.handleDungeonItemClick then H.handleDungeonItemClick({id=itemID,name=obj.name},button) end
         end)
       end
-      local sk=FLT.NewFS(row, nil,"OVERLAY","GameFontNormalSmall"); sk:SetPoint("TOPLEFT",245,-9); sk:SetWidth(72); sk:SetJustifyH("LEFT"); sk:SetText(string.format(L["Skill %s"], tostring(obj.skill or "?"))); sk:SetTextColor(FLT.SkinC(1,0.82,0.20))
+      local sk=FLT.NewFS(row, nil,"OVERLAY","GameFontNormalSmall"); sk:SetPoint("TOPLEFT",245,-9); sk:SetWidth(72); sk:SetJustifyH("LEFT"); sk:SetText(string.format(L["Skill %s"], tostring(obj.skill or "?"))); sk:SetTextColor(FLT.TextC(1,0.82,0.20))
       local ef=FLT.NewFS(row, nil,"OVERLAY","GameFontHighlightSmall"); ef:SetPoint("TOPLEFT",325,-8); ef:SetWidth(430); ef:SetJustifyH("LEFT"); ef:SetText(obj.effect and L[obj.effect] or "")
       row:SetScript("OnEnter",function(self)
         GameTooltip:SetOwner(self,"ANCHOR_RIGHT")
@@ -277,11 +277,11 @@ local function createProfessionPanel(parent)
 
   -- Recipe browser ---------------------------------------------------------
   local recipeTitle=FLT.NewFS(recipeView, nil,"OVERLAY","GameFontNormalLarge")
-  recipeTitle:SetPoint("TOPLEFT",8,-3); recipeTitle:SetTextColor(FLT.SkinC(1,0.82,0.20))
+  recipeTitle:SetPoint("TOPLEFT",8,-3); recipeTitle:SetTextColor(FLT.TextC(1,0.82,0.20))
   local rtDiv=recipeView:CreateTexture(nil,"ARTWORK"); FLT.SetTex(rtDiv, UI.ASSET_ROOT.."divider_ornate"); rtDiv:SetHeight(14)
   rtDiv:SetPoint("TOPLEFT",4,-48); rtDiv:SetPoint("TOPRIGHT",-24,-48)
   local recipeMeta=FLT.NewFS(recipeView, nil,"OVERLAY","GameFontHighlightSmall")
-  recipeMeta:SetPoint("TOPLEFT",8,-31); recipeMeta:SetWidth(665); recipeMeta:SetJustifyH("LEFT"); recipeMeta:SetTextColor(FLT.SkinC(0.82,0.80,0.72))
+  recipeMeta:SetPoint("TOPLEFT",8,-31); recipeMeta:SetWidth(665); recipeMeta:SetJustifyH("LEFT"); recipeMeta:SetTextColor(FLT.TextC(0.82,0.80,0.72))
   local vendorMap=UI.GoldButton(recipeView,L["Vendor"],94,24,UI.ASSET_ROOT.."icon_map",12); vendorMap:SetPoint("TOPRIGHT",-24,-6)
   local earnFavor=UI.GoldButton(recipeView,L["How to earn Favor"],150,24,"Interface\\Icons\\INV_Misc_Coin_02",12); earnFavor:SetPoint("RIGHT",vendorMap,"LEFT",-8,0)
   earnFavor:SetScript("OnClick",function() if showFavorPage then showFavorPage() end end)
@@ -537,7 +537,7 @@ local function createProfessionPanel(parent)
         local icon=row:CreateTexture(nil,"ARTWORK"); icon:SetSize(20,20); icon:SetPoint("LEFT",10,0); FLT.SetTex(icon, "Interface\\Icons\\INV_Misc_Note_01")
         local nm=FLT.NewFS(row, nil,"OVERLAY","GameFontHighlight"); nm:SetPoint("LEFT",40,0); nm:SetWidth(480); nm:SetJustifyH("LEFT"); nm:SetText(recipe.name)
         local sk=FLT.NewFS(row, nil,"OVERLAY","GameFontHighlightSmall"); sk:SetPoint("LEFT",540,0); sk:SetWidth(70); sk:SetJustifyH("LEFT"); sk:SetText(recipe.skill)
-        local co=FLT.NewFS(row, nil,"OVERLAY","GameFontNormalSmall"); co:SetPoint("LEFT",630,0); co:SetWidth(125); co:SetJustifyH("LEFT"); co:SetText(recipe.cost.." Favor"); co:SetTextColor(FLT.SkinC(1,0.82,0.20))
+        local co=FLT.NewFS(row, nil,"OVERLAY","GameFontNormalSmall"); co:SetPoint("LEFT",630,0); co:SetWidth(125); co:SetJustifyH("LEFT"); co:SetText(recipe.cost.." Favor"); co:SetTextColor(FLT.TextC(1,0.82,0.20))
         row:SetScript("OnEnter",function(self) showRecipeTooltip(self,recipe,vendor) end)
         row:SetScript("OnLeave",function() GameTooltip:Hide() end)
         list[#list+1]=row
@@ -593,7 +593,7 @@ local function createProfessionPanel(parent)
   end
 
   local homeIntro=FLT.NewFS(homeView, nil,"OVERLAY","GameFontHighlightSmall")
-  homeIntro:SetPoint("TOPLEFT",8,-8); homeIntro:SetWidth(780); homeIntro:SetJustifyH("LEFT"); homeIntro:SetTextColor(FLT.SkinC(0.85,0.82,0.75))
+  homeIntro:SetPoint("TOPLEFT",8,-8); homeIntro:SetWidth(780); homeIntro:SetJustifyH("LEFT"); homeIntro:SetTextColor(FLT.TextC(0.85,0.82,0.75))
   homeIntro:SetText(L["Pick a profession to browse all of its recipes (where to learn them, reagents, who in your guild knows them) or the Merchant's Favor recipes. Camping Buffs lists the campsite objects of every profession."])
 
   local function sectionTitle(text, y) return UI.SectionTitle(homeView,text,8,y,-22) end
@@ -601,7 +601,7 @@ local function createProfessionPanel(parent)
     local t=CreateFrame("Button",nil,homeView); t:SetSize(w,42)
     UI.CardRow(t)
     t.icon=t:CreateTexture(nil,"ARTWORK"); t.icon:SetSize(28,28); t.icon:SetPoint("LEFT",8,0)
-    t.name=FLT.NewFS(t, nil,"OVERLAY","GameFontNormal"); t.name:SetPoint("TOPLEFT",44,-6); t.name:SetTextColor(FLT.SkinC(1,0.82,0.20))
+    t.name=FLT.NewFS(t, nil,"OVERLAY","GameFontNormal"); t.name:SetPoint("TOPLEFT",44,-6); t.name:SetTextColor(FLT.TextC(1,0.82,0.20))
     t.sub=FLT.NewFS(t, nil,"OVERLAY","GameFontHighlightSmall"); t.sub:SetPoint("TOPLEFT",44,-23); t.sub:SetWidth(w-50); t.sub:SetJustifyH("LEFT"); t.sub:SetWordWrap(false)
     return t
   end
@@ -778,14 +778,17 @@ local function createProfessionPanel(parent)
 
   -- Sub-navigation inside a profession: "All recipes" | "Merchant's Favor".
   local currentProfession, currentSub = nil, nil
-  local subButtons, subX = {}, 0
+  local subButtons, subRow, subW = {}, {}, {}
   for _,spec in ipairs({{"all",N"All recipes"},{"fav",N"Favorites"},{"skillup",N"Skill-Up Helper"},{"profit",N"Profit"},{"favor",N"Merchant's Favor"}}) do
-    local b=UI.GoldButton(subnav,L[spec[2]],(spec[1]=="favor" or spec[1]=="skillup") and 150 or 120,26,nil,13); b:SetPoint("TOPLEFT",subX,-2); subX=subX+b:GetWidth()+6
+    local w=(spec[1]=="favor" or spec[1]=="skillup") and 150 or 120
+    local b=UI.GoldButton(subnav,L[spec[2]],w,26,nil,13); subRow[#subRow+1]=b; subW[#subW+1]=w
     b:SetScript("OnClick",function()
       if currentProfession then showProfession(currentProfession, spec[1]) end
     end)
     subButtons[spec[1]]=b
   end
+  -- 6.2.14 (Discord miti86 21.11., French): one after the other, a smaller text when the row is wider than the window
+  UI.ButtonRow(subnav, subRow, subW, 6, 0, -2, { 13, 12, 11 })
   -- 6.2.6: the Skill-Up Helper (UI/SkillUpUI.lua, logic SkillUp.lua) - new in this version (TODO.md "Neu-Markierungen")
   -- 6.2.6-beta28: the Profit page (UI/ProfitUI.lua) - new in this version; the Crafting List button moved into
   -- All recipes / Favorites (UI/ProfessionRecipes.lua, user 12.11.: "dort besser aufgehoben")
@@ -807,7 +810,7 @@ local function createProfessionPanel(parent)
       t:SetPoint("TOPLEFT",8+((i-1)%4)*198,-36-math.floor((i-1)/4)*56)
       UI.CardRow(t)
       local ic=t:CreateTexture(nil,"ARTWORK"); ic:SetSize(32,32); ic:SetPoint("LEFT",10,0); FLT.SetTex(ic, PROFESSION_ICONS[profession])
-      local nm=FLT.NewFS(t, nil,"OVERLAY","GameFontNormal"); nm:SetPoint("TOPLEFT",50,-8); nm:SetText(L[profession]); nm:SetTextColor(FLT.SkinC(1,0.82,0.20))
+      local nm=FLT.NewFS(t, nil,"OVERLAY","GameFontNormal"); nm:SetPoint("TOPLEFT",50,-8); nm:SetText(L[profession]); nm:SetTextColor(FLT.TextC(1,0.82,0.20))
       local sb=FLT.NewFS(t, nil,"OVERLAY","GameFontHighlightSmall"); sb:SetPoint("TOPLEFT",50,-27); sb:SetText(string.format(L["%d Favor recipes"], n))
       t:SetScript("OnClick",function() showProfession(profession,"favor") end)
       favorTiles[#favorTiles+1]=t

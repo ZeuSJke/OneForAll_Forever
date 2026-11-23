@@ -604,9 +604,9 @@ function UI.CreateRecipeBrowser(parent)
 
   local title = FLT.NewFS(f, nil, "OVERLAY", "GameFontNormalLarge")
   local profIcon = f:CreateTexture(nil, "ARTWORK"); profIcon:SetSize(40, 40); profIcon:SetPoint("TOPLEFT", 12, -6)
-  title:SetPoint("TOPLEFT", 60, -8); title:SetTextColor(FLT.SkinC(unpack(GOLD)))
+  title:SetPoint("TOPLEFT", 60, -8); title:SetTextColor(FLT.TextC(unpack(GOLD)))
   local meta = FLT.NewFS(f, nil, "OVERLAY", "GameFontHighlightSmall")
-  meta:SetPoint("TOPLEFT", 60, -32); meta:SetTextColor(FLT.SkinC(0.82, 0.80, 0.72))
+  meta:SetPoint("TOPLEFT", 60, -32); meta:SetTextColor(FLT.TextC(0.82, 0.80, 0.72))
 
   -- the search line of the open recipe (6.1.0): its text and "Search again" change without rebuilding the details
   local searchUI = {}
@@ -652,7 +652,7 @@ function UI.CreateRecipeBrowser(parent)
     local specs = {{L["Other users"] .. " |cff9d9d9d(" .. L["only visible when online"] .. ")|r", K.other, M.other}, {L["Guild member"], K.guild, M.guild}, {L["I know it"], K.me, M.me}}
     if FLT.RecipeChannelOff then table.remove(specs, 1) end -- 6.1.4: no search among other users
     for i, spec in ipairs(specs) do
-      local t = FLT.NewFS(f, nil, "OVERLAY", "GameFontHighlightSmall"); t:SetPoint("TOPRIGHT", lx, -14); t:SetText(spec[1]); t:SetTextColor(FLT.SkinC(0.85, 0.82, 0.75))
+      local t = FLT.NewFS(f, nil, "OVERLAY", "GameFontHighlightSmall"); t:SetPoint("TOPRIGHT", lx, -14); t:SetText(spec[1]); t:SetTextColor(FLT.TextC(0.85, 0.82, 0.75))
       if i == 1 and not FLT.RecipeChannelOff then
         -- keeps its width when the text changes (see f:Refresh), so the other entries stay put
         t:SetWidth(t:GetStringWidth() or 200); t:SetJustifyH("RIGHT"); f.otherLegend = t
@@ -664,7 +664,7 @@ function UI.CreateRecipeBrowser(parent)
   end
   -- hint in the second line, right-aligned under the legend; it may reach left over the whole detail column (user
   -- 06.11.: with only "I know it" and "Guild member" it started at the "I know it" check and was cut off: "re...")
-  local scanHint = FLT.NewFS(f, nil, "OVERLAY", "GameFontHighlightSmall"); scanHint:SetTextColor(FLT.SkinC(1, 0.82, 0))
+  local scanHint = FLT.NewFS(f, nil, "OVERLAY", "GameFontHighlightSmall"); scanHint:SetTextColor(FLT.TextC(1, 0.82, 0))
   scanHint:SetPoint("TOPRIGHT", f, "TOPRIGHT", -14, legendFirst and -33 or -32)
   scanHint:SetPoint("LEFT", f, "LEFT", 344, 0) -- the detail column (the list is 336 wide)
   scanHint:SetJustifyH("RIGHT"); scanHint:SetWordWrap(false)
@@ -943,7 +943,7 @@ function UI.CreateRecipeBrowser(parent)
     -- 330 wide: leaves room for the favourite star (beta7: the SetPoint stood behind this comment on the same line, so
     -- the recipe name never showed - user screenshot 07.11.)
     local name = dtext("GameFontNormalLarge", 330); name:SetPoint("TOPLEFT", 56, y - 2)
-    name:SetText(recipeName(r) .. ((r.c and r.c > 1) and (" x" .. r.c) or "")); local qc = QCOL[r.q or 1] or QCOL[1]; name:SetTextColor(FLT.SkinC(qc[1], qc[2], qc[3]))
+    name:SetText(recipeName(r) .. ((r.c and r.c > 1) and (" x" .. r.c) or "")); local qc = QCOL[r.q or 1] or QCOL[1]; name:SetTextColor(FLT.TextC(qc[1], qc[2], qc[3]))
     local sub = dtext("GameFontDisableSmall", 350); sub:SetPoint("TOPLEFT", 56, y - 26)
     -- 6.1.0 (user 03.11.): no automatic search when a recipe is opened - only the "Search" button asks the channel
     local guild = FLT.GetGuildRecipeKnowers and FLT.GetGuildRecipeKnowers(prof, r.s)
@@ -970,7 +970,7 @@ function UI.CreateRecipeBrowser(parent)
     local box, by -- the Details box and the y inside it
 
     local function line(label, text)
-      local h = dtext("GameFontNormalSmall", nil, box); h:SetPoint("TOPLEFT", 12, by); h:SetText(label); h:SetTextColor(FLT.SkinC(unpack(GOLD)))
+      local h = dtext("GameFontNormalSmall", nil, box); h:SetPoint("TOPLEFT", 12, by); h:SetText(label); h:SetTextColor(FLT.TextC(unpack(GOLD)))
       local b = dtext("GameFontHighlightSmall", textW, box); b:SetPoint("TOPLEFT", 104, by); b:SetText(text)
       by = by - math.max(18, (b:GetStringHeight() or 14) + 6)
     end
@@ -1058,7 +1058,7 @@ function UI.CreateRecipeBrowser(parent)
       for _, t in ipairs(card.border.pieces) do detailWidgets[#detailWidgets + 1] = t end
       for _, t in ipairs(card.fill.pieces) do detailWidgets[#detailWidgets + 1] = t end
       y = y - 6
-      local hk = dtext("GameFontNormal"); hk:SetPoint("TOPLEFT", 10, y); hk:SetText(label); hk:SetTextColor(FLT.SkinC(unpack(GOLD)))
+      local hk = dtext("GameFontNormal"); hk:SetPoint("TOPLEFT", 10, y); hk:SetText(label); hk:SetTextColor(FLT.TextC(unpack(GOLD)))
       if not isGuild then
         -- "Search again" (at most every 30 s) and the state of the search
         local holder = dframe("Frame"); holder:SetSize(104, 22); holder:SetPoint("TOPLEFT", 286, y + 2)
@@ -1152,7 +1152,7 @@ function UI.CreateRecipeBrowser(parent)
         itemRow(r.ri, ry, r.rn, nil, nil, b); ry = ry - 38
         local src = r.src or {}
         local function sub(text)
-          local t = dtext("GameFontNormalSmall", nil, b); t:SetPoint("TOPLEFT", 12, ry); t:SetText(text); t:SetTextColor(FLT.SkinC(unpack(GOLD))); ry = ry - 20
+          local t = dtext("GameFontNormalSmall", nil, b); t:SetPoint("TOPLEFT", 12, ry); t:SetText(text); t:SetTextColor(FLT.TextC(unpack(GOLD))); ry = ry - 20
         end
         if src.v then
           -- only vendors of the own side (and neutral ones), user 05.11.
@@ -1251,7 +1251,7 @@ function UI.CreateRecipeBrowser(parent)
       local n = knownT[r.s] and canMake(r) or 0
       b.name:SetText(recipeName(r) .. (n > 0 and (" (" .. n .. ")") or "") .. (pct and ("  " .. pct .. "%") or ""))
       local col = d and DIFF[d] or {0.92, 0.90, 0.84}
-      b.name:SetTextColor(FLT.SkinC(col[1], col[2], col[3]))
+      b.name:SetTextColor(FLT.TextC(col[1], col[2], col[3]))
       -- learn level; "?" when not known yet (6.1.5: the yellow level was shown here and read like the learn level)
       b.lvl:SetText(r.req and tostring(r.req) or "|cff9d9d9d?|r")
       if r.lv then

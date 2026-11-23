@@ -113,20 +113,20 @@ local function createAlertFrame()
   eyebrow:SetPoint("TOPLEFT", 82, -15)
   eyebrow:SetText(L["LIBRARY BOOK NEARBY"])
   f.eyebrow = eyebrow
-  eyebrow:SetTextColor(FLT.SkinC(1.00, 0.76, 0.18))
+  eyebrow:SetTextColor(FLT.TextC(1.00, 0.76, 0.18))
 
   local title = FLT.NewFS(f, nil, "OVERLAY", "GameFontNormalLarge")
   title:SetPoint("TOPLEFT", 82, -34)
   title:SetPoint("RIGHT", -45, 0)
   title:SetJustifyH("LEFT")
-  title:SetTextColor(FLT.SkinC(1, 0.92, 0.68))
+  title:SetTextColor(FLT.TextC(1, 0.92, 0.68))
   f.title = title
 
   local where = FLT.NewFS(f, nil, "OVERLAY", "GameFontHighlightSmall")
   where:SetPoint("TOPLEFT", 82, -61)
   where:SetPoint("RIGHT", -18, 0)
   where:SetJustifyH("LEFT")
-  where:SetTextColor(FLT.SkinC(0.83, 0.83, 0.78))
+  where:SetTextColor(FLT.TextC(0.83, 0.83, 0.78))
   f.where = where
 
   local map = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")

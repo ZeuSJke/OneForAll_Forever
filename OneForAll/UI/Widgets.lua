@@ -118,7 +118,71 @@ function FLT.SkinHex(hex) return "|cff" .. hex end
 function FLT.Desat(tex, on)
   if tex and tex.SetDesaturated then tex:SetDesaturated(on and true or false) end
 end
-function FLT.NewFS(owner, ...) return owner:CreateFontString(...) end
+-- Own text colour (6.2.14, user 21.11.: community wish "die Schriftfarbe ... ging eigentlich nur um den weissen Text", chosen
+-- with Blizzard's colour picker in Settings > Window). Two ways it reaches the text:
+-- 1) FontStrings made with a white Blizzard font (GameFontHighlight ...) get a copy of that font ("OneForAll_<name>"), whose
+--    colour follows the choice at once - Blizzard's own fonts stay untouched, so the rest of the game keeps its colours.
+-- 2) FLT.TextC replaces FLT.SkinC in SetTextColor: white and light grey (hardly any colour, bright) become the chosen colour,
+--    kept as bright relative to each other; gold, red, green ... stay. These change when the text is drawn again (/reload).
+local textCol -- { r, g, b } or nil (the default look)
+local WHITE_FONTS = { GameFontHighlight = true, GameFontHighlightSmall = true, GameFontHighlightLarge = true,
+  GameFontHighlightMedium = true, GameFontHighlightLeft = true, GameFontHighlightSmallLeft = true,
+  GameFontHighlightExtraSmall = true, GameFontHighlightHuge = true, GameFontHighlightOutline = true }
+local ownFonts = {}
+local function ownFont(name)
+  local f = ownFonts[name]
+  if f ~= nil then return f end
+  local src = _G[name]
+  f = false
+  if src and CreateFont then
+    f = CreateFont("OneForAll_" .. name)
+    if f and f.CopyFontObject then f:CopyFontObject(src) else f = false end
+    if f and textCol then f:SetTextColor(textCol[1], textCol[2], textCol[3]) end
+  end
+  ownFonts[name] = f
+  return f
+end
+function FLT.NewFS(owner, name, layer, template, ...)
+  if template and WHITE_FONTS[template] then
+    local f = ownFont(template)
+    if f then return owner:CreateFontString(name, layer, f:GetName(), ...) end
+  end
+  return owner:CreateFontString(name, layer, template, ...)
+end
+function FLT.TextC(r, g, b, a)
+  r, g, b, a = FLT.SkinC(r, g, b, a)
+  if textCol and type(r) == "number" and g and b then
+    local mx, mn = math.max(r, g, b), math.min(r, g, b)
+    if mx > 0.55 and mx - mn < 0.13 then
+      local k = math.min(1, mx / 0.92)
+      return textCol[1] * k, textCol[2] * k, textCol[3] * k, a
+    end
+  end
+  return r, g, b, a
+end
+-- nil = back to the default white
+function UI.SetTextColor(r, g, b)
+  textCol = r and { r, g, b } or nil
+  for name, f in pairs(ownFonts) do
+    if f then
+      if textCol then f:SetTextColor(r, g, b) else local src = _G[name]; if src and src.GetTextColor then f:SetTextColor(src:GetTextColor()) end end
+    end
+  end
+end
+-- Blizzard's colour picker: old = { r, g, b }, onPick(r, g, b) on every change and with the old colour on cancel
+function UI.PickColor(old, onPick)
+  local CPF = ColorPickerFrame
+  if type(CPF) ~= "table" or type(old) ~= "table" then return end
+  local o = { old[1], old[2], old[3] }
+  local function picked() local cr, cg, cb = CPF:GetColorRGB(); onPick(cr, cg, cb) end
+  local function cancel() onPick(o[1], o[2], o[3]) end
+  if CPF.SetupColorPickerAndShow then
+    CPF:SetupColorPickerAndShow({ r = o[1], g = o[2], b = o[3], hasOpacity = false, swatchFunc = picked, cancelFunc = cancel })
+  else -- older clients
+    CPF.hasOpacity = false; CPF.func = picked; CPF.cancelFunc = cancel; CPF.previousValues = o
+    CPF:SetColorRGB(o[1], o[2], o[3]); CPF:Hide(); CPF:Show()
+  end
+end
 
 local LAYOUT = {
   BOOK_CONTENT_WIDTH = 958,
@@ -144,7 +208,20 @@ local BG = setmetatable({}, { __mode = "k" })     -- texture -> "base" | "inner"
 local BG_A = setmetatable({}, { __mode = "k" })   -- texture -> its own alpha when registered
 local BG_VC = setmetatable({}, { __mode = "k" })  -- RoundRect piece -> { r, g, b, a } (skinned)
 local BG_IN = setmetatable({}, { __mode = "k" })  -- object -> inside the main window?
+local BG_COL = setmetatable({}, { __mode = "k" }) -- colour texture -> { r, g, b, a } (makeTexture / UI.SetBGColor)
 local bgAlpha = 1
+-- Own background colour (6.2.14, user 21.11.: community wish, Blizzard's colour picker): the dark, nearly colourless
+-- backgrounds take the chosen colour, the darkest window background exactly it and the lighter boxes as much lighter as
+-- before; gold insets, coloured fills, lines and pictures stay (they are not dark and grey).
+local bgTint -- { r, g, b } or nil
+local TINT_REF = 0.075
+local function tinted(r, g, b)
+  if not bgTint then return r, g, b end
+  local mx, mn = math.max(r, g, b), math.min(r, g, b)
+  if mx > 0.35 or mx - mn > 0.06 then return r, g, b end
+  local k = mx / TINT_REF
+  return math.min(1, bgTint[1] * k), math.min(1, bgTint[2] * k), math.min(1, bgTint[3] * k)
+end
 local function innerMul(a)
   if a >= 0.999 then return 1 end
   local x = math.max(0, math.min(1, (a - 0.3) / 0.7))
@@ -173,14 +250,25 @@ end
 local function applyBG(t)
   local m = mulFor(t)
   local vc = BG_VC[t]
-  if vc then t:SetVertexColor(vc[1], vc[2], vc[3], vc[4] * m)
-  elseif t.SetAlpha then t:SetAlpha((BG_A[t] or 1) * m) end
+  if vc then
+    local r, g, b = vc[1], vc[2], vc[3]
+    if BG[t] then r, g, b = tinted(r, g, b) end
+    t:SetVertexColor(r, g, b, vc[4] * m)
+  else
+    local col = BG_COL[t]
+    if col and t.SetColorTexture then
+      local r, g, b = col[1], col[2], col[3]
+      if BG[t] then r, g, b = tinted(r, g, b) end
+      t:SetColorTexture(r, g, b, col[4])
+    end
+    if t.SetAlpha then t:SetAlpha((BG_A[t] or 1) * m) end
+  end
 end
 local function markTex(t, role)
   -- own alpha only the first time (a second call while faded would store the faded value)
   if BG[t] == nil and not BG_VC[t] and t.GetAlpha then BG_A[t] = t:GetAlpha() or 1 end
   BG[t] = role or "inner"
-  if bgAlpha < 0.999 then applyBG(t) end
+  if bgAlpha < 0.999 or bgTint then applyBG(t) end
 end
 -- obj: a texture, or a RoundRect / Card part (table with .pieces)
 function UI.MarkBG(obj, role)
@@ -198,7 +286,7 @@ function UI.UnmarkBG(obj)
   for _, t in ipairs(type(obj.pieces) == "table" and obj.pieces or { obj }) do
     if BG[t] then
       BG[t] = nil
-      if BG_VC[t] then applyBG(t) elseif t.SetAlpha then t:SetAlpha(BG_A[t] or 1) end
+      if BG_VC[t] or BG_COL[t] then applyBG(t) elseif t.SetAlpha then t:SetAlpha(BG_A[t] or 1) end
       BG_A[t] = nil
     end
   end
@@ -211,10 +299,23 @@ function UI.SetBackgroundAlpha(a)
   bgAlpha = a
   for t in pairs(BG) do applyBG(t) end
 end
+-- nil = the default look
+function UI.SetBackgroundTint(r, g, b)
+  bgTint = r and { r, g, b } or nil
+  for t in pairs(BG) do applyBG(t) end
+end
+-- a plain colour background whose colour the background tint may change later (in place of SetColorTexture)
+function UI.SetBGColor(t, r, g, b, a)
+  r, g, b, a = FLT.SkinC(r, g, b, a or 1)
+  BG_COL[t] = { r, g, b, a }
+  t:SetColorTexture(r, g, b, a)
+  if BG[t] and (bgTint or bgAlpha < 0.999) then applyBG(t) end
+  return t
+end
 
 local function makeTexture(parent, layer, r, g, b, a)
   local t = parent:CreateTexture(nil, layer or "BACKGROUND")
-  t:SetColorTexture(FLT.SkinC(r, g, b, a))
+  UI.SetBGColor(t, r, g, b, a)
   if layer == nil or layer == "BACKGROUND" or layer == "BORDER" then UI.MarkBG(t) end
   return noSnap(t)
 end
@@ -253,7 +354,7 @@ local function makeButton(parent, text, w, h)
   local label = FLT.NewFS(b, nil, "OVERLAY", "GameFontNormal")
   label:SetPoint("CENTER", 0, 0)
   label:SetText(text)
-  label:SetTextColor(FLT.SkinC(0.96, 0.78, 0.34))
+  label:SetTextColor(FLT.TextC(0.96, 0.78, 0.34))
   b:SetFontString(label)
   b._label = label
 
@@ -322,7 +423,8 @@ local function RoundRect(owner, anchor, layer, sub, c, inset, cr, cg, cb, ca, te
     local sr, sg, sb, sa = FLT.SkinC(r, g, b, a or 1)
     for _, t in ipairs(self.pieces) do
       BG_VC[t] = { sr, sg, sb, sa or 1 }
-      t:SetVertexColor(sr, sg, sb, (sa or 1) * mulFor(t)) -- window opacity (UI.MarkBG)
+      if BG[t] and bgTint then applyBG(t)
+      else t:SetVertexColor(sr, sg, sb, (sa or 1) * mulFor(t)) end -- window opacity (UI.MarkBG)
     end
   end
   function p:SetShown(v) for _, t in ipairs(self.pieces) do t:SetShown(v) end end
@@ -443,7 +545,7 @@ local function GoldButton(parent, text, w, h, icon, fontSize, plain)
   local plate = Plate(b, h)
   local label = FLT.NewFS(b, nil, "OVERLAY", "GameFontNormal")
   do local font, _, flags = label:GetFont(); if font then label:SetFont(font, fontSize or 12, flags) end end
-  label:SetText(text); label:SetTextColor(FLT.SkinC(0.95, 0.82, 0.50))
+  label:SetText(text); label:SetTextColor(FLT.TextC(0.95, 0.82, 0.50))
   local function place(dx, dy)
     label:ClearAllPoints()
     if b.icon and b.icon:IsShown() then
@@ -475,19 +577,19 @@ local function GoldButton(parent, text, w, h, icon, fontSize, plain)
   b._label, b.plate = label, plate
   function b:SetActive(on)
     plate:SetActive(on)
-    if on then label:SetTextColor(FLT.SkinC(1, 0.93, 0.66)) else label:SetTextColor(FLT.SkinC(0.95, 0.82, 0.50)) end
+    if on then label:SetTextColor(FLT.TextC(1, 0.93, 0.66)) else label:SetTextColor(FLT.TextC(0.95, 0.82, 0.50)) end
   end
   function b:SetLook(enabled)
     plate:SetEnabledLook(enabled)
     if b.wantGreen then b:SetGreen(enabled) end -- (first: SetGreen(false) sets the gold text, grey comes after it)
-    if enabled then if not b.green then label:SetTextColor(FLT.SkinC(0.95, 0.82, 0.50)) end else label:SetTextColor(FLT.SkinC(0.5, 0.5, 0.5)) end
+    if enabled then if not b.green then label:SetTextColor(FLT.TextC(0.95, 0.82, 0.50)) end else label:SetTextColor(FLT.TextC(0.5, 0.5, 0.5)) end
     if b.icon then FLT.Desat(b.icon, not enabled); b.icon:SetAlpha(enabled and 1 or 0.5) end
   end
   function b:SetLabel(t) label:SetText(t); fit(); place(0, 0) end
   -- b:SetGreen(on): a green plate for the one button that should catch the eye (6.2.12-beta17); off while disabled
   function b:SetGreen(on)
     b.green = on and true or nil
-    if on then plate:SetTint(0.45, 1, 0.5); label:SetTextColor(0.85, 1, 0.85) else plate:SetTint(); label:SetTextColor(FLT.SkinC(0.95, 0.82, 0.50)) end
+    if on then plate:SetTint(0.45, 1, 0.5); label:SetTextColor(0.85, 1, 0.85) else plate:SetTint(); label:SetTextColor(FLT.TextC(0.95, 0.82, 0.50)) end
   end
   -- the gold chevron of the "< Dungeons" button as a page arrow (Welcome setup, user 31.10.): dir "prev" / "next" / nil
   function b:SetArrow(dir)
@@ -499,6 +601,31 @@ local function GoldButton(parent, text, w, h, icon, fontSize, plain)
   b:SetScript("OnMouseDown", function(self) if self:IsEnabled() then place(1, -1) end end)
   b:SetScript("OnMouseUp", function() place(0, 0) end)
   return b
+end
+
+-- A row of GoldButtons one after the other (6.2.14, Discord miti86 21.11.: French tab texts ran into each other - a GoldButton
+-- grows with its text). A row wider than its parent gets a smaller text (sizes, e.g. { 12, 11, 10 }; the first one is the
+-- buttons' own). widths = the buttons' normal widths; x, y = the first button's TOPLEFT. No size yet: once more on the first show.
+function UI.ButtonRow(parent, buttons, widths, gap, x, y, sizes)
+  local function layout()
+    local avail = (parent:GetWidth() or 0) - x - 8
+    for si, size in ipairs(sizes) do
+      local total = 0
+      for i, b in ipairs(buttons) do
+        if si > 1 then local font, _, flags = b._label:GetFont(); if font then b._label:SetFont(font, size, flags) end end
+        b:SetWidth(widths[i]); b:SetLabel(b._label:GetText()); total = total + b:GetWidth() + gap
+      end
+      if avail <= 0 or total - gap <= avail then break end
+    end
+    for i, b in ipairs(buttons) do
+      b:ClearAllPoints()
+      if i == 1 then b:SetPoint("TOPLEFT", x, y) else b:SetPoint("LEFT", buttons[i - 1], "RIGHT", gap, 0) end
+    end
+    return avail > 0
+  end
+  if not layout() and parent.HookScript then
+    local done; parent:HookScript("OnShow", function() if not done then done = layout() end end)
+  end
 end
 
 -- A secure button inside an addon window makes the whole window protected: in combat it then cannot be closed
@@ -621,7 +748,7 @@ function UI.SmallCaps(parent, text, big, small, color, template)
   local function add(str, size, spacing)
     local fs = FLT.NewFS(holder, nil, "OVERLAY", template or "GameFontNormal")
     local font, _, flags = fs:GetFont(); if font then fs:SetFont(font, size, flags) end
-    fs:SetText(str); fs:SetTextColor(FLT.SkinC(unpack(color)))
+    fs:SetText(str); fs:SetTextColor(FLT.TextC(unpack(color)))
     -- common baseline: a font string's box includes room for descenders that
     -- grows with the font size, so bigger letters are moved down accordingly
     total = total + spacing
@@ -673,7 +800,7 @@ function UI.TitleBand(parent, opts)
   local title = UI.SmallCaps(band, opts.title or "", 19, 15, UI.GOLD, "GameFontNormalLarge")
   title:SetPoint("TOPLEFT", 66, -9)
   local sub = FLT.NewFS(band, nil, "OVERLAY", "GameFontHighlightSmall")
-  sub:SetPoint("TOPLEFT", 67, -34); sub:SetText(opts.subtitle or ""); sub:SetTextColor(FLT.SkinC(0.80, 0.77, 0.70))
+  sub:SetPoint("TOPLEFT", 67, -34); sub:SetText(opts.subtitle or ""); sub:SetTextColor(FLT.TextC(0.80, 0.77, 0.70))
   band.subtitle, band.title = sub, title
   return band
 end
@@ -762,9 +889,9 @@ function UI.SectionBand(parent, label, strip, width, onToggle)
   local cbox = CreateFrame("Frame", nil, holder); cbox:SetSize(22, 22); cbox:SetPoint("LEFT", 12, 0)
   Card(cbox, cbox, 4, {0.80, 0.60, 0.24, 0.95}, {0.06, 0.05, 0.04, 0.95}, "BACKGROUND", 0)
   local chevron = cbox:CreateTexture(nil, "OVERLAY"); chevron:SetSize(15, 15); chevron:SetPoint("CENTER", 0, 0); FLT.SetTex(chevron, ASSET_ROOT .. "chevron")
-  local title = FLT.NewFS(holder, nil, "OVERLAY", "GameFontNormalLarge"); title:SetPoint("LEFT", 46, 0); title:SetText(label); title:SetTextColor(FLT.SkinC(unpack(UI.GOLD)))
+  local title = FLT.NewFS(holder, nil, "OVERLAY", "GameFontNormalLarge"); title:SetPoint("LEFT", 46, 0); title:SetText(label); title:SetTextColor(FLT.TextC(unpack(UI.GOLD)))
   do local font, _, flags = title:GetFont(); if font then title:SetFont(font, 14, flags) end end
-  local info = FLT.NewFS(holder, nil, "OVERLAY", "GameFontHighlightSmall"); info:SetPoint("RIGHT", -20, 0); info:SetJustifyH("RIGHT"); info:SetTextColor(FLT.SkinC(0.85, 0.82, 0.74))
+  local info = FLT.NewFS(holder, nil, "OVERLAY", "GameFontHighlightSmall"); info:SetPoint("RIGHT", -20, 0); info:SetJustifyH("RIGHT"); info:SetTextColor(FLT.TextC(0.85, 0.82, 0.74))
   OrnateFrame(holder, holder, 13, 2, "OVERLAY", 1)
   local hhi = makeTexture(holder, "HIGHLIGHT", 0.80, 0.58, 0.18, 0.10); hhi:SetPoint("TOPLEFT", 2, -2); hhi:SetPoint("BOTTOMRIGHT", -2, 2)
   local box = CreateFrame("Frame", nil, parent); box:SetWidth(width)
@@ -789,9 +916,10 @@ end
 -- Dark panel with a thin rounded line.
 function UI.FramedPanel(f, inset)
   -- flat background with the same rounded corners as the line
-  UI.MarkBG(RoundRect(f, f, "BACKGROUND", 0, 7, 1, 0.045, 0.045, 0.055, 0.96))
+  local bg = UI.MarkBG(RoundRect(f, f, "BACKGROUND", 0, 7, 1, 0.045, 0.045, 0.055, 0.96))
   -- ht3 (user 30.10.: "alle Rahmen deutlich schlanker"): a 1 px line (Assets/window_ring) instead of the 1.5 px gold line
   RoundRect(f, f, "OVERLAY", 3, 8, 0, 0.50, 0.42, 0.30, 0.85, ASSET_ROOT .. "window_ring")
+  return bg -- the background (6.2.14: the dungeon tracker sets its own opacity on it)
 end
 -- ht3 (user 30.10.): the side list, middle and right parts of a tab without a frame of their own; lineX: a quiet
 -- upright line that far right of the column's right edge (the gap to the next column)
@@ -844,7 +972,7 @@ function UI.QuietHead(holder, label)
   FLT.SetTex(chevron, ASSET_ROOT .. "chevron")
   local title = FLT.NewFS(holder, nil, "OVERLAY", "GameFontNormal"); title:SetPoint("LEFT", 38, 0); title:SetText(label or "")
   do local font, _, flags = title:GetFont(); if font then title:SetFont(font, 14, flags) end end
-  title:SetTextColor(FLT.SkinC(unpack(UI.GOLD)))
+  title:SetTextColor(FLT.TextC(unpack(UI.GOLD)))
   local info = FLT.NewFS(holder, nil, "OVERLAY", "GameFontHighlightSmall"); info:SetPoint("RIGHT", -16, 0); info:SetJustifyH("RIGHT")
   info:SetTextColor(0.72, 0.70, 0.66)
   return chevron, title, info
@@ -860,11 +988,12 @@ end
 -- ht7: the window's outer frame (header test): a thin dark gold line with small corners (Assets/window_ring: radius 4,
 -- line 1) and short, faint gold accents at the four corners (corner arc, two lines fading out along the edges, a soft
 -- shine inside: fade_lr, corner_glow, edge_fade). deco: a frame above the content; frame: the window to frame.
--- The main window and every popup use it.
-function UI.WindowFrame(deco, frame)
+-- The main window and every popup use it. col (optional, 6.2.14 dungeon tracker: dark grey): { ring = {r, g, b}, acc = {r, g, b} }
+-- instead of the gold - the same style in another colour.
+function UI.WindowFrame(deco, frame, col)
     local ring = RoundRect(deco, frame, "OVERLAY", 0, 8, 0, 1, 1, 1, 1, ASSET_ROOT .. "window_ring")
-    ring:SetColor(FLT.SkinC(0.50, 0.38, 0.19, 1))
-    local ACC = { FLT.SkinC(0.95, 0.72, 0.32) }
+    if col and col.ring then ring:SetColor(col.ring[1], col.ring[2], col.ring[3], 1) else ring:SetColor(FLT.SkinC(0.50, 0.38, 0.19, 1)) end
+    local ACC = (col and col.acc) or { FLT.SkinC(0.95, 0.72, 0.32) }
     local LINE_A, SHINE_A = 0.55, 0.16
     local function tex(file, layer, alpha, l, r, t, b)
       local x = deco:CreateTexture(nil, layer, nil, 2); FLT.SetTex(x, ASSET_ROOT .. file); x:SetBlendMode("ADD")
@@ -954,7 +1083,7 @@ end
 
 -- Section title with the ornate divider below it.
 function UI.SectionTitle(parent, text, x, y, right)
-  local t = FLT.NewFS(parent, nil, "OVERLAY", "GameFontNormal"); t:SetPoint("TOPLEFT", x, y); t:SetText(text); t:SetTextColor(FLT.SkinC(unpack(UI.GOLD)))
+  local t = FLT.NewFS(parent, nil, "OVERLAY", "GameFontNormal"); t:SetPoint("TOPLEFT", x, y); t:SetText(text); t:SetTextColor(FLT.TextC(unpack(UI.GOLD)))
   do local font, _, flags = t:GetFont(); if font then t:SetFont(font, 14, flags) end end
   local dv = parent:CreateTexture(nil, "ARTWORK"); FLT.SetTex(dv, ASSET_ROOT .. "divider_ornate"); dv:SetHeight(14)
   -- ht5 (user 30.10.): the line right next to the word (like Classic Refined), same line, a little quieter
@@ -986,7 +1115,7 @@ function UI.SkinBlizzButton(b, h)
   end
   Plate(b, h or (b.GetHeight and b:GetHeight()) or 22)
   local fs = b.GetFontString and b:GetFontString()
-  if fs and fs.SetTextColor then fs:SetTextColor(FLT.SkinC(0.95, 0.82, 0.50)) end
+  if fs and fs.SetTextColor then fs:SetTextColor(FLT.TextC(0.95, 0.82, 0.50)) end
   return b
 end
 
@@ -1130,7 +1259,7 @@ function UI.Confirm(text, onYes, yesLabel, secureMacro, altLabel, onAlt)
     UI.Plate(sy, 26)
     sy.label = FLT.NewFS(sy, nil, "OVERLAY", "GameFontNormal"); sy.label:SetPoint("CENTER")
     do local font, _, flags = sy.label:GetFont(); if font then sy.label:SetFont(font, 13, flags) end end
-    sy.label:SetTextColor(FLT.SkinC(0.95, 0.82, 0.50))
+    sy.label:SetTextColor(FLT.TextC(0.95, 0.82, 0.50))
     sy:Hide()
     f.secureYes = sy
   end
@@ -1187,12 +1316,12 @@ function UI.ShowBugReport()
     for _, t in ipairs(OrnateFrame(f, f, 16, 3, "OVERLAY", 4)) do t:SetVertexColor(FLT.SkinC(1, 1, 1, 1)) end
     local close = UI.CloseButton(f); close:SetPoint("TOPRIGHT", -12, -12)
     local title = FLT.NewFS(f, nil, "OVERLAY", "GameFontNormalLarge"); title:SetPoint("TOP", 0, -20)
-    title:SetText(L["Report a bug or idea"]); title:SetTextColor(FLT.SkinC(1, 0.82, 0.20))
+    title:SetText(L["Report a bug or idea"]); title:SetTextColor(FLT.TextC(1, 0.82, 0.20))
     local text = FLT.NewFS(f, nil, "OVERLAY", "GameFontHighlightSmall"); text:SetPoint("TOP", 0, -44); text:SetWidth(390)
     text:SetJustifyH("CENTER")
     text:SetText(L["Copy the link (Ctrl+C) and open it in your browser: a post in #bug-reports or #suggestions on our Discord. A screenshot helps a lot."])
     local function label(t, y)
-      local l = FLT.NewFS(f, nil, "OVERLAY", "GameFontNormalSmall"); l:SetPoint("TOPLEFT", 28, y); l:SetText(t); l:SetTextColor(FLT.SkinC(0.90, 0.74, 0.42))
+      local l = FLT.NewFS(f, nil, "OVERLAY", "GameFontNormalSmall"); l:SetPoint("TOPLEFT", 28, y); l:SetText(t); l:SetTextColor(FLT.TextC(0.90, 0.74, 0.42))
     end
     label("Discord", -80)
     f.dc = copyBox(f, 300, 20); f.dc:SetPoint("TOPLEFT", 112, -76)
@@ -1236,7 +1365,7 @@ function UI.ShowDiscord()
     for _, t in ipairs(OrnateFrame(f, f, 16, 3, "OVERLAY", 4)) do t:SetVertexColor(FLT.SkinC(1, 1, 1, 1)) end
     local close = UI.CloseButton(f); close:SetPoint("TOPRIGHT", -12, -12)
     local title = FLT.NewFS(f, nil, "OVERLAY", "GameFontNormalLarge"); title:SetPoint("TOP", 0, -20)
-    title:SetText(L["OneForAll on Discord"]); title:SetTextColor(FLT.SkinC(1, 0.82, 0.20))
+    title:SetText(L["OneForAll on Discord"]); title:SetTextColor(FLT.TextC(1, 0.82, 0.20))
     local text = FLT.NewFS(f, nil, "OVERLAY", "GameFontHighlightSmall"); text:SetPoint("TOP", 0, -46); text:SetWidth(350)
     text:SetJustifyH("CENTER")
     text:SetText(L["News, questions and ideas. Copy the link (Ctrl+C) and open it in your browser."])
@@ -1293,8 +1422,8 @@ function UI.OpenDropDown(owner, options, current, onPick, width)
     local sel = not o.header and o.key == current
     if o.checked ~= nil then sel = o.checked end -- several picks at once (Gear Planner sources, user 31.10.)
     r.check:SetShown(sel); r.del:SetShown(o.remove and true or false)
-    if o.header then r.text:SetTextColor(FLT.SkinC(0.90, 0.66, 0.22))
-    elseif sel then r.text:SetTextColor(FLT.SkinC(1, 0.82, 0.2)) else r.text:SetTextColor(0.92, 0.90, 0.84) end
+    if o.header then r.text:SetTextColor(FLT.TextC(0.90, 0.66, 0.22))
+    elseif sel then r.text:SetTextColor(FLT.TextC(1, 0.82, 0.2)) else r.text:SetTextColor(0.92, 0.90, 0.84) end
     r:SetScript("OnClick", function() ddMenu:Hide(); onPick(o.key) end)
     r:Show()
   end

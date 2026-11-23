@@ -34,25 +34,52 @@ local bySpell, byItem, reagent -- spell -> {r, prof}; crafted item -> list of {r
 local function index()
   if bySpell then return end
   bySpell, byItem, reagent = {}, {}, {}
+  local function add(prof, r)
+    local e = { r = r, prof = prof }
+    bySpell[r.s] = e
+    local selfUse = false -- e.g. "The Mortar: Reloaded" needs a Goblin Mortar to make one: never a way to make it
+    for _, g in ipairs(r.r or {}) do if g[1] == r.i then selfUse = true end end
+    if r.i and not selfUse then
+      local l = byItem[r.i]; if not l then l = {}; byItem[r.i] = l end
+      -- smelting first (6.2.14, Discord nylevii 22.11.: Truesilver Bar "made by Alchemy" - the transmute came first when nobody
+      -- knows either; a known recipe still wins in makerOf)
+      if prof == "Mining" then table.insert(l, 1, e) else l[#l + 1] = e end
+      reagent[r.i] = true
+    end
+    for _, g in ipairs(r.r or {}) do reagent[g[1]] = true end
+  end
   for prof, recipes in pairs(FLT.PROFESSION_RECIPES or {}) do
-    for _, r in ipairs(recipes) do
-      local e = { r = r, prof = prof }
-      bySpell[r.s] = e
-      local selfUse = false -- e.g. "The Mortar: Reloaded" needs a Goblin Mortar to make one: never a way to make it
-      for _, g in ipairs(r.r or {}) do if g[1] == r.i then selfUse = true end end
-      if r.i and not selfUse then
-        local l = byItem[r.i]; if not l then l = {}; byItem[r.i] = l end
-        l[#l + 1] = e; reagent[r.i] = true
+    for _, r in ipairs(recipes) do add(prof, r) end
+  end
+  -- Smelting (6.2.14, Discord Gaelda 22.11.: Steel Bar was only "to get"): bars break down into ore (Data/Smelting.lua)
+  for _, r in ipairs(FLT.SMELTING or {}) do add("Mining", r) end
+end
+-- Mining skill of this character, read live: Mining has no recipe list of ours, so nothing of it is saved (6.2.14)
+local function miningSkill()
+  if GetProfessions and GetProfessionInfo then
+    local a, b = GetProfessions()
+    for _, idx in ipairs({ a or 0, b or 0 }) do
+      if idx ~= 0 then
+        local ok, name, _, rank, _, _, _, line = pcall(GetProfessionInfo, idx)
+        if ok and (line == 186 or (FLT.ProfKey and FLT.ProfKey(name) == "Mining")) then return rank or 0 end
       end
-      for _, g in ipairs(r.r or {}) do reagent[g[1]] = true end
     end
   end
+  if GetNumSkillLines and GetSkillLineInfo then
+    for i = 1, GetNumSkillLines() or 0 do
+      local name, isHeader, _, rank = GetSkillLineInfo(i)
+      if not isHeader and FLT.ProfKey and FLT.ProfKey(name) == "Mining" then return rank or 0 end
+    end
+  end
+  return 0
 end
+CL._miningSkill = miningSkill -- tests
 function CL.Recipe(spell) index(); return bySpell[spell] end
 
 -- this character can craft a recipe: known; or, with the profession, a starter recipe ("Known when you learn ...") or
 -- any recipe within its skill while the profession window was never opened (nothing known yet, user 24.10.)
 function CL.ICanCraft(prof, r)
+  if prof == "Mining" then return miningSkill() >= (r.req or 1) end -- smelting: every bar up to the skill (no recipes to learn)
   local p = FLT.GetProfessionState and FLT.GetProfessionState(prof)
   if not (p and p.known) then return false end
   if p.known[r.s] then return true end
@@ -422,7 +449,7 @@ local function header(i, text, y, cols)
   local h = headers[i]
   if not h then
     h = CreateFrame("Frame", nil, child); h:SetHeight(20)
-    h.t = FLT.NewFS(h, nil, "OVERLAY", "GameFontNormal"); h.t:SetPoint("LEFT", 2, 0); h.t:SetTextColor(FLT.SkinC(unpack(GOLD)))
+    h.t = FLT.NewFS(h, nil, "OVERLAY", "GameFontNormal"); h.t:SetPoint("LEFT", 2, 0); h.t:SetTextColor(FLT.TextC(unpack(GOLD)))
     h.line = UI.makeTexture(h, "ARTWORK", 0.72, 0.50, 0.12, 0.45); h.line:SetPoint("BOTTOMLEFT"); h.line:SetPoint("BOTTOMRIGHT"); h.line:SetHeight(1)
     h.c = {}
     for k, x in ipairs({ -100, -62, -4 }) do
@@ -488,7 +515,8 @@ refresh = function()
     b.icon:SetTexture(GetItemIcon and GetItemIcon(row.id) or "Interface\\Icons\\INV_Misc_QuestionMark")
     local name, q = itemName(row.id, row.name)
     b.name:SetText(name); b.name:SetTextColor(qcolor(q)); b.name:SetPoint("RIGHT", b.c2, "LEFT", -50, 0)
-    if row.craft and CL.ICanCraft(row.maker.prof, row.maker.r) then
+    -- not for smelting: the "Craft" button opens a profession by its spell, Mining's window is not checked yet (6.2.14)
+    if row.craft and row.maker.prof ~= "Mining" and CL.ICanCraft(row.maker.prof, row.maker.r) then
       b.craftBtn:ClearAllPoints(); b.craftBtn:SetPoint("RIGHT", b.c2, "LEFT", -2, 0); b.craftBtn:SetLabel(L["Craft"]); b.craftBtn:SetWidth(46); b.craftBtn:Show()
       b.craftBtn.target = { prof = row.maker.prof, r = row.maker.r, n = math.ceil(row.craft / (row.maker.r.c or 1)) }
     end
@@ -597,7 +625,7 @@ local function create()
   for _, t in ipairs(UI.OrnateFrame(frame, frame, 16, 3, "OVERLAY", 4)) do t:SetVertexColor(FLT.SkinC(1, 1, 1, 1)) end
   local close = UI.CloseButton(frame); close:SetPoint("TOPRIGHT", -12, -12) -- the only way to close it (user 24.10.)
   local title = FLT.NewFS(frame, nil, "OVERLAY", "GameFontNormal"); title:SetPoint("TOPLEFT", 18, -15)
-  title:SetText(L["Crafting List"]); title:SetTextColor(FLT.SkinC(unpack(GOLD)))
+  title:SetText(L["Crafting List"]); title:SetTextColor(FLT.TextC(unpack(GOLD)))
   sf = FLT.SkinBlizz(CreateFrame("ScrollFrame", nil, frame, "UIPanelScrollFrameTemplate"))
   sf:SetPoint("TOPLEFT", 8, -34); sf:SetPoint("BOTTOMRIGHT", -30, 36)
   child = CreateFrame("Frame", nil, sf); child:SetSize(W - 38, 10); sf:SetScrollChild(child)
@@ -904,7 +932,7 @@ function CL.RecipeBar(parent)
   cb:SetSize(104, 24); cb:SetPoint("TOPRIGHT", 0, -28)
   UI.Plate(cb, 24)
   cb.label = FLT.NewFS(cb, nil, "OVERLAY", "GameFontNormal"); cb.label:SetPoint("CENTER")
-  cb.label:SetTextColor(FLT.SkinC(0.95, 0.82, 0.50)); cb.label:SetText(L["Craft"])
+  cb.label:SetTextColor(FLT.TextC(0.95, 0.82, 0.50)); cb.label:SetText(L["Craft"])
   secureCraft(cb, function() if cur then return cur.prof, cur.r, n() end end, function(t) cb.label:SetText(t) end)
   cb:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_TOP"); GameTooltip:AddLine(L["Craft"], 1, 0.82, 0)
@@ -1066,3 +1094,4 @@ ev:SetScript("OnEvent", function(_, event, _, _, spell)
 end)
 CL._compute = function() compute(); return rows, shop end -- tests
 CL._reset = function() bySpell = nil; dirty = true end
+CL._makerOf = function(id) index(); return makerOf(id) end -- tests

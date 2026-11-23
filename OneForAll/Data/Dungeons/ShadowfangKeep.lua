@@ -235,6 +235,7 @@ FLT.DUNGEON_REGISTRY["Shadowfang Keep"] = {
             description = "Only during a seasonal event (Hallow's End).",
             name = "Sever",
             npcID = 14682,
+            displayID = 1061, -- CMaNGOS classic-db creature_template (user 23.11.2026)
             loot = {
             },
         },

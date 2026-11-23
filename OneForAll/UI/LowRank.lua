@@ -18,6 +18,11 @@ FLT.LowRank = LR
 -- action slots: 1-120 = bars 1-5 and the class / stance pages, 145-180 = bars 6-8 of the newer client (MultiBar5-7;
 -- user report 09.11.: Thorns rank 1 on bar 6 was not found). 121-144 are the override / skyriding pages: skipped.
 local RANGES = { 1, 120, 145, 180 }
+-- 6.2.14 (Discord evilyntent 21.11., samuraijack42 18.11.: with the Gamepad UI the button kept the old rank although the popup
+-- said it was updated - the popup had found and changed the same spell on the hidden normal bars): the gamepad bars use other
+-- slots, so with the controller switched on all slots up to 240 are checked (slots past 180 guarded, they may not exist)
+local PAD_RANGES = { 1, 240 }
+local function ranges() return (GetCVar and GetCVar("GamePadEnable") == "1") and PAD_RANGES or RANGES end
 local MAX_ROWS = 8
 local LEARN_DELAY, LOGIN_DELAY, TRAINER_DELAY = 4, 8, 0.8
 
@@ -115,8 +120,10 @@ function LR.Scan()
       return e
     end
   end
-  for r = 1, #RANGES, 2 do for slot = RANGES[r], RANGES[r + 1] do
-    local kind, id = GetActionInfo(slot)
+  local rg = ranges()
+  for r = 1, #rg, 2 do for slot = rg[r], rg[r + 1] do
+    local kind, id
+    if slot <= 180 then kind, id = GetActionInfo(slot) else local ok, k, i = pcall(GetActionInfo, slot); if ok then kind, id = k, i end end
     local e = kind == "spell" and not FLT.IsSecret(kind) and low(id)
     if e then e.slots[#e.slots + 1] = slot end
   end end
@@ -222,9 +229,9 @@ local function createPopup()
   UI.FramedPanel(f)
   for _, t in ipairs(UI.OrnateFrame(f, f, 16, 3, "OVERLAY", 4)) do t:SetVertexColor(FLT.SkinC(1, 1, 1, 1)) end
   local title = FLT.NewFS(f, nil, "OVERLAY", "GameFontNormalLarge"); title:SetPoint("TOPLEFT", 18, -16)
-  title:SetText(L["Low spell ranks"]); title:SetTextColor(FLT.SkinC(1, 0.82, 0.20))
+  title:SetText(L["Low spell ranks"]); title:SetTextColor(FLT.TextC(1, 0.82, 0.20))
   local sub = FLT.NewFS(f, nil, "OVERLAY", "GameFontHighlightSmall"); sub:SetPoint("TOPLEFT", 18, -38)
-  sub:SetText(L["These action buttons use a lower rank than you know."]); sub:SetTextColor(FLT.SkinC(0.80, 0.77, 0.70))
+  sub:SetText(L["These action buttons use a lower rank than you know."]); sub:SetTextColor(FLT.TextC(0.80, 0.77, 0.70))
   local close = UI.CloseButton(f); close:SetPoint("TOPRIGHT", -12, -12)
   f.rows = {}
   f.more = FLT.NewFS(f, nil, "OVERLAY", "GameFontDisableSmall"); f.more:SetPoint("BOTTOMLEFT", 20, 22)

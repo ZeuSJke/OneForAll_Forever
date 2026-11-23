@@ -488,6 +488,7 @@ FLT.DUNGEON_REGISTRY["Scholomance"] = {
         {
             name = "Lord Blackwood",
             npcID = 14695,
+            displayID = 14699, -- CMaNGOS classic-db creature_template (user 23.11.2026)
             description = "Summoned with a brazier from the Tier 0.5 set quests.",
             loot = {
             },
@@ -495,6 +496,7 @@ FLT.DUNGEON_REGISTRY["Scholomance"] = {
         {
             name = "Kormok",
             npcID = 16118,
+            displayID = 16020, -- CMaNGOS classic-db creature_template (user 23.11.2026)
             description = "Summoned with a brazier from the Tier 0.5 set quests.",
             loot = {
                 {22303, "Ironweave Pants", "Legs, Cloth", 3},

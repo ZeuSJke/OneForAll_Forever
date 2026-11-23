@@ -1,4 +1,4 @@
-local _, FLT = ...
+local ADDON_NAME, FLT = ...
 local L = FLT.L or setmetatable({}, { __index = function(_, k) return k end }) -- (tests without Locales)
 local unpack = unpack or table.unpack
 local UI = FLT.UI
@@ -324,12 +324,22 @@ function UI.LayoutTabs()
   -- header test: the tabs fill the bar under the banner; each = glyph + name + the same padding on both sides,
   -- Settings (glyph only) fixed at the right edge (user 30.10.)
   local x, right = UI.PANEL_INSET, UI.PANEL_INSET
-  local contentW, n = 0, 0
-  for _, spec in ipairs(UI.OrderedPanels()) do
-    local b = tabButtons[spec.key]
-    if b and not FIXED_TABS[spec.key] and UI.IsTabVisible(spec.key) then n = n + 1; contentW = contentW + b:ContentWidth() end
+  local contentW, n, avail = 0, 0, 0
+  -- 6.2.14 (Discord ainder 22.11., French: "Familiers de chasseur" ran under the Settings button): when the names do not fit
+  -- with 8 px on each side, all tab names get a smaller text (13 -> 12 -> 11 -> 10)
+  for _, size in ipairs({ 13, 12, 11, 10 }) do
+    contentW, n = 0, 0
+    for _, spec in ipairs(UI.OrderedPanels()) do
+      local b = tabButtons[spec.key]
+      if b and not FIXED_TABS[spec.key] and UI.IsTabVisible(spec.key) then
+        local font, _, flags = b._label:GetFont()
+        if font then b._label:SetFont(font, size, flags); if b._place then b._place(0, 0) end end
+        n = n + 1; contentW = contentW + b:ContentWidth()
+      end
+    end
+    avail = BASE_W - x - right - HDR.iconTabW - HDR.tabGap * n - contentW
+    if avail >= 16 * n then break end
   end
-  local avail = BASE_W - x - right - HDR.iconTabW - HDR.tabGap * n - contentW
   local pad = math.max(8, math.floor(avail / math.max(1, 2 * n)))
   for _, spec in ipairs(UI.OrderedPanels()) do
     local b = tabButtons[spec.key]
@@ -405,6 +415,7 @@ local function makeTab(parent, text, w, h, key)
   end
   place(0, 0)
   b._label = label
+  b._place = place
   function b:ContentWidth() return (b.glyph and 23 or 0) + math.ceil(label:GetStringWidth() or 60) end
   function b:SetActive(on)
     on = on and true or false
@@ -440,7 +451,7 @@ local function decorateWindow()
   -- 4 px in, so its square corners stay under the rounded window line
   local pad = 4
   bar:SetPoint("TOPLEFT", pad, -pad); bar:SetPoint("TOPRIGHT", -pad, -pad); bar:SetHeight(28 - pad)
-  bar:SetColorTexture(FLT.SkinC(0.055, 0.047, 0.038, 1)); UI.MarkBG(bar, "base")
+  UI.SetBGColor(bar, 0.055, 0.047, 0.038, 1); UI.MarkBG(bar, "base") -- (6.2.14: the background colour may tint it)
   local barShine = frame:CreateTexture(nil, "BORDER", nil, 2)
   barShine:SetPoint("TOPLEFT", bar, "TOPLEFT"); barShine:SetPoint("TOPRIGHT", bar, "TOPRIGHT"); barShine:SetHeight(11)
   barShine:SetColorTexture(FLT.SkinC(1, 0.85, 0.45, 0.04)); UI.MarkBG(barShine, "base")
@@ -590,7 +601,7 @@ local function buildUI()
   createHeightGrip()
   applyHeight(db.height or BASE_H)
   frame.TitleText:SetText(UI.DISPLAY_NAME .. "  |cffb8b0a0- " .. L["made by Smoergi"] .. "|r")
-  frame.TitleText:SetTextColor(FLT.SkinC(1, 0.82, 0))
+  frame.TitleText:SetTextColor(FLT.TextC(1, 0.82, 0))
   -- header test: the logo with name and "FOREVER COMPANION" on the banner's dark left side; the credit small at the
   -- bottom left (instead of the title line)
   frame.TitleText:Hide()
@@ -602,10 +613,10 @@ local function buildUI()
     UI.brandLogo = logo
     local name = FLT.NewFS(frame, nil, "OVERLAY", "GameFontNormalHuge"); name:SetPoint("TOPLEFT", 76, -18)
     do local font, _, flags = name:GetFont(); if font then name:SetFont(font, 22, flags) end end
-    name:SetText(UI.DISPLAY_NAME); name:SetTextColor(FLT.SkinC(1, 0.93, 0.80))
+    name:SetText(UI.DISPLAY_NAME); name:SetTextColor(FLT.TextC(1, 0.93, 0.80))
     local sub = FLT.NewFS(frame, nil, "OVERLAY", "GameFontNormalSmall"); sub:SetPoint("TOPLEFT", name, "BOTTOMLEFT", 1, -4)
     do local font, _, flags = sub:GetFont(); if font then sub:SetFont(font, 10, flags) end end
-    sub:SetText("FOREVER COMPANION"); sub:SetTextColor(FLT.SkinC(0.90, 0.68, 0.30))
+    sub:SetText("FOREVER COMPANION"); sub:SetTextColor(FLT.TextC(0.90, 0.68, 0.30))
     local credit = FLT.NewFS(frame, nil, "OVERLAY", "GameFontDisableSmall"); credit:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 22, 4)
     credit:SetText(L["made by Smoergi"])
     -- the addon version at the bottom right, left of the resize grip (user 05.11.)
@@ -697,6 +708,28 @@ function UI.GetWindowAlpha()
 end
 function UI.ApplyWindowAlpha()
   if UI.SetBackgroundAlpha then UI.SetBackgroundAlpha(UI.GetWindowAlpha()) end
+  UI.ApplyWindowColors()
+end
+-- own background and text colour (6.2.14, Settings > Window; nil = the default look): windowDB().bgColor / textColor = { r, g, b }
+local function rgb(c) if type(c) == "table" and tonumber(c[1]) and tonumber(c[2]) and tonumber(c[3]) then return c[1], c[2], c[3] end end
+function UI.GetWindowColor(key) return rgb(windowDB()[key]) end
+function UI.SetWindowColor(key, r, g, b)
+  windowDB()[key] = r and { r, g, b } or nil
+  UI.ApplyWindowColors()
+end
+function UI.ApplyWindowColors()
+  if UI.SetBackgroundTint then UI.SetBackgroundTint(rgb(windowDB().bgColor)) end
+  if UI.SetTextColor then UI.SetTextColor(rgb(windowDB().textColor)) end
+end
+-- before any of our windows is built (texts take the colour when they are made)
+do
+  local ev = CreateFrame("Frame")
+  ev:RegisterEvent("ADDON_LOADED")
+  ev:SetScript("OnEvent", function(self, _, name)
+    if name ~= ADDON_NAME then return end
+    self:UnregisterAllEvents()
+    UI.ApplyWindowColors()
+  end)
 end
 function UI.SetWindowAlpha(a)
   a = math.max(MIN_ALPHA, math.min(1, tonumber(a) or 1))

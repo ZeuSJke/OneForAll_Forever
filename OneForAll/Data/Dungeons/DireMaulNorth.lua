@@ -376,6 +376,7 @@ FLT.DUNGEON_REGISTRY["Dire Maul: North"] = {
         {
             name = "Mizzle the Crafty",
             npcID = 14353,
+            displayID = 14406, -- CMaNGOS classic-db creature_template (user 23.11.2026)
             description = "Hands out the Gordok Tribute after King Gordok falls; the more guards alive, the better.",
             loot = {
                 {18475, "Oddly Magical Belt", "Waist, Cloth", 2},

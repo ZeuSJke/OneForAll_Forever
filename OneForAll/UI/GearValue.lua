@@ -437,6 +437,7 @@ end
 GV.Total = gearTotal
 -- "2.4" / "2,4" (the client's decimal separator), from 10 % on without decimals
 function GV.Pct(p)
+  p = tonumber(p) or 0
   local s = string.format(p >= 9.95 and "%.0f" or "%.1f", p)
   local sep = type(DECIMAL_SEPERATOR) == "string" and DECIMAL_SEPERATOR or "."
   return sep ~= "." and (s:gsub("%.", sep)) or s
@@ -496,6 +497,8 @@ function GV.TooltipLine(tt, id, itemLink)
   which = which and ("  |cffb0b0b0" .. string.format(L["(replaces %s)"], which) .. "|r") or ""
   -- ip: % of the replaced item; mode "item" shows it instead, "both" first with the whole gear's in brackets (6.2.13)
   local function line(k, p, extra, ip)
+    -- only an upgrade or a downgrade has a line ("same" has no %: with "Both" it asked GV.Pct(nil) - 6.2.14-beta2, user 22.11.)
+    if (k ~= "up" and k ~= "down") or not p then return end
     local shown, more = p, ""
     if ip and mode == "item" then shown = ip
     elseif ip and mode == "both" then shown, more = ip, " " .. string.format(L["(overall %s%%)"], GV.Pct(p)) end
@@ -508,6 +511,10 @@ function GV.TooltipLine(tt, id, itemLink)
     else tt:AddLine(UP .. (wornThere and L["Upgrade (worn item has no value for you)"] or L["Upgrade (slot empty)"]), 0.25, 1, 0.25) end
     return
   end
+  -- about as good as the worn item (less than 0.1 % of the whole gear): a grey line instead of none, so it is clear it was
+  -- compared (6.2.14-beta6, Discord 21.11.: "wieso diese items nicht verglichen werden" - Crimson Silk Vest against
+  -- Violet Sorcerer's Robes, -5 Intellect / +3 spell power)
+  if kind == "same" then tt:AddLine(OFA .. L["About the same value as your worn item"], 0.7, 0.7, 0.7); return end
   line(kind, pct, which, iPct)
   -- set bonuses (6.2.2, user 09.11.): a second line with the bonus it loses / completes, e.g. green "Upgrade: 8%" and
   -- red "Downgrade: 5% (set bonus lost)" - the item itself is better, worn now it costs the bonus

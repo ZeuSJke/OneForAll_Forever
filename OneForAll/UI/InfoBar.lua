@@ -86,6 +86,18 @@ add({ key = "fps", label = N"FPS and latency", icon = "Interface\\Icons\\INV_Giz
   end })
 
 local sessionStart, moneyEvent, goldSaved
+-- 6.2.14 (Discord yanthir 22.11.: "This session" stayed +0 after gold came in): the start amount is read at login, not at the
+-- bar's first redraw (that could come only with the first money); a 0 read too early waits for the first PLAYER_MONEY
+do
+  local f = CreateFrame("Frame")
+  f:RegisterEvent("PLAYER_ENTERING_WORLD")
+  f:SetScript("OnEvent", function(self)
+    self:UnregisterAllEvents()
+    local function take() if not sessionStart and GetMoney and (GetMoney() or 0) > 0 then sessionStart = GetMoney() end end
+    take()
+    if C_Timer and C_Timer.After then C_Timer.After(2, take) end
+  end)
+end
 -- 6.2.5 (Discord amalae. 11.11.: every alt had 0 gold): the money read too early after login or at logout can be 0 -
 -- a 0 replaces a stored amount only after a PLAYER_MONEY event (the money really changed); nothing saved at logout
 local function saveGold()
@@ -113,7 +125,7 @@ end
 add({ key = "gold", label = N"Gold", icon = "Interface\\Icons\\INV_Misc_Coin_02", events = { "PLAYER_MONEY", "PLAYER_LOGOUT" },
   text = function()
     local c = GetMoney and GetMoney() or 0
-    if not sessionStart then sessionStart = c end
+    if not sessionStart and (c > 0 or moneyEvent) then sessionStart = c end
     saveGold()
     return money(c - c % 100) -- gold and silver are enough here
   end,

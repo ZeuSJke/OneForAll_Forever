@@ -138,6 +138,23 @@ local function tlist(list, sep) -- a list of data words, translated
   for i, w in ipairs(list or {}) do out[i] = L[w] end
   return table.concat(out, sep or ", ")
 end
+-- the beasts Petopia knows for a rank that Data/HunterPets.lua (from 03.10.) lacks (Data/HunterPetTames.lua PET_TEACHERS_EXTRA,
+-- 6.2.14, user 21.11.: "wo ich ein pet finde mit z.B. demoralizing screech rank 1"): added to the ranks once at load, so the
+-- ability list, the family pages, the search and the pet alerts all know them; a rank with a beast now is no longer "noSource"
+do
+  local extra = FLT.PET_TEACHERS_EXTRA
+  for _, a in ipairs(extra and FLT.PET_ABILITIES or {}) do
+    local byRank = extra[a.name]
+    for _, r in ipairs(byRank and a.ranks or {}) do
+      local more = byRank[r.rank]
+      if more and #more > 0 then
+        r.learnFrom = r.learnFrom or {}
+        for _, b in ipairs(more) do r.learnFrom[#r.learnFrom + 1] = b end
+        r.noSource = nil
+      end
+    end
+  end
+end
 -- a beast on the world map: the pin and, when known, the outline of its spawns (6.1.9, user 07.11.: "mehrere
 -- Koordinaten ... zu einer Linie verbinden, um ein Gebiet abzudecken"; Data/HunterPetTames.lua PET_TAME_AREAS)
 local function showBeast(b)
@@ -736,7 +753,7 @@ local function createPetsPanel(parent)
     local function select(i)
       for j, r in ipairs(rows) do
         r.card:SetSelected(j == i)
-        if j == i then r.label:SetTextColor(FLT.SkinC(unpack(GOLD))) else r.label:SetTextColor(FLT.SkinC(0.92, 0.90, 0.84)) end
+        if j == i then r.label:SetTextColor(FLT.TextC(unpack(GOLD))) else r.label:SetTextColor(FLT.TextC(0.92, 0.90, 0.84)) end
       end
       for _, p in pairs(panes) do p:Hide() end
       if not panes[i] then
@@ -778,12 +795,12 @@ local function createPetsPanel(parent)
   local abilityIndex = {}
 
   local function heading(child, s, y)
-    local h = text(child, "GameFontNormal"); h:SetPoint("TOPLEFT", 0, y); h:SetText(s); h:SetTextColor(FLT.SkinC(unpack(GOLD)))
+    local h = text(child, "GameFontNormal"); h:SetPoint("TOPLEFT", 0, y); h:SetText(s); h:SetTextColor(FLT.TextC(unpack(GOLD)))
     return y - 20
   end
   local function para(child, s, y, template, r, g, b)
     local p = text(child, template or "GameFontHighlightSmall", 420); p:SetPoint("TOPLEFT", 0, y); p:SetText(s)
-    if r then p:SetTextColor(FLT.SkinC(r, g, b)) end
+    if r then p:SetTextColor(FLT.TextC(r, g, b)) end
     return y - math.max(16, (p:GetStringHeight() or 14) + 4)
   end
 
@@ -884,9 +901,9 @@ local function createPetsPanel(parent)
         pic:SetTexCoord(0.07, 0.93, 0.07, 0.93)
       end
       local ringTex = ring:CreateTexture(nil, "OVERLAY"); ringTex:SetAllPoints(); FLT.SetTex(ringTex, UI.ASSET_ROOT .. "frame_ring")
-      local t = text(child, "GameFontNormalLarge"); t:SetPoint("TOPLEFT", 118, -6); t:SetText(L[f.name]); t:SetTextColor(FLT.SkinC(unpack(GOLD)))
+      local t = text(child, "GameFontNormalLarge"); t:SetPoint("TOPLEFT", 118, -6); t:SetText(L[f.name]); t:SetTextColor(FLT.TextC(unpack(GOLD)))
       do local font, _, flags = t:GetFont(); if font then t:SetFont(font, 26, flags) end end
-      local petTag = text(child, "GameFontHighlightSmall", 260); petTag:SetPoint("LEFT", t, "RIGHT", 14, -2); petTag:SetTextColor(FLT.SkinC(0.35, 1, 0.45))
+      local petTag = text(child, "GameFontHighlightSmall", 260); petTag:SetPoint("LEFT", t, "RIGHT", 14, -2); petTag:SetTextColor(FLT.TextC(0.35, 1, 0.45))
       local dv = child:CreateTexture(nil, "ARTWORK"); FLT.SetTex(dv, UI.ASSET_ROOT .. "divider_ornate"); dv:SetSize(W - 112, 16); dv:SetPoint("TOPLEFT", 112, -36)
 
       local role = f.role
@@ -905,7 +922,7 @@ local function createPetsPanel(parent)
         local fact = facts[i]
         if fact then
           local ic = child:CreateTexture(nil, "ARTWORK"); ic:SetSize(16, 16); ic:SetPoint("TOPLEFT", 120, fy); FLT.SetTex(ic, fact[1]); ic:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-          local l = text(child, "GameFontNormal"); l:SetPoint("LEFT", ic, "RIGHT", 8, 0); l:SetText(fact[2] .. ":"); l:SetTextColor(FLT.SkinC(unpack(GOLD)))
+          local l = text(child, "GameFontNormal"); l:SetPoint("LEFT", ic, "RIGHT", 8, 0); l:SetText(fact[2] .. ":"); l:SetTextColor(FLT.TextC(unpack(GOLD)))
           local v = text(child, "GameFontHighlight", W - 230); v:SetPoint("LEFT", l, "RIGHT", 6, 0); v:SetText(fact[3]); v:SetWordWrap(false)
           fy = fy - 20
         end
@@ -941,7 +958,7 @@ local function createPetsPanel(parent)
         local l = text(r, "GameFontHighlight"); l:SetPoint("LEFT", 36, 0); l:SetText(L[key:sub(1, 1):upper() .. key:sub(2)])
         local v = text(r, "GameFontHighlight"); v:SetPoint("RIGHT", -12, 0); v:SetText(val and ("x" .. val) or "-")
         local n = tonumber(val)
-        if n and n > 1.001 then v:SetTextColor(FLT.SkinC(0.45, 1, 0.45)) elseif n and n < 0.999 then v:SetTextColor(FLT.SkinC(1, 0.45, 0.40)) else v:SetTextColor(FLT.SkinC(0.95, 0.93, 0.88)) end
+        if n and n > 1.001 then v:SetTextColor(FLT.TextC(0.45, 1, 0.45)) elseif n and n < 0.999 then v:SetTextColor(FLT.TextC(1, 0.45, 0.40)) else v:SetTextColor(FLT.TextC(0.95, 0.93, 0.88)) end
       end
       local ab = box(child, bw + 8, y, bw, bh, N"Family abilities")
       local ay = -32
@@ -985,7 +1002,7 @@ local function createPetsPanel(parent)
             r = CreateFrame("Button", nil, tb); r:SetSize(W - 16, 30)
             UI.CardRow(r)
             r.n = text(r, "GameFontHighlight", 200); r.n:SetPoint("LEFT", 12, 0); r.n:SetWordWrap(false)
-            r.z = text(r, "GameFontHighlightSmall", 120); r.z:SetPoint("LEFT", 214, 0); r.z:SetTextColor(FLT.SkinC(0.84, 0.81, 0.74)); r.z:SetWordWrap(false)
+            r.z = text(r, "GameFontHighlightSmall", 120); r.z:SetPoint("LEFT", 214, 0); r.z:SetTextColor(FLT.TextC(0.84, 0.81, 0.74)); r.z:SetWordWrap(false)
             r.m = UI.GoldButton(r, L["Map"], 64, 20, UI.ASSET_ROOT .. "icon_map", 11); r.m:SetPoint("RIGHT", -6, 0)
             r.m:SetScript("OnClick", function() local d = r.data; if d then showBeast(d) end end)
             tameRows[i] = r
@@ -1080,9 +1097,9 @@ local function createPetsPanel(parent)
         local m = fr:CreateMaskTexture(); FLT.SetTex(m, UI.ASSET_ROOT .. "talent_icon_mask2", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE"); m:SetAllPoints(pic); pic:AddMaskTexture(m)
       end
       local frame = fr:CreateTexture(nil, "OVERLAY"); frame:SetAllPoints(); FLT.SetTex(frame, UI.ASSET_ROOT .. "talent_frame"); frame:SetVertexColor(FLT.SkinC(0.98, 0.76, 0.30, 1))
-      local t = text(child, "GameFontNormalLarge"); t:SetPoint("TOPLEFT", 100, -8); t:SetText(L[a.name]); t:SetTextColor(FLT.SkinC(unpack(GOLD)))
+      local t = text(child, "GameFontNormalLarge"); t:SetPoint("TOPLEFT", 100, -8); t:SetText(L[a.name]); t:SetTextColor(FLT.TextC(unpack(GOLD)))
       do local font, _, flags = t:GetFont(); if font then t:SetFont(font, 24, flags) end end
-      local eff = text(child, "GameFontHighlight", W - 110); eff:SetPoint("TOPLEFT", 101, -38); eff:SetText(LN(a.effect or "")); eff:SetTextColor(FLT.SkinC(0.92, 0.90, 0.84))
+      local eff = text(child, "GameFontHighlight", W - 110); eff:SetPoint("TOPLEFT", 101, -38); eff:SetText(LN(a.effect or "")); eff:SetTextColor(FLT.TextC(0.92, 0.90, 0.84))
       local alertCB = FLT.SkinBlizz(CreateFrame("CheckButton", nil, child, "UICheckButtonTemplate"))
       alertCB:SetSize(22, 22); alertCB:SetPoint("TOPRIGHT", -2, -4)
       local alertLbl = text(child, "GameFontHighlightSmall"); alertLbl:SetPoint("RIGHT", alertCB, "LEFT", -2, 0); alertLbl:SetText(L["Alert for this ability"])
@@ -1111,7 +1128,7 @@ local function createPetsPanel(parent)
       local paw = fam:CreateTexture(nil, "ARTWORK"); paw:SetSize(34, 34); paw:SetPoint("TOPLEFT", 8, -8); FLT.SetTex(paw, PAW)
       local ft = UI.SmallCaps(fam, L["Supported Families"], 14, 10, GOLD); ft:SetPoint("TOPLEFT", 50, -9)
       local fl = text(fam, "GameFontHighlightSmall", W - 62); fl:SetPoint("TOPLEFT", 50, -28)
-      fl:SetText((a.families and #a.families > 0) and tlist(a.families) or "-"); fl:SetTextColor(FLT.SkinC(0.85, 0.83, 0.77))
+      fl:SetText((a.families and #a.families > 0) and tlist(a.families) or "-"); fl:SetTextColor(FLT.TextC(0.85, 0.83, 0.77))
       local famH = math.max(50, 28 + math.max(14, fl:GetStringHeight() or 14) + 10)
       fam:SetHeight(famH)
       local headBottom = fy - famH
@@ -1121,7 +1138,7 @@ local function createPetsPanel(parent)
       local intro = {}
       local function addIntro(str, r, g, b)
         local p = text(child, "GameFontHighlightSmall", W - 10); p:SetText(str)
-        if r then p:SetTextColor(FLT.SkinC(r, g, b)) end
+        if r then p:SetTextColor(FLT.TextC(r, g, b)) end
         intro[#intro + 1] = p
       end
       if a.source == "trainer" then addIntro(L["Learned from any Pet Trainer."], 0.65, 0.85, 1) end
@@ -1147,7 +1164,7 @@ local function createPetsPanel(parent)
         local body = CreateFrame("Frame", nil, card); body:SetPoint("TOPLEFT", 0, -30); body:SetPoint("TOPRIGHT", 0, -30); body:SetHeight(1)
         local by = 0
         if r.desc and r.desc ~= "" then
-          local d = text(body, "GameFontHighlightSmall", W - 40); d:SetPoint("TOPLEFT", 32, by); d:SetText(LN(r.desc)); d:SetTextColor(FLT.SkinC(0.86, 0.84, 0.78))
+          local d = text(body, "GameFontHighlightSmall", W - 40); d:SetPoint("TOPLEFT", 32, by); d:SetText(LN(r.desc)); d:SetTextColor(FLT.TextC(0.86, 0.84, 0.78))
           by = by - math.max(16, (d:GetStringHeight() or 14) + 6)
         end
         local beastsTop = by
@@ -1205,12 +1222,12 @@ local function createPetsPanel(parent)
           local learned = FLT:HasPetRank(a.name, bl.rank.rank or 1)
           bl.paw:ClearAllPoints()
           if learned then
-            bl.bg:SetFill(0.05, 0.15, 0.07, 0.95); bl.bg:SetBorder(0.30, 0.55, 0.30, 0.9); bl.label:SetTextColor(FLT.SkinC(0.35, 1, 0.45))
+            bl.bg:SetFill(0.05, 0.15, 0.07, 0.95); bl.bg:SetBorder(0.30, 0.55, 0.30, 0.9); bl.label:SetTextColor(FLT.TextC(0.35, 1, 0.45))
             bl.right:SetText("|cff59ff73" .. L["Learned"] .. "|r"); bl.paw:Hide()
           else
-            bl.bg:SetFill(0.060, 0.062, 0.074, 0.97); bl.bg:SetBorder(0.42, 0.33, 0.18, 0.95); bl.label:SetTextColor(FLT.SkinC(unpack(GOLD)))
+            bl.bg:SetFill(0.060, 0.062, 0.074, 0.97); bl.bg:SetBorder(0.42, 0.33, 0.18, 0.95); bl.label:SetTextColor(FLT.TextC(unpack(GOLD)))
             if bl.hasBeasts then
-              bl.right:SetText(string.format(L["%d beasts"], #bl.rank.learnFrom)); bl.right:SetTextColor(FLT.SkinC(0.86, 0.84, 0.78))
+              bl.right:SetText(string.format(L["%d beasts"], #bl.rank.learnFrom)); bl.right:SetTextColor(FLT.TextC(0.86, 0.84, 0.78))
               bl.paw:SetPoint("RIGHT", bl.right, "RIGHT", -(bl.right:GetStringWidth() or 50) - 6, 0); bl.paw:Show()
             else
               bl.right:SetText(""); bl.paw:Hide()

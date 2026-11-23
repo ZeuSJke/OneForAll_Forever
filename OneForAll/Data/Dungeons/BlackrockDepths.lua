@@ -570,6 +570,7 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
         {
             name = "Hurley Blackbreath",
             npcID = 9537,
+            displayID = 8658, -- CMaNGOS classic-db creature_template (user 23.11.2026)
             loot = {
                 {11735, "Ragefury Eyepatch", "Head, Leather", 3},
                 {18043, "Coal Miner Boots", "Feet, Leather", 3},
@@ -592,6 +593,7 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
         {
             name = "Plugger Spazzring",
             npcID = 9499,
+            displayID = 8652, -- CMaNGOS classic-db creature_template (user 23.11.2026)
             loot = {
                 {12791, "Barman Shanker", "Main Hand, Dagger", 3},
                 {12793, "Mixologist's Tunic", "Chest, Leather", 3},
@@ -625,6 +627,7 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
         {
             name = "Doom'rel",
             npcID = 9039,
+            displayID = 8687, -- CMaNGOS classic-db creature_template (user 23.11.2026)
             description = "Leader of the Seven; the Chest of The Seven opens after the fight.",
             loot = {
                 {11926, "Deathdealer Breastplate", "Chest, Mail", 3},
@@ -634,6 +637,7 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
         {
             name = "Anger'rel",
             npcID = 9035,
+            displayID = 8686, -- CMaNGOS classic-db creature_template (user 23.11.2026)
             description = "One of the Seven, the Dark Iron spirits fought in turn before Doom'rel.",
             loot = {
                 {11925, "Ghostshroud", "Head, Leather", 3},

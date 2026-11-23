@@ -89,14 +89,14 @@ local function showBookRewardsPopup(frame)
     local icon=iconBG:CreateTexture(nil,"ARTWORK"); icon:SetPoint("TOPLEFT",4,-4); icon:SetPoint("BOTTOMRIGHT",-4,4); FLT.SetTex(icon, "Interface\\Icons\\INV_Misc_Book_09")
     local ib=iconBG:CreateTexture(nil,"OVERLAY"); ib:SetAllPoints(); FLT.SetTex(ib, "Interface\\Buttons\\UI-Quickslot2"); ib:SetVertexColor(FLT.SkinC(0.9,0.65,0.2,1))
 
-    local title=FLT.NewFS(p, nil,"OVERLAY","GameFontNormalLarge"); title:SetPoint("TOPLEFT",78,-18); title:SetText(L["Library Books"]); title:SetTextColor(FLT.SkinC(1,0.82,0.20))
-    local sub=FLT.NewFS(p, nil,"OVERLAY","GameFontHighlightSmall"); sub:SetPoint("TOPLEFT",78,-43); sub:SetText(L["Turn-ins, rewards and librarian locations"]); sub:SetTextColor(FLT.SkinC(0.78,0.76,0.70))
+    local title=FLT.NewFS(p, nil,"OVERLAY","GameFontNormalLarge"); title:SetPoint("TOPLEFT",78,-18); title:SetText(L["Library Books"]); title:SetTextColor(FLT.TextC(1,0.82,0.20))
+    local sub=FLT.NewFS(p, nil,"OVERLAY","GameFontHighlightSmall"); sub:SetPoint("TOPLEFT",78,-43); sub:SetText(L["Turn-ins, rewards and librarian locations"]); sub:SetTextColor(FLT.TextC(0.78,0.76,0.70))
     local line=makeTexture(p,"ARTWORK",0.72,0.50,0.12,0.52); line:SetPoint("TOPLEFT",18,-78); line:SetPoint("TOPRIGHT",-18,-78); line:SetHeight(1)
 
     -- 6.2.7-beta14 (user 13.11.: "der teil wirkt unuebersichtlich, auch fehlt dort ein map button"): one row per librarian
     -- (crest, name, place, Map button), the notes below in small grey text
     local head0=FLT.NewFS(p, nil,"OVERLAY","GameFontNormal"); head0:SetPoint("TOPLEFT",24,-90)
-    head0:SetText((L["Turn in:"]:gsub(":%s*$",""))); head0:SetTextColor(FLT.SkinC(1,0.82,0.20))
+    head0:SetText((L["Turn in:"]:gsub(":%s*$",""))); head0:SetTextColor(FLT.TextC(1,0.82,0.20))
     local LIBRARIANS={
       { side="Alliance", tc={0,0.25}, npc="Garion Wendell", place=N"Stormwind City, Mage Quarter", zone="Stormwind City", x=37.6, y=80.8 },
       { side="Horde", tc={0.25,0.5}, npc="Owen Thadd", place=N"Undercity, Magic Quarter", zone="Undercity", x=73.4, y=33.0 },
@@ -108,9 +108,9 @@ local function showBookRewardsPopup(frame)
       local crest=row:CreateTexture(nil,"ARTWORK"); crest:SetSize(26,26); crest:SetPoint("LEFT",8,0)
       FLT.SetTex(crest, UI.ASSET_ROOT.."faction_crests"); crest:SetTexCoord(lib.tc[1],lib.tc[2],0,1)
       local nm=FLT.NewFS(row, nil,"OVERLAY","GameFontNormal"); nm:SetPoint("TOPLEFT",44,-5)
-      nm:SetText((FLT.Name and FLT.Name(lib.npc) or lib.npc) .. "  |cff9d9480(" .. L[lib.side] .. ")|r"); nm:SetTextColor(FLT.SkinC(0.95,0.93,0.88))
+      nm:SetText((FLT.Name and FLT.Name(lib.npc) or lib.npc) .. "  |cff9d9480(" .. L[lib.side] .. ")|r"); nm:SetTextColor(FLT.TextC(0.95,0.93,0.88))
       local pl=FLT.NewFS(row, nil,"OVERLAY","GameFontHighlightSmall"); pl:SetPoint("TOPLEFT",44,-22)
-      pl:SetText(L[lib.place] .. string.format("  |cff9d9480%.1f, %.1f|r", lib.x, lib.y)); pl:SetTextColor(FLT.SkinC(0.78,0.76,0.70))
+      pl:SetText(L[lib.place] .. string.format("  |cff9d9480%.1f, %.1f|r", lib.x, lib.y)); pl:SetTextColor(FLT.TextC(0.78,0.76,0.70))
       local map=UI.GoldButton(row,L["Map"],74,22,UI.ASSET_ROOT.."icon_map",12); map:SetPoint("RIGHT",-8,0)
       map:SetScript("OnClick",function() FLT:ShowOnMap({ zone=lib.zone, x=lib.x, y=lib.y, name=FLT.Name and FLT.Name(lib.npc) or lib.npc }) end)
       ry=ry-44
@@ -123,7 +123,7 @@ local function showBookRewardsPopup(frame)
     for _,tier in ipairs(FLT.BOOK_REWARD_TIERS or {}) do
       local head=FLT.NewFS(p, nil,"OVERLAY","GameFontNormal"); head:SetPoint("TOPLEFT",24,y)
       head:SetText(string.format("%s  |cffbbbbbb- %s%s|r", string.format(L["%d books"], tonumber(tier.books:match("%d+")) or 0) .. (tier.books:find("?", 1, true) and " (?)" or ""), (FLT.Name and FLT.Name(tier.quest) or tier.quest), (tier.req and tier.req>1) and (", " .. string.format(L["requires level %d"], tier.req)) or ""))
-      head:SetTextColor(FLT.SkinC(1,0.82,0.20))
+      head:SetTextColor(FLT.TextC(1,0.82,0.20))
       y=y-22
       local x=24
       for _,it in ipairs(tier.items) do
@@ -178,9 +178,9 @@ local function createBooksPanel(frame)
     fadeRight = 320,
   })
   progress = FLT.NewFS(band, nil, "OVERLAY", "GameFontNormal")
-  progress:SetPoint("RIGHT", -18, 8); progress:SetJustifyH("RIGHT"); progress:SetTextColor(FLT.SkinC(1, 0.86, 0.40))
+  progress:SetPoint("RIGHT", -18, 8); progress:SetJustifyH("RIGHT"); progress:SetTextColor(FLT.TextC(1, 0.86, 0.40))
   local progress2 = FLT.NewFS(band, nil, "OVERLAY", "GameFontHighlightSmall")
-  progress2:SetPoint("TOPRIGHT", progress, "BOTTOMRIGHT", 0, -4); progress2:SetJustifyH("RIGHT"); progress2:SetTextColor(FLT.SkinC(0.84, 0.81, 0.74))
+  progress2:SetPoint("TOPRIGHT", progress, "BOTTOMRIGHT", 0, -4); progress2:SetJustifyH("RIGHT"); progress2:SetTextColor(FLT.TextC(0.84, 0.81, 0.74))
   -- header test: the band is gone - both counts go into the action row, right of the rewards button (placed below)
   progress:SetParent(panel); progress2:SetParent(panel)
 
@@ -207,7 +207,7 @@ local function createBooksPanel(frame)
     local st = STATE[legendKeys[i]]
     local hold = CreateFrame("Frame", nil, nav)
     local d = UI.Mark(hold, 14, st.mark, unpack(st.color)); d:SetPoint("LEFT", -1, 0)
-    local t = FLT.NewFS(hold, nil, "OVERLAY", "GameFontHighlightSmall"); t:SetPoint("LEFT", d, "RIGHT", 6, 0); t:SetText(L[st.text]); t:SetTextColor(FLT.SkinC(0.84, 0.81, 0.74))
+    local t = FLT.NewFS(hold, nil, "OVERLAY", "GameFontHighlightSmall"); t:SetPoint("LEFT", d, "RIGHT", 6, 0); t:SetText(L[st.text]); t:SetTextColor(FLT.TextC(0.84, 0.81, 0.74))
     hold:SetSize(140, 18)
     legendHolds[i] = hold
     if legendKeys[i] == "questflag" then
@@ -272,7 +272,7 @@ local function createBooksPanel(frame)
     local name = FLT.NewFS(row, nil, "OVERLAY", "GameFontHighlight")
     name:SetPoint("LEFT", COL.name, 0); name:SetWidth(COL_W.name); name:SetJustifyH("LEFT"); name:SetText(bookName(book))
     if name.SetWordWrap then name:SetWordWrap(false) end
-    name:SetTextColor(FLT.SkinC(0.95, 0.93, 0.88))
+    name:SetTextColor(FLT.TextC(0.95, 0.93, 0.88))
 
     local crest = row:CreateTexture(nil, "ARTWORK"); crest:SetSize(24, 24); crest:SetPoint("CENTER", row, "LEFT", COL.side + COL_W.side / 2, 0)
     FLT.SetTex(crest, UI.ASSET_ROOT .. "faction_crests")
@@ -281,7 +281,7 @@ local function createBooksPanel(frame)
     local zone = FLT.NewFS(row, nil, "OVERLAY", "GameFontHighlightSmall")
     zone:SetPoint("LEFT", COL.zone + 10, 0); zone:SetWidth(COL_W.zone - 10); zone:SetJustifyH("LEFT")
     zone:SetText(book.x and string.format("%s  |cff9d9480%.1f, %.1f|r", ZN(book.zone), book.x, book.y) or (ZN(book.zone) .. "  |cff9d9480?|r"))
-    zone:SetTextColor(FLT.SkinC(0.90, 0.88, 0.84))
+    zone:SetTextColor(FLT.TextC(0.90, 0.88, 0.84))
 
     local map = UI.GoldButton(row, L["Map"], 74, 22, UI.ASSET_ROOT .. "icon_map", 12)
     map:SetPoint("CENTER", row, "LEFT", COL.actions + COL_W.actions / 2, 0)

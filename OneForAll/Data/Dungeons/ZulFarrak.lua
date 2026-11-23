@@ -206,6 +206,7 @@ FLT.DUNGEON_REGISTRY["Zul'Farrak"] = {
             -- fights with Nekrum Gutchewer; Wowhead Forever zone drops 13.11.2026
             name = "Ruuzlu",
             npcID = 7797,
+            displayID = 6687, -- CMaNGOS classic-db creature_template (user 23.11.2026)
             loot = {
                 {274654, "Sandfury Guillotine", "Two-Hand, Axe", 3},
                 {274655, "Peacekeeper Wand", "Ranged, Wand", 3},
@@ -263,13 +264,7 @@ FLT.DUNGEON_REGISTRY["Zul'Farrak"] = {
                 {11086, "Jang'thraze the Protector", "Main Hand, Sword", 3},
             },
         },
-        {
-            name = "Sandfury Executioner",
-            npcID = 7274,
-            displayID = 6440,
-            description = "Carries the Executioner's Key for the prisoner cages.",
-            loot = {},
-        },
+        -- Sandfury Executioner (7274) is no boss here: only an elite with the cage key (user 23.11.2026, like other journals)
         {
             name = "Zerillis",
             npcID = 10082,

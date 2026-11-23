@@ -76,6 +76,12 @@ end
 
 -- reading the scan --------------------------------------------------------------------------------------------------
 local btn, state, token, progress, lastDone = nil, "idle", 0, 0, -100
+-- the three steps the button shows (6.2.14-beta3, user 21.11.: "da passiert 10 sekunden lang gar nichts ... dann bleibt es wieder
+-- 5 sekunden stehen"): "waiting" = the server puts the list together (the game tells no progress), "reading" = % of the
+-- auctions read, "loading" = items with a random bonus whose link the client still has to load (count left). The loading step
+-- ends as soon as the game has sent them all (GET_ITEM_INFO_RECEIVED, only registered then), at the latest after 5 s.
+local itemEv = CreateFrame("Frame")
+local LOAD_MAX = 5
 local updateButton
 local function readScan()
   local A = C_AuctionHouse
@@ -98,8 +104,11 @@ local function readScan()
     end
     state, lastDone = "idle", GetTime(); updateButton()
   end
-  local function retry(n)
-    if my ~= token then return end
+  local deadline, queued
+  local function stopLoading() itemEv:UnregisterEvent("GET_ITEM_INFO_RECEIVED"); itemEv:SetScript("OnEvent", nil) end
+  local function resolve()
+    if my ~= token then stopLoading(); return end
+    if state ~= "loading" then return end
     local left = {}
     for _, p in ipairs(pending) do
       local link = A.GetReplicateItemLink and A.GetReplicateItemLink(p[1])
@@ -107,7 +116,20 @@ local function readScan()
       if key then add(var, key, p[2]) else left[#left + 1] = p end
     end
     pending = left
-    if #pending > 0 and n < 3 and C_Timer then C_Timer.After(2, function() retry(n + 1) end) else finish() end
+    progress = #pending
+    if #pending == 0 or GetTime() >= deadline then stopLoading(); finish() else updateButton() end
+  end
+  local function startLoading()
+    state, progress, deadline = "loading", #pending, GetTime() + LOAD_MAX
+    updateButton()
+    itemEv:RegisterEvent("GET_ITEM_INFO_RECEIVED")
+    itemEv:SetScript("OnEvent", function() -- comes in bursts: one look at most every 0.2 s
+      if queued then return end
+      queued = true
+      C_Timer.After(0.2, function() queued = false; resolve() end)
+    end)
+    C_Timer.After(0.5, resolve)
+    C_Timer.After(LOAD_MAX + 0.05, resolve)
   end
   local function part(first)
     if my ~= token then return end
@@ -131,7 +153,7 @@ local function readScan()
     end
     progress = total > 0 and math.floor((last + 1) / total * 100) or 100; updateButton()
     if last + 1 < total and C_Timer then C_Timer.After(0, function() part(last + 1) end)
-    elseif #pending > 0 and C_Timer then C_Timer.After(1, function() retry(1) end)
+    elseif #pending > 0 and C_Timer then startLoading()
     else finish() end
   end
   part(0)
@@ -139,17 +161,20 @@ end
 AS._read = readScan -- tests
 
 local ev = CreateFrame("Frame")
+AS.WAIT = 60
 local function start()
   if state ~= "idle" or not (C_AuctionHouse and C_AuctionHouse.ReplicateItems) then return end
   if type(OneForAllDB) == "table" then OneForAllDB.ahScanLast = time() end
   state = "waiting"; updateButton()
   C_AuctionHouse.ReplicateItems()
-  -- no answer (another addon's scan is less than 15 minutes old): read what the client has, if anything
+  -- no answer (another addon's scan is less than 15 minutes old): read what the client has, if anything. 60 s (6.2.14, user 22.11.:
+  -- right after logging in on a new day the message came - the server took longer than the 15 s waited before; a late answer
+  -- is still read by the event below)
   local my = token
-  if C_Timer then C_Timer.After(15, function()
+  if C_Timer then C_Timer.After(AS.WAIT, function()
     if state ~= "waiting" or my ~= token then return end
     if (C_AuctionHouse.GetNumReplicateItems() or 0) > 0 then readScan()
-    else state = "idle"; updateButton(); if FLT.Msg then FLT.Msg(L["The auction house allows a full scan only every 15 minutes - try again later."]) end end
+    else state = "idle"; updateButton(); if FLT.Msg then FLT.Msg(L["The auction house did not answer - another addon may have scanned in the last 15 minutes. Try again later."]) end end
   end) end
 end
 AS.Start = start
@@ -166,8 +191,9 @@ AS.FormatAge = fmtAge
 updateButton = function()
   if not btn then return end
   local label = btn._label
-  if state == "reading" then label:SetText(string.format(L["Scan %d%%"], progress))
-  elseif state == "waiting" then label:SetText(L["Scan..."])
+  if state == "reading" then label:SetText(string.format(L["Reading %d%%"], progress))
+  elseif state == "loading" then label:SetText(string.format(L["Loading items (%d)"], progress))
+  elseif state == "waiting" then label:SetText(L["Waiting for server..."])
   else label:SetText(L["Cheap Upgrade Scan"]) end
   if btn.SetLook then btn:SetLook(state == "idle" and AS.CooldownLeft() == 0) end
 end
@@ -213,7 +239,7 @@ ev:SetScript("OnEvent", function(_, e)
     if state ~= "idle" then token = token + 1; state = "idle"; updateButton() end
   elseif e == "REPLICATE_ITEM_LIST_UPDATE" then
     -- ours or another addon's full scan: read once (the event can come more than once), the 15 minutes start now
-    if state == "reading" or (state == "idle" and GetTime() - lastDone < 10) then return end
+    if state == "reading" or state == "loading" or (state == "idle" and GetTime() - lastDone < 10) then return end
     if state == "idle" and type(OneForAllDB) == "table" then OneForAllDB.ahScanLast = time() end
     FLT.SafeCall("AHScan", readScan)
   end

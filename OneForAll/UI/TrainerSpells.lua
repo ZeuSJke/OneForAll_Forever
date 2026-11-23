@@ -342,7 +342,7 @@ local function createFrame()
   f.crest = crestF:CreateTexture(nil, "ARTWORK"); f.crest:SetPoint("TOPLEFT", 3, -3); f.crest:SetPoint("BOTTOMRIGHT", -3, 3)
   local cfr = crestF:CreateTexture(nil, "OVERLAY"); cfr:SetAllPoints(); FLT.SetTex(cfr, UI.ASSET_ROOT .. "talent_frame")
   f.title = FLT.NewFS(f, nil, "OVERLAY", "GameFontNormalLarge"); f.title:SetPoint("TOPLEFT", crestF, "TOPRIGHT", 12, -3)
-  f.title:SetTextColor(FLT.SkinC(1, 0.82, 0.20))
+  f.title:SetTextColor(FLT.TextC(1, 0.82, 0.20))
   do local font, _, flags = f.title:GetFont(); if font then f.title:SetFont(font, 20, flags) end end
   f.sub = FLT.NewFS(f, nil, "OVERLAY", "GameFontHighlight"); f.sub:SetPoint("TOPLEFT", f.title, "BOTTOMLEFT", 0, -5)
   f.sub:SetTextColor(0.85, 0.82, 0.74)
@@ -567,7 +567,7 @@ local function refreshWeapons(f, c, own)
     if hi > 1 then y = y - 6 end
     local h = getHead(f, hi)
     h:ClearAllPoints(); h:SetPoint("TOPLEFT", 0, y); y = y - HEAD_H - 2
-    h.text:SetText(name); h.text:SetTextColor(FLT.SkinC(1, 0.84, 0.30))
+    h.text:SetText(name); h.text:SetTextColor(FLT.TextC(1, 0.84, 0.30))
     if known then h.right:SetText("|cff59ff73" .. L["Known"] .. "|r")
     elseif #trainers == 0 then h.right:SetText("|cff9d9d9d" .. (sub == 19 and L["From the start, no trainer"] or L["No weapon master of your faction"]) .. "|r")
     else h.right:SetText(sub == 6 and L["1 gold, from level 20"] or L["10 silver"]); toLearn = toLearn + 1 end
@@ -602,7 +602,7 @@ local function questInLog(id)
   elseif GetQuestLogIndexByID then i = GetQuestLogIndexByID(id) end
   return (i or 0) > 0
 end
-local SIDE_MASK = { Alliance = { 1, 3, 4, 7 }, Horde = { 2, 5, 6, 8 } }
+local SIDE_MASK = { Alliance = { 1, 3, 4, 7, 33 }, Horde = { 2, 5, 6, 8, 34 } } -- race bit + 1 (33 / 34 = Skyborne, 6.2.14)
 local function forFaction(q, side)
   if not q.races or q.races == 0 then return true end
   for _, r in ipairs(SIDE_MASK[side] or {}) do if math.floor(q.races / 2 ^ (r - 1)) % 2 == 1 then return true end end
@@ -676,7 +676,7 @@ local function refreshQuests(f, c, own)
       h:ClearAllPoints(); h:SetPoint("TOPLEFT", 0, y); y = y - HEAD_H - 2
       if e.group == "now" then h.text:SetText(L["Available now"]); h.text:SetTextColor(0.45, 1.00, 0.50)
       elseif e.group == "done" then h.text:SetText(L["Done"]); h.text:SetTextColor(0.45, 1.00, 0.50)
-      else h.text:SetText(string.format(L["Level %s"], e.group)); h.text:SetTextColor(FLT.SkinC(1, 0.84, 0.30)) end
+      else h.text:SetText(string.format(L["Level %s"], e.group)); h.text:SetTextColor(FLT.TextC(1, 0.84, 0.30)) end
       h.right:SetText(""); h:Show()
       stripe = 0
     end
@@ -872,7 +872,7 @@ function FLT.RefreshTrainerSpells()
       if group == "now" then
         h.text:SetText(L["Available now"]); h.text:SetTextColor(0.45, 1.00, 0.50)
       else
-        h.text:SetText(string.format(L["Level %s"], lvl)); h.text:SetTextColor(FLT.SkinC(1, 0.84, 0.30))
+        h.text:SetText(string.format(L["Level %s"], lvl)); h.text:SetTextColor(FLT.TextC(1, 0.84, 0.30))
       end
       h.right:SetText("")
       h:Show()

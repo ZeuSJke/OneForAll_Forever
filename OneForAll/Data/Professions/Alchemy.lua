@@ -20,7 +20,7 @@ FLT.PROFESSION_RECIPES["Alchemy"] = {
   {s=3170, i=3382, n="Minor Troll's Blood Elixir", q=1, cat="Elixirs", req=15, rw=true, y=60, g=80, gr=100, r={{2447,1,"Peacebloom"}, {2449,2,"Earthroot"}, {3371,1,"Empty Vial"}}},
   {s=2331, i=2455, n="Minor Mana Potion", q=1, lv=5, cat="Recovery Potions", req=25, rw=true, y=65, g=85, gr=105, r={{785,1,"Mageroyal"}, {2447,1,"Peacebloom"}, {3371,1,"Empty Vial"}}},
   {s=7836, i=6370, n="Blackmouth Oil", q=1, cat="Reagents", req=80, rw=true, y=80, g=90, gr=100, r={{6358,2,"Oily Blackmouth"}, {3371,1,"Empty Vial"}}},
-  {s=1244645, i=247239, n="Lesser Discolored Healing Potion", q=1, lv=3, cat="Recovery Potions", req=85, rw=true, y=85, g=105, gr=125, r={{3371,1,"Empty Vial"}, {2450,1,"Briarthorn"}, {730,1,"Murloc Eye"}}},
+  {s=1244645, i=247239, n="Lesser Discolored Healing Potion", q=1, lv=3, cat="Recovery Potions", req=55, rw=true, y=85, g=105, gr=125, r={{3371,1,"Empty Vial"}, {2450,1,"Briarthorn"}, {730,1,"Murloc Eye"}}},
   {s=2365, i=2460, n="Draught of Tongues", q=1, cat="Draughts", y=100, g=120, gr=140, r={{2449,2,"Earthroot"}, {785,2,"Mageroyal"}, {3371,1,"Empty Vial"}}},
   {s=7179, i=5996, n="Draught of Water Breathing", q=1, lv=8, cat="Draughts", req=90, rw=true, y=120, g=140, gr=160, r={{3820,1,"Stranglekelp"}, {6370,2,"Blackmouth Oil"}, {3371,1,"Empty Vial"}}},
   {s=3171, i=3383, n="Elixir of Wisdom", q=1, lv=10, cat="Elixirs", req=90, rw=true, y=120, g=140, gr=160, r={{785,1,"Mageroyal"}, {2450,2,"Briarthorn"}, {3371,1,"Empty Vial"}}},

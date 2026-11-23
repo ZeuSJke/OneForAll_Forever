@@ -88,7 +88,7 @@ local function button(parent,text,w,h)
     if p[3] then e:SetWidth(p[3]) end; if p[4] then e:SetHeight(p[4]) end
   end
   local fs=FLT.NewFS(b, nil,"OVERLAY","GameFontNormalSmall")
-  fs:SetPoint("CENTER"); fs:SetText(text); fs:SetTextColor(FLT.SkinC(0.96,0.78,0.34)); b:SetFontString(fs); b.label=fs
+  fs:SetPoint("CENTER"); fs:SetText(text); fs:SetTextColor(FLT.TextC(0.96,0.78,0.34)); b:SetFontString(fs); b.label=fs
   return b
 end
 
@@ -96,10 +96,10 @@ local function setButtonSelected(b, selected)
   if not b then return end
   if selected then
     b.bg:SetColorTexture(FLT.SkinC(0.20,0.13,0.035,0.98))
-    b.label:SetTextColor(FLT.SkinC(1.0,0.84,0.24))
+    b.label:SetTextColor(FLT.TextC(1.0,0.84,0.24))
   else
     b.bg:SetColorTexture(FLT.SkinC(0.075,0.065,0.05,0.98))
-    b.label:SetTextColor(FLT.SkinC(0.86,0.76,0.56))
+    b.label:SetTextColor(FLT.TextC(0.86,0.76,0.56))
   end
 end
 
@@ -472,7 +472,7 @@ local function codeWindow()
   UI.FramedPanel(f)
   for _, t in ipairs(UI.OrnateFrame(f, f, 16, 3, "OVERLAY", 4)) do t:SetVertexColor(FLT.SkinC(1, 1, 1, 1)) end
   UI.CloseButton(f):SetPoint("TOPRIGHT", -12, -12)
-  f.title = FLT.NewFS(f, nil, "OVERLAY", "GameFontNormalLarge"); f.title:SetPoint("TOPLEFT", 18, -16); f.title:SetTextColor(FLT.SkinC(1, 0.82, 0.2))
+  f.title = FLT.NewFS(f, nil, "OVERLAY", "GameFontNormalLarge"); f.title:SetPoint("TOPLEFT", 18, -16); f.title:SetTextColor(FLT.TextC(1, 0.82, 0.2))
   f.hint = FLT.NewFS(f, nil, "OVERLAY", "GameFontHighlightSmall"); f.hint:SetPoint("TOPLEFT", 18, -40); f.hint:SetWidth(480); f.hint:SetJustifyH("LEFT")
   f.hint:SetTextColor(0.80, 0.77, 0.70)
   f.eb = FLT.SkinBlizz(CreateFrame("EditBox", nil, f, "InputBoxTemplate")); f.eb:SetSize(470, 22); f.eb:SetPoint("TOPLEFT", 24, -72)
@@ -701,8 +701,8 @@ function FLT:CreateTalentPlannerPanel(parent)
     p:SetPoint("TOPLEFT",182+(i-1)*TREE_STEP,treeTop); p:SetSize(TREE_W,483)
     UI.FramedPanel(p)
     treeArt(p,TREE_W-6,477,3)
-    local title=FLT.NewFS(p, nil,"OVERLAY","GameFontNormalLarge"); title:SetPoint("TOP",0,-9); title:SetText(string.format(L["Tree %d"],i)); title:SetTextColor(FLT.SkinC(1,0.82,0.20)); p.title=title
-    local pts=FLT.NewFS(p, nil,"OVERLAY","GameFontNormalSmall"); pts:SetPoint("TOP",0,-31); pts:SetText(string.format(L["%d points"],0)); pts:SetTextColor(FLT.SkinC(0.72,0.72,0.72)); p.points=pts
+    local title=FLT.NewFS(p, nil,"OVERLAY","GameFontNormalLarge"); title:SetPoint("TOP",0,-9); title:SetText(string.format(L["Tree %d"],i)); title:SetTextColor(FLT.TextC(1,0.82,0.20)); p.title=title
+    local pts=FLT.NewFS(p, nil,"OVERLAY","GameFontNormalSmall"); pts:SetPoint("TOP",0,-31); pts:SetText(string.format(L["%d points"],0)); pts:SetTextColor(FLT.TextC(0.72,0.72,0.72)); p.points=pts
   end
 
   local footer=CreateFrame("Frame",nil,panel)
@@ -978,9 +978,9 @@ function FLT:CreateTalentPlannerPanel(parent)
       if b.icon.SetDesaturated then b.icon:SetDesaturated(full and rank==0) end
       if b.slot then b.slot:SetVertexColor(FLT.SkinC(er,eg,eb,0.98)) end
       if b.glow then b.glow:SetShown(rank>0) end
-      if rank>0 and rank>=(b.maxRanks or 1) then b.rank:SetTextColor(FLT.SkinC(1,0.82,0.25))
-      elseif rank>0 then b.rank:SetTextColor(FLT.SkinC(0.45,1,0.45))
-      else b.rank:SetTextColor(FLT.SkinC(unlocked and 0.92 or 0.6, unlocked and 0.92 or 0.6, unlocked and 0.92 or 0.6)) end
+      if rank>0 and rank>=(b.maxRanks or 1) then b.rank:SetTextColor(FLT.TextC(1,0.82,0.25))
+      elseif rank>0 then b.rank:SetTextColor(FLT.TextC(0.45,1,0.45))
+      else b.rank:SetTextColor(FLT.TextC(unlocked and 0.92 or 0.6, unlocked and 0.92 or 0.6, unlocked and 0.92 or 0.6)) end
 
       b:SetScript("OnClick",function(self,mouse)
         local pstate=stateFor(selectedClass); local old=pstate.ranks[nodeID] or 0

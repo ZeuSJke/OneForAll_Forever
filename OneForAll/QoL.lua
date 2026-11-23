@@ -23,6 +23,7 @@ local DEFAULTS = {
   mapLandmarks = true, lmDungeons = true, lmFlight = true, lmTransport = true, lmTransitions = true, -- transitions: on like all landmarks (user 01.11.) -- Map Landmarks: on with all parts (user 16.10.)
   gearValue = true, -- Gear Planner Value in item tooltips: on (user 16.10.)
   ahScan = true, -- "Cheap Upgrade Scan" button in the auction house (6.2.13-beta19): on (user 21.11.)
+  runTracker = true, -- dungeon tracker (6.2.14): on (user 23.11.: "ja an")
   gvMode = "overall", -- which % the Gear Value line shows (6.2.13): the whole gear's, as before (user 20.11.)
   spellbookTrainer = true, -- trainer button in the spellbook: on (user 22.10.)
   classBright = true, -- brighter class colors: on (user 22.10.)
@@ -1158,7 +1159,8 @@ do
         sec = tonumber(sec) or 30
         local z = snoozed[name]
         if z and exp and (z == true or (exp > 0 and exp > z + 1)) then snoozed[name] = nil; z = nil end -- up again / renewed
-        if z then -- snoozed (user 05.11.): no card until the buff is up again or renewed
+        if QoL.OtherClassBuff and QoL.OtherClassBuff(name) then -- 6.2.14: another class's own buff (e.g. Battle Shout from a warrior in the group)
+        elseif z then -- snoozed (user 05.11.): no card until the buff is up again or renewed
         elseif exp then
           renewed[name] = nil; snoozed[name] = nil
           buffSeen[name] = true
@@ -1360,6 +1362,26 @@ do
     local n
     pcall(function() n = (C_Spell and C_Spell.GetSpellName and C_Spell.GetSpellName(id)) or (GetSpellInfo and GetSpellInfo(id)) end)
     return type(n) == "string" and n or nil
+  end
+  -- 6.2.14 (Discord yanthir 22.11.: "Why does it remind my hunter to cast Battle Shout?" - a new character's list starts as a
+  -- copy of the account's old list, so a warrior's buffs came along): the own buffs of the other classes (their presets,
+  -- by name - every rank) give no reminder; the names are read once the client knows them
+  function QoL.OtherClassBuff(name)
+    local mine = UnitClass and select(2, UnitClass("player"))
+    if not mine then return false end
+    if QoL._otherBuffsFor ~= mine then QoL._otherBuffs, QoL._otherBuffsFor = nil, mine end
+    if not QoL._otherBuffs then
+      local set, own, ok = {}, {}, true
+      for _, id in ipairs(PRESETS[mine] or {}) do local n = spellNameOf(id); if n then own[n] = true end end
+      for cls, ids in pairs(PRESETS) do
+        if cls ~= mine then
+          for _, id in ipairs(ids) do local n = spellNameOf(id); if n then if not own[n] then set[n] = true end else ok = false end end
+        end
+      end
+      if not ok then return set[name] or false end -- names not all there yet: ask again next time
+      QoL._otherBuffs = set
+    end
+    return QoL._otherBuffs[name] or false
   end
   local function itemNameOf(id)
     local n
@@ -2453,9 +2475,13 @@ local function shortStat(text)
     return "Enchanted: " .. (body .. " and "):gsub("(.-) %+(%d+%%?) and ", "+%2 %1 and "):sub(1, -6)
   end
 end
+-- only the game's own item tooltips (6.2.14, Discord hedek1 23.11.: Dugi Guides' hidden stat-reading tooltip has lines without
+-- a font - "SetText(): Font not set" and taint - and other addons read the original text there)
+QoL.SHORT_TIPS = { GameTooltip = true, ItemRefTooltip = true, ShoppingTooltip1 = true, ShoppingTooltip2 = true,
+  ItemRefShoppingTooltip1 = true, ItemRefShoppingTooltip2 = true, EmbeddedItemTooltip = true }
 local function shortenTooltip(tt)
   if not QoL.Get("shortStats") or type(tt) ~= "table" or not tt.GetName or not tt.NumLines then return end
-  local name = tt:GetName(); if not name then return end
+  local name = tt:GetName(); if not name or not QoL.SHORT_TIPS[name] then return end
   local changed
   for i = 2, tt:NumLines() do
     local line = _G[name .. "TextLeft" .. i]
@@ -2767,7 +2793,7 @@ local function copyWindow()
   if UI and UI.FramedPanel then UI.FramedPanel(f) end
   if UI and UI.OrnateFrame then for _, t in ipairs(UI.OrnateFrame(f, f, 16, 3, "OVERLAY", 4)) do t:SetVertexColor(FLT.SkinC(1, 1, 1, 1)) end end
   local title = FLT.NewFS(f, nil, "OVERLAY", "GameFontNormalLarge"); title:SetPoint("TOPLEFT", 18, -14); title:SetText(L["Copy chat"])
-  title:SetTextColor(FLT.SkinC(1, 0.82, 0.2))
+  title:SetTextColor(FLT.TextC(1, 0.82, 0.2))
   local hint = FLT.NewFS(f, nil, "OVERLAY", "GameFontDisableSmall"); hint:SetPoint("LEFT", title, "RIGHT", 12, -1)
   hint:SetText(L["Ctrl+C copies the selected text.  Esc closes."])
   local close = UI and UI.GoldButton and UI.GoldButton(f, L["Close"], 90, 22, nil, 12)
@@ -3025,7 +3051,7 @@ local function itemCard(parent, caption, captionGold)
   local c = CreateFrame("Button", nil, parent); c:SetSize(CARD_W, CARD_H)
   c.card = UI.Card(c, c, 5, {0.28, 0.25, 0.20, 0.9}, {0.05, 0.052, 0.062, 0.97}, "BACKGROUND", 0)
   c.caption = FLT.NewFS(c, nil, "OVERLAY", "GameFontHighlightSmall"); c.caption:SetPoint("TOPLEFT", 8, -7); c.caption:SetText(caption)
-  if captionGold then c.caption:SetTextColor(FLT.SkinC(1, 0.82, 0.2)) end
+  if captionGold then c.caption:SetTextColor(FLT.TextC(1, 0.82, 0.2)) end
   c.iconBorder = c:CreateTexture(nil, "BORDER"); c.iconBorder:SetSize(38, 38); c.iconBorder:SetPoint("TOPLEFT", 8, -26); c.iconBorder:SetColorTexture(1, 1, 1, 1)
   c.icon = c:CreateTexture(nil, "ARTWORK"); c.icon:SetPoint("TOPLEFT", c.iconBorder, 1, -1); c.icon:SetPoint("BOTTOMRIGHT", c.iconBorder, -1, 1)
   c.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
@@ -3083,7 +3109,7 @@ local function helperFrame()
   local alert = f:CreateTexture(nil, "ARTWORK"); alert:SetSize(36, 36); alert:SetPoint("TOPLEFT", 10, -9)
   alert:SetTexture("Interface\\DialogFrame\\UI-Dialog-Icon-AlertNew")
   local title = FLT.NewFS(f, nil, "OVERLAY", "GameFontNormalLarge"); title:SetPoint("TOPLEFT", 52, -11); title:SetText(L["Bags full!"])
-  title:SetTextColor(FLT.SkinC(1, 0.82, 0.2))
+  title:SetTextColor(FLT.TextC(1, 0.82, 0.2))
   f.sub = FLT.NewFS(f, nil, "OVERLAY", "GameFontHighlightSmall"); f.sub:SetPoint("TOPLEFT", 52, -30); f.sub:SetWidth(W - 90); f.sub:SetJustifyH("LEFT")
   local close = UI.GoldButton(f, "", 18, 16, UI.ASSET_ROOT .. "icon_close", 10); close:SetPoint("TOPRIGHT", -8, -8)
   if close.icon then close.icon:ClearAllPoints(); close.icon:SetSize(10, 10); close.icon:SetPoint("CENTER") end
