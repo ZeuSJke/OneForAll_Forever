@@ -12,7 +12,7 @@
   ["World drops"] = "Мировая добыча",
   ["World"] = "Мир",
   ["PvP"] = "PvP",
-  ["%d quests for %s are not taken yet (see the tracker)."] = "Заданий для %s еще не взято: %d (см. трекер).",
+  ["%d quests for %s are not taken yet (see the tracker)."] = "%d заданий для %s еще не взято (см. трекер).",
   ["Average %s"] = "В среднем %s",
   ["Best %s"] = "Лучшее %s",
   ["Deaths"] = "Смерти",

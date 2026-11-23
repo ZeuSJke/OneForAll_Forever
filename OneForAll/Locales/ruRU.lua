@@ -2368,6 +2368,7 @@ FLT.LOCALES.ruRU = function() return {
   ["A button in the auction house that scans it for Armory > Cheap Upgrades."] = "Кнопка в окне аукциона, сканирующая его для Оружейная > Дешевые улучшения.",
   ["Reads the whole auction house (Blizzard's full scan, once every 15 minutes) and keeps the cheapest price of every Bind on Equip piece of gear, items with a random bonus (\"of the Eagle\") each with their own price - Auctionator has only one price per item. Off: no button, nothing is read; the Cheap Upgrades then use Auctionator's prices."] = "Считывает весь аукцион (полное сканирование Blizzard, раз в 15 минут) и сохраняет самую низкую цену каждой BoE-экипировки; предметы со случайным бонусом (\"орла\") хранятся каждый со своей ценой — Auctionator хранит лишь одну цену на предмет. Выкл: кнопки нет, ничего не считывается, а «Дешевые улучшения» берут цены из Auctionator.",
   -- 6.2.14: dungeon tracker and History (UI/RunTracker.lua, UI/RunHistory.lua)
+  ["%d quests for %s are not taken yet (see the tracker)."] = "%d заданий для %s еще не взято (см. трекер).",
   ["Average %s"] = "В среднем %s",
   ["Best %s"] = "Лучшее %s",
   ["Deaths"] = "Смерти",
