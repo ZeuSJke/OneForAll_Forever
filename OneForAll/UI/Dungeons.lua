@@ -1,4 +1,5 @@
 local _, FLT = ...
+FLT.DOT = FLT.DOT or "·" -- separator dot (Locales/Locale.lua; another one on Russian clients)
 local function N(s) return s end -- marks an English text translated where it is shown (tools/locale/extract.py)
 local L = FLT.L or setmetatable({}, { __index = function(_, k) return k end }) -- (tests without Locales)
 local unpack = unpack or table.unpack
@@ -814,7 +815,6 @@ local function createDungeonPanel(parent)
     for k,b in pairs(viewBtn) do b:SetScript("OnClick",function() browse._setView(k) end) end
     viewBtn.history,ny=UI.NavEntry(nav,ny,L["History"],"Interface\\Icons\\INV_Misc_Book_09")
     viewBtn.history:SetScript("OnClick",function() browse._showHistory() end)
-    do local m=UI.NewMark(viewBtn.history,string.format(L["New in OneForAll %s."],"6.2.14")); m:SetPoint("RIGHT",-8,0) end -- TODO.md "Neu-Markierungen"
     ny=UI.NavSeparator(nav,ny)
     local jump={}
     for i=1,math.max(#BRACKETS,#RAID_BRACKETS) do
@@ -902,23 +902,30 @@ local function createDungeonPanel(parent)
   local prevBtn=stepButton(-1); prevBtn:SetPoint("LEFT",back,"RIGHT",6,0)
   local nextBtn=stepButton(1); nextBtn:SetPoint("LEFT",prevBtn,"RIGHT",4,0)
   -- ht9 (user 30.10.): the band over the full width again (ht8 had made it as narrow as the list), a 1 px line
-  local dband=CreateFrame("Frame",nil,detail); dband:SetPoint("TOPLEFT",8,-8); dband:SetSize(FULL_W,58)
+  -- 6.2.17-beta19 (user 25.11.: "die button ... oben in den Banner rein schieben. dann den unteren Teil etwas nach oben ziehen"):
+  -- the band is a little taller and holds every head button - "Dungeons" < > bottom left over the picture (beta20, user 25.11.:
+  -- "links lassen in dem banner, also ueber dem dungeon bild aber links unten in der ecke"), Map / Bosses & Loot / Quests bottom right
+  local dband=CreateFrame("Frame",nil,detail); dband:SetPoint("TOPLEFT",8,-8); dband:SetSize(FULL_W,66)
   local dbandBg=makeTexture(dband,"BACKGROUND",0.045,0.045,0.058,0.96); dbandBg:SetPoint("TOPLEFT",1,-1); dbandBg:SetPoint("BOTTOMRIGHT",-1,1)
   UI.RoundRect(dband,dband,"OVERLAY",1,8,0,0.55,0.43,0.24,0.95,ASSET_ROOT.."window_ring")
-  -- the buttons sit in the row under the band, right of "Dungeons" (they covered the line under the title)
-  local brow=CreateFrame("Frame",nil,detail); brow:SetPoint("TOPLEFT",8,-73); brow:SetSize(FULL_W,26)
+  -- half see-through over the dungeon picture (beta21, user 25.11.: "kann man die button so halbtransparent machen?")
+  for _,b in ipairs({back,prevBtn,nextBtn}) do b:SetParent(dband); b:ClearAllPoints(); b:SetPlateAlpha(0.8) end
+  back:SetPoint("BOTTOMLEFT",dband,"BOTTOMLEFT",10,7); prevBtn:SetPoint("LEFT",back,"RIGHT",6,0); nextBtn:SetPoint("LEFT",prevBtn,"RIGHT",4,0)
+  local brow=CreateFrame("Frame",nil,dband); brow:SetPoint("BOTTOMLEFT",dband,"BOTTOMLEFT",0,7); brow:SetSize(FULL_W,24)
   -- dungeon picture fills the left part of the band (no own frame) and
   -- fades out to the right; the band's ornate frame lies on top
   local detailArt=dband:CreateTexture(nil,"BORDER"); detailArt:SetPoint("TOPLEFT",2,-2); detailArt:SetPoint("BOTTOMLEFT",2,2); detailArt:SetWidth(300); detailArt:Hide()
   local detailArtFrame={Show=function() end,Hide=function() end}
-  local dtitle=FLT.NewFS(dband, nil,"OVERLAY","GameFontNormalLarge"); dtitle:SetPoint("TOPLEFT",196,-8); dtitle:SetTextColor(FLT.TextC(1,0.82,0.20))
+  local dtitle=FLT.NewFS(dband, nil,"OVERLAY","GameFontNormalLarge"); dtitle:SetPoint("TOPLEFT",206,-10); dtitle:SetTextColor(FLT.TextC(1,0.82,0.20))
+  dtitle:SetWidth(760); dtitle:SetJustifyH("LEFT"); dtitle:SetWordWrap(false)
   do local font,_,flags=dtitle:GetFont(); if font then dtitle:SetFont(font,21,flags) end end
-  local dcrest=dband:CreateTexture(nil,"ARTWORK"); dcrest:SetSize(16,16); dcrest:SetPoint("TOPLEFT",194,-35); FLT.SetTex(dcrest, ASSET_ROOT.."faction_crests")
+  local dcrest=dband:CreateTexture(nil,"ARTWORK"); dcrest:SetSize(16,16); dcrest:SetPoint("TOPLEFT",204,-40); FLT.SetTex(dcrest, ASSET_ROOT.."faction_crests")
   local dmeta=FLT.NewFS(dband, nil,"OVERLAY","GameFontHighlightSmall"); dmeta:SetPoint("LEFT",dcrest,"RIGHT",5,0); dmeta:SetTextColor(FLT.TextC(0.78,0.75,0.68))
-  local bossesBtn=UI.GoldButton(brow,L["Bosses & Loot"],126,26,nil,13); bossesBtn:SetPoint("RIGHT",-142,0)
-  local questsBtn=UI.GoldButton(brow,L["Quests"],120,26,nil,13); questsBtn:SetPoint("RIGHT",-14,0)
-  local keyBtn=UI.GoldButton(brow,L["Key"],110,26,nil,13); keyBtn:SetPoint("RIGHT",-14,0); keyBtn:Hide()
-  local mapBtn=UI.GoldButton(brow,L["Map"],84,26,ASSET_ROOT.."icon_map",13,true); -- a real button here (user 31.10.)
+  dmeta:SetWidth(395); dmeta:SetJustifyH("LEFT"); dmeta:SetWordWrap(false) -- stays clear of Map / Bosses & Loot / Quests
+  local bossesBtn=UI.GoldButton(brow,L["Bosses & Loot"],126,24,nil,13); bossesBtn:SetPoint("RIGHT",-140,0)
+  local questsBtn=UI.GoldButton(brow,L["Quests"],120,24,nil,13); questsBtn:SetPoint("RIGHT",-12,0)
+  local keyBtn=UI.GoldButton(brow,L["Key"],110,24,nil,13); keyBtn:SetPoint("RIGHT",-12,0); keyBtn:Hide()
+  local mapBtn=UI.GoldButton(brow,L["Map"],84,24,ASSET_ROOT.."icon_map",13,true); -- a real button here (user 31.10.)
   mapBtn:SetPoint("RIGHT",bossesBtn,"LEFT",-8,0); mapBtn:Hide() -- 8 px between all head buttons (user 31.10.)
 
   -- Rounded card background with an automatic border colour (lighter than
@@ -931,8 +938,11 @@ local function createDungeonPanel(parent)
   -- ht11 (user 30.10.): rows like the lists elsewhere - no frame, a fine line under the row, a faint hover; the
   -- selected row a dark warm plate with the short gold mark on the left (like the side lists)
   local function cardBg(owner,r,g,b,a,edge)
-    local line=owner:CreateTexture(nil,"BORDER"); line:SetColorTexture(0.40,0.32,0.20,0.35); line:SetHeight(1)
-    line:SetPoint("BOTTOMLEFT",4,0); line:SetPoint("BOTTOMRIGHT",-4,0)
+    -- edge "box" (quest list, 6.2.17-beta16): the row sits in its own box (UI.Card) - no line under it
+    if edge~="box" then
+      local line=owner:CreateTexture(nil,"BORDER"); line:SetColorTexture(0.40,0.32,0.20,0.35); line:SetHeight(1)
+      line:SetPoint("BOTTOMLEFT",4,0); line:SetPoint("BOTTOMRIGHT",-4,0)
+    end
     local sel=UI.RoundRect(owner,owner,"BACKGROUND",1,6,0,0.21,0.15,0.08,0.95); sel:SetShown(false)
     local mark=UI.GlowLine(owner,"LEFT",0.85,5); mark:Hide()
     local hov=owner:CreateTexture(nil,"BACKGROUND",nil,2); hov:SetAllPoints(); hov:SetColorTexture(0.90,0.66,0.22,0.06); hov:Hide()
@@ -1016,9 +1026,9 @@ local function createDungeonPanel(parent)
   -- the header band of the left lists (bosses, quests, key / attunement): plain, no picture (bosses since 5.7.x,
   -- quests and key the same since 5.7.3, user 27.10.)
   local function listBand(f)
-    local base=f:CreateTexture(nil,"BORDER",nil,0); base:SetPoint("TOPLEFT",4,-4); base:SetPoint("TOPRIGHT",-4,-4); base:SetHeight(36)
-    base:SetColorTexture(FLT.SkinC(0.03,0.03,0.035,0.85))
-    local lea=f:CreateTexture(nil,"BORDER",nil,2); lea:SetAllPoints(base); FLT.SetTex(lea, ASSET_ROOT.."leather"); lea:SetVertexColor(FLT.SkinC(0.5,0.45,0.4)); lea:SetAlpha(0.15)
+    -- only the line under the head (6.2.17-beta22, user 25.11.: "ein schwarzer hintergrund hinterlegt.. brauchen wir den?" - the dark
+    -- leather band behind "Quests | 6" / "Bosses | 4" is gone); base is just the anchor for the line
+    local base=CreateFrame("Frame",nil,f); base:SetPoint("TOPLEFT",4,-4); base:SetPoint("TOPRIGHT",-4,-4); base:SetHeight(36)
     local line=f:CreateTexture(nil,"ARTWORK"); FLT.SetTex(line, ASSET_ROOT.."divider_ornate")
     line:SetPoint("LEFT",base,"BOTTOMLEFT",0,0); line:SetPoint("RIGHT",base,"BOTTOMRIGHT",0,0); line:SetHeight(16)
   end
@@ -1066,7 +1076,7 @@ local function createDungeonPanel(parent)
 
   -- Body is no longer one big ScrollFrame. Boss/quest lists own their scroll state,
   -- so selecting an entry never sends the entire dungeon page back to the top.
-  local body=CreateFrame("Frame",nil,detail); body:SetPoint("TOPLEFT",8,-106); body:SetPoint("BOTTOMRIGHT",-8,4)
+  local body=CreateFrame("Frame",nil,detail); body:SetPoint("TOPLEFT",8,-84); body:SetPoint("BOTTOMRIGHT",-8,4) -- 10 px under the band (6.2.17-beta19; was -106 with the button row under it)
   -- Every dungeon/mode(/faction filter) combination gets its own view frame.
   -- A view is built on first use and afterwards only shown/hidden. WoW never
   -- frees frames, so the previous "destroy and rebuild on every click"
@@ -1094,9 +1104,34 @@ local function createDungeonPanel(parent)
 
   -- Item names/icons are colored from the client item cache. Cached panes
   -- re-apply them when shown again, because the data may have loaded since.
+  -- "Two-Hand · Axe": the slot from our data, else from the client once it knows the item
+  local function itemSlotLine(rec)
+    local sl=type(rec.slot)=="string" and rec.slot or nil
+    if sl then return ((FLT.SlotText and FLT.SlotText(sl) or sl):gsub(",%s*"," " .. FLT.DOT .. " ")) end
+    if rec.id and C_Item and C_Item.GetItemInfoInstant then
+      local ok,_,_,sub,loc=pcall(C_Item.GetItemInfoInstant,rec.id)
+      if ok then
+        local where=loc and loc~="" and _G[loc] or nil
+        if sub then sub=sub:gsub("^Two%-Handed ",""):gsub("^One%-Handed ","") end -- "Two-Hand · Axes", not "Two-Hand · Two-Handed Axes"
+        if where and sub and sub~="" and sub~=where then return where.." " .. FLT.DOT .. " "..sub end
+        return where or sub or ""
+      end
+    end
+    return ""
+  end
   local function refreshItemVisuals(list)
     for _,it in ipairs(list or {}) do
       colorDungeonItemText(it.text,it.rec,it.r,it.g,it.b)
+      -- the quality colour on the reward card's edge and around its icon (quest pane, beta45)
+      if it.card then
+        local r,g,b=it.text:GetTextColor()
+        if r then
+          it.card:SetBorder(0.14+r*0.30,0.14+g*0.30,0.15+b*0.30,0.95) -- only a hint of the quality on the edge
+          if it.accent then it.accent:SetColorTexture(r,g,b,1) end
+        end
+      end
+      if it.light then local r,g,b=it.text:GetTextColor(); if r then it.text:SetTextColor(r+(1-r)*0.42,g+(1-g)*0.42,b+(1-b)*0.42) end end -- on a dark tile
+      if it.slotText then it.slotText:SetText(itemSlotLine(it.rec)) end
       if it.rec.id and FLT.ItemName then it.text:SetText(FLT.ItemName(it.rec.id,it.rec.name)) end -- German once loaded
       if it.icon then FLT.SetTex(it.icon, dungeonItemIcon(it.rec)) end
       -- green arrow on upgrades (user 16.11.), like the bags and the game's quest rewards
@@ -1402,10 +1437,21 @@ local function createDungeonPanel(parent)
   -- Detail layout shared by the Quests and Key tabs: title, a row of small
   -- "chips" (level, faction, status ...), label rows and framed boxes.
   local CHIP_CREST={Alliance={0,0.25},Horde={0.25,0.5},Both={0.5,0.75}}
-  local STATUS_COLOR={completed={0.40,0.94,0.50},inlog={1,0.82,0.20},chain={0.45,0.85,0.70},ready={1,0.82,0.20},available={0.92,0.90,0.84},unavailable={0.62,0.60,0.56},open={0.92,0.90,0.84}}
+  -- one colour per quest status (6.2.17-beta45, user 25.11. 18:00, concept "ofa_quest_ui_package": a coloured bar and a label per
+  -- row; "Chain" and "In log" were missing there): done green, ready to turn in gold, in the log blue, chain started teal, available
+  -- grey, unavailable dim, no longer available red
+  local STATUS_COLOR={completed={0.40,0.94,0.50},inlog={0.50,0.78,1.00},chain={0.40,0.86,0.76},ready={1,0.82,0.20},available={0.80,0.78,0.72},unavailable={0.56,0.54,0.50},missed={0.90,0.45,0.38},open={0.80,0.78,0.72}}
+  -- the quest pane (beta45: dark again, no parchment): gold headings, light text, dimmer labels; INK = while a quest pane is built
+  -- (infoRow, placeRow, openBox, chips follow it)
+  local INK={title={1,0.82,0.20},head={1,0.82,0.20},label={0.64,0.62,0.58},text={0.92,0.90,0.86},dim={0.58,0.56,0.52}}
+  local STATUS_INK=STATUS_COLOR
+  local inkMode=false
+  local PDW=0 -- how much wider the content is while a quest pane is built (6.2.17-beta46, user 25.11. 18:40: "rechts ... etwas breiter")
+  local function ink(fs,c) if fs then fs:SetTextColor(FLT.TextC(c[1],c[2],c[3])) end return fs end
   local function makeChip(parent,text,color,crest)
     local f=CreateFrame("Frame",nil,parent); f:SetHeight(22)
-    Card(f,f,4,{0.50,0.40,0.24,0.90},{0.055,0.055,0.065,0.96},"BACKGROUND",0)
+    local light=inkMode
+    Card(f,f,4,{0.42,0.35,0.24,0.90},{0.055,0.055,0.065,0.96},"BACKGROUND",0)
     local ix=9
     if crest then
       local ic=f:CreateTexture(nil,"ARTWORK"); ic:SetSize(14,14); ic:SetPoint("LEFT",7,0)
@@ -1414,7 +1460,8 @@ local function createDungeonPanel(parent)
     end
     local fs=FLT.NewFS(f,nil,"OVERLAY","GameFontHighlightSmall"); fs:SetPoint("LEFT",ix,0)
     function f:Set(t,c)
-      fs:SetText(t or ""); local col=c or {0.92,0.90,0.84}; fs:SetTextColor(FLT.TextC(col[1],col[2],col[3]))
+      fs:SetText(t or "")
+      if light then ink(fs,c or INK.text) else local col=c or {0.92,0.90,0.84}; fs:SetTextColor(FLT.TextC(col[1],col[2],col[3])) end
       f:SetWidth(ix+math.floor((fs:GetStringWidth() or 40)+0.5)+10)
     end
     f:Set(text,color)
@@ -1425,8 +1472,11 @@ local function createDungeonPanel(parent)
     for _,c in ipairs(chips) do c:ClearAllPoints(); c:SetPoint("TOPLEFT",x,y); x=x+(c:GetWidth() or 60)+6 end
   end
   local function infoRow(parent,y,label,text,valueW)
-    local h=FLT.NewFS(parent,nil,"OVERLAY","GameFontNormalSmall"); h:SetPoint("TOPLEFT",10,y); h:SetWidth(86); h:SetJustifyH("LEFT"); h:SetText(L[label]); h:SetTextColor(FLT.TextC(1,0.82,0.20))
-    local b=FLT.NewFS(parent,nil,"OVERLAY","GameFontHighlightSmall"); b:SetPoint("TOPLEFT",100,y); b:SetWidth(valueW or 330); b:SetJustifyH("LEFT"); b:SetText(text or L["Unknown"]); b:SetWordWrap(true)
+    -- in the quest pane one size bigger (beta35, user 25.11.: "das starts at, turn in, etc. oben vllt auch ein wenig groesser")
+    local big=inkMode
+    local h=FLT.NewFS(parent,nil,"OVERLAY",big and "GameFontNormal" or "GameFontNormalSmall"); h:SetPoint("TOPLEFT",10,y); h:SetWidth(big and 116 or 86); h:SetJustifyH("LEFT"); h:SetText(L[label]); h:SetTextColor(FLT.TextC(1,0.82,0.20))
+    local b=FLT.NewFS(parent,nil,"OVERLAY",big and "GameFontHighlight" or "GameFontHighlightSmall"); b:SetPoint("TOPLEFT",big and 130 or 100,y); b:SetWidth((valueW or 330)+PDW-(big and 30 or 0)); b:SetJustifyH("LEFT"); b:SetText(text or L["Unknown"]); b:SetWordWrap(true)
+    if inkMode then ink(h,INK.label); ink(b,INK.text) end
     return y-math.max(16,b:GetStringHeight() or 16)-8, b
   end
   -- 6.2.7 (user 13.11.: "das muss alles gepflegt sein"): "Starts at" / "Turn in" with a Map button whenever the place is known;
@@ -1443,7 +1493,7 @@ local function createDungeonPanel(parent)
     local ny=infoRow(parent,y,label,shown,loc and 250 or 330)
     if loc then
       local b=UI.GoldButton(parent,L["Map"],62,20,ASSET_ROOT.."icon_map",11)
-      b:SetPoint("TOPRIGHT",parent,"TOPLEFT",446,yStart+3)
+      b:SetPoint("TOPRIGHT",parent,"TOPLEFT",446+PDW,yStart+3)
       b:SetScript("OnClick",function() FLT:ShowOnMap(loc) end)
       b:SetScript("OnEnter",function(self)
         GameTooltip:SetOwner(self,"ANCHOR_RIGHT")
@@ -1470,10 +1520,12 @@ local function createDungeonPanel(parent)
   -- framed box with a gold title; returns the box, the y where content starts
   -- and a function that closes the box at the given y (returns the next y)
   local function openBox(parent,y,title,width)
-    local box=CreateFrame("Frame",nil,parent); box:SetPoint("TOPLEFT",8,y); box:SetWidth(width or 440)
+    local box=CreateFrame("Frame",nil,parent); box:SetPoint("TOPLEFT",8,y); box:SetWidth((width or 440)+PDW)
     if box.SetFrameLevel and parent.GetFrameLevel then box:SetFrameLevel(parent:GetFrameLevel() or 1) end
-    Card(box,box,5,{0.50,0.40,0.24,0.90},{0.050,0.048,0.055,0.92},"BACKGROUND",0)
-    local t=FLT.NewFS(box,nil,"OVERLAY","GameFontNormal"); t:SetPoint("TOPLEFT",10,-7); t:SetText(L[title]); t:SetTextColor(FLT.TextC(1,0.82,0.20))
+    -- in the quest pane: a gold heading, no box around it (6.2.17-beta16; beta45 on the dark panel)
+    if not inkMode then Card(box,box,5,{0.50,0.40,0.24,0.90},{0.050,0.048,0.055,0.92},"BACKGROUND",0) end
+    local t=FLT.NewFS(box,nil,"OVERLAY",inkMode and "GameFontNormalLarge" or "GameFontNormal"); t:SetPoint("TOPLEFT",10,-7); t:SetText(L[title]); t:SetTextColor(FLT.TextC(1,0.82,0.20))
+    if inkMode then ink(t,INK.head) end
     local function close(endY) box:SetHeight(math.max(30,y-endY+6)); return endY-14 end
     return box,y-30,close
   end
@@ -1511,8 +1563,16 @@ local function createDungeonPanel(parent)
     end
     local idx=questSelection[d.key] or 1; if idx>#quests then idx=1 end; if idx<1 then idx=1 end; questSelection[d.key]=idx
 
-    local left=dynFrame("Frame"); left:SetPoint("TOPLEFT",0,0); left:SetPoint("BOTTOMLEFT",0,0); left:SetWidth(390)
-    framedPanel(left,7)
+    -- the list is wider than in the boss view and the parchment sits at the right edge (6.2.17-beta21, user 25.11.: "der grosse
+    -- schwarze bereich rechts stoert mich ... den braunen questbereich moechte ich nicht breiter machen" -> "Questliste breiter")
+    -- beta46 (user 25.11. 18:40: "den linken bereich mit der questliste wieder etwas schmaler ... den bereich rechts ... etwas breiter"):
+    -- the list as wide as the boss list, the details take the rest
+    local WIDER=0
+    local LEFT_W=390+WIDER
+    local RIGHT_W=FULL_W-LEFT_W-12
+    local DW=RIGHT_W-474 -- the quest pane was built for 474
+    local left=dynFrame("Frame"); left:SetPoint("TOPLEFT",0,0); left:SetPoint("BOTTOMLEFT",0,0); left:SetWidth(LEFT_W)
+    framedPanel(left,math.floor((FULL_W-RIGHT_W-LEFT_W)/2)) -- the line in the middle between list and details
     listBand(left)
     local lh=dynText(left,"GameFontNormalLarge"); lh:SetPoint("TOPLEFT",16,-14); lh:SetText(L["Quests"].." | "..#quests); lh:SetTextColor(FLT.TextC(1,0.82,0.20))
     local shareBtn
@@ -1563,24 +1623,65 @@ local function createDungeonPanel(parent)
     allianceBtn:SetActive(filter=="Alliance"); hordeBtn:SetActive(filter=="Horde")
     allianceBtn:SetScript("OnClick",function() questFactionFilter[d.key]="Alliance"; questSelection[d.key]=1; renderQuests(d) end)
     hordeBtn:SetScript("OnClick",function() questFactionFilter[d.key]="Horde"; questSelection[d.key]=1; renderQuests(d) end)
-    local legend=dynText(left,"GameFontDisableSmall"); legend:SetPoint("TOPLEFT",14,-48); legend:SetWidth(368); legend:SetJustifyH("LEFT"); legend:SetWordWrap(true); legend:SetText(string.format(L["Green = done   Half green = ready to turn in   Green text = in log   Teal = chain started   Dim = unavailable   %s + shared"],L[filter]))
-
-    -- the list starts below the legend (2 lines in English; 3 in some languages since the teal line, 6.2.2)
-    local listTop=math.max(78, 48+math.ceil(legend:GetStringHeight() or 26)+6)
+    -- the legend (beta46, user 25.11. 18:38: "die legende oben hast du ... ganz weg gelassen"): a coloured mark per status like the
+    -- concept, plus "In log" and "Chain"; it wraps when a language needs more room
+    local legX,legY=16,-50
+    local function legendItem(text,c)
+      local fs=dynText(left,"GameFontDisableSmall"); fs:SetText(text)
+      local w=12+math.ceil(fs:GetStringWidth() or 50)
+      if legX>16 and legX+w>LEFT_W-12 then legX=16; legY=legY-16 end
+      local m=CreateFrame("Frame",nil,left); m:SetSize(8,8); m:SetPoint("TOPLEFT",legX,legY-2)
+      UI.RoundRect(m,m,"ARTWORK",0,2,0,c[1],c[2],c[3],1)
+      fs:SetPoint("TOPLEFT",legX+12,legY)
+      legX=legX+w+12
+    end
+    legendItem(L["Completed"],STATUS_COLOR.completed); legendItem(L["Ready to turn in"],STATUS_COLOR.ready)
+    legendItem(L["In log"],STATUS_COLOR.inlog); legendItem(L["Chain"],STATUS_COLOR.chain)
+    legendItem(L["Available"],STATUS_COLOR.available) -- no "Selected" (user 25.11. 20:00: "selected kannst du weg machen")
+    local listTop=-legY+20
     local qsf=dynFrame("ScrollFrame",left,"UIPanelScrollFrameTemplate"); qsf:SetPoint("TOPLEFT",10,-listTop); qsf:SetPoint("BOTTOMRIGHT",-3,8); tidyScroll(qsf,left)
-    local qchild=dynFrame("Frame",qsf); qchild:SetSize(LAYOUT.QUEST_LIST_WIDTH,1); qsf:SetScrollChild(qchild)
+    local qchild=dynFrame("Frame",qsf); qchild:SetSize(LAYOUT.QUEST_LIST_WIDTH+WIDER,1); qsf:SetScrollChild(qchild)
     local qy=-2
     local rows={}
+    -- a small rounded label: tinted plate, text in the status colour (row status, chain chip under the name)
+    local function pill(parent,font)
+      local f=CreateFrame("Frame",nil,parent); f:SetHeight(18)
+      f.bg=UI.RoundRect(f,f,"ARTWORK",0,5,0,0.2,0.2,0.2,0.9)
+      f.text=FLT.NewFS(f,nil,"OVERLAY",font or "GameFontNormalSmall"); f.text:SetPoint("CENTER",0,0)
+      function f:Set(t,c,plate)
+        f.text:SetText(t or ""); f.text:SetTextColor(FLT.TextC(c[1],c[2],c[3]))
+        local k=plate or 0.26; f.bg:SetColor(c[1]*k,c[2]*k,c[3]*k,0.95)
+        f:SetWidth(math.ceil((f.text:GetStringWidth() or 40)+14)); f:SetShown(t and t~="" and true or false)
+      end
+      return f
+    end
     for i,quest in ipairs(quests) do
-      local row=dynFrame("Button",qchild); row:SetSize(LAYOUT.QUEST_ROW_WIDTH,40); row:SetPoint("TOPLEFT",0,qy); qy=qy-42
-      local bg=cardBg(row,0.068,0.070,0.080,0.95); bg.plateOff=true
+      -- every quest in its own box (6.2.17-beta16); beta45 (concept): neutral dark rows, the status as a coloured bar on the left and a
+      -- label on the right, the name always light; done rows keep a light green tint; the selection is the gold frame
+      local row=dynFrame("Button",qchild); row:SetSize(LAYOUT.QUEST_ROW_WIDTH+WIDER,44); row:SetPoint("TOPLEFT",0,qy); qy=qy-49
+      Card(row,row,5,{0.30,0.27,0.22,0.85},{0.085,0.083,0.088,0.95},"BACKGROUND",-2)
+      local bg=cardBg(row,0.068,0.070,0.080,0.95,"box"); bg.plateOff=true
       local hi=makeTexture(row,"HIGHLIGHT",0.62,0.44,0.16,0.045); hi:SetPoint("TOPLEFT",1,-1); hi:SetPoint("BOTTOMRIGHT",-1,1)
+      -- the bar on the row's left edge, its full height (beta46, user 25.11. 18:38: "das highlight an den quests ... in der vorlage besser")
+      local bar=row:CreateTexture(nil,"OVERLAY",nil,2); bar:SetPoint("TOPLEFT",0,-1); bar:SetPoint("BOTTOMLEFT",0,1); bar:SetWidth(4)
       local qn=FLT.NewFS(row, nil,"OVERLAY","GameFontNormal")
-      qn:SetWidth(295); qn:SetJustifyH("LEFT"); qn:SetWordWrap(false) -- one line (German titles ran into the meta line)
+      qn:SetJustifyH("LEFT"); qn:SetWordWrap(false) -- one line (German titles ran into the meta line)
       qn:SetText(NM(quest.name))
-      qn:SetPoint("TOPLEFT",12,-3)
-      local meta=FLT.NewFS(row, nil,"OVERLAY","GameFontHighlightSmall"); meta:SetPoint("TOPLEFT",30,-21); meta:SetWidth(295); meta:SetJustifyH("LEFT")
-      rows[i]={button=row,bg=bg,name=qn,meta=meta,quest=quest}
+      qn:SetPoint("TOPLEFT",14,-6)
+      local meta=FLT.NewFS(row, nil,"OVERLAY","GameFontHighlightSmall"); meta:SetPoint("TOPLEFT",14,-25); meta:SetJustifyH("LEFT"); meta:SetWordWrap(false)
+      local tag=pill(row,"GameFontHighlightSmall"); tag:SetHeight(15); tag:SetPoint("LEFT",meta,"RIGHT",6,0)
+      local st=pill(row); st:SetPoint("RIGHT",row,"RIGHT",-10,0)
+      qn:SetPoint("RIGHT",st,"LEFT",-8,0) -- the name ends before the label (long German names)
+      rows[i]={button=row,bg=bg,bar=bar,name=qn,meta=meta,tag=tag,state=st,quest=quest}
+      row:SetScript("OnEnter",function(self)
+        local r=rows[i]
+        local why=(r.status=="unavailable" or r.status=="missed") and unavailableText(quest) or nil
+        if not why then return end
+        GameTooltip:SetOwner(self,"ANCHOR_RIGHT"); GameTooltip:AddLine(NM(quest.name),1,0.82,0.20)
+        GameTooltip:AddLine(L[QUEST_STATUS_LABELS[r.status] or r.status],0.80,0.78,0.72); GameTooltip:AddLine(why,0.92,0.90,0.86,true)
+        GameTooltip:Show()
+      end)
+      row:SetScript("OnLeave",function() GameTooltip:Hide() end)
     end
     qchild:SetHeight(math.max(1,-qy+2))
 
@@ -1589,24 +1690,43 @@ local function createDungeonPanel(parent)
         local quest=row.quest
         local questStatus=getDungeonQuestStatus(d, quest)
         row.status=questStatus
-        local req=quest.required or quest.level or "?"; local m=string.format(L["Req. %s"],tostring(req)).."  |  "..L[quest.side or "Both"]
+        -- no "Horde" / "Alliance" here: the faction tab shows only its own quests and the shared ones (6.2.17-beta16)
+        local req=quest.required or quest.level or "?"; local m=string.format(L["Req. %s"],tostring(req))
         if quest.class then m=m.." / "..((type(LOCALIZED_CLASS_NAMES_MALE)=="table" and LOCALIZED_CLASS_NAMES_MALE[quest.class]) or quest.class) end -- the class name, not "PRIEST" (6.2.4)
         local stepIdx, stepTotal, stepInLog = getChainProgress(quest)
-        m=m.."  |  "..((questStatus=="chain" and not stepInLog) and L["Chain started"] or L[QUEST_STATUS_LABELS[questStatus] or questStatus])
+        local c=STATUS_COLOR[questStatus] or STATUS_COLOR.open
+        -- the label: a started chain says which step is in the log ("Chain 2/4"), else "Chain started"
+        local label=L[QUEST_STATUS_LABELS[questStatus] or questStatus]
+        if questStatus=="chain" then label=stepIdx and string.format(L["Chain %d/%d"],stepIdx,stepTotal) or L["Chain started"] end
+        row.state:Set(label,c)
+        row.bar:SetColorTexture(FLT.SkinC(c[1],c[2],c[3],(questStatus=="unavailable" or questStatus=="missed") and 0.55 or 1))
+        -- the name light on every row, dim when it cannot be taken; done rows a light green tint
+        local dim=questStatus=="unavailable" or questStatus=="missed"
+        row.name:SetTextColor(FLT.TextC(dim and 0.58 or 0.95,dim and 0.56 or 0.93,dim and 0.52 or 0.88))
+        row.meta:SetTextColor(FLT.TextC(dim and 0.48 or 0.62,dim and 0.46 or 0.60,dim and 0.43 or 0.56))
+        row.bg:SetFill(questStatus=="completed" and 0.10 or nil, 0.26, 0.12, 0.42)
+        -- the chain chip under the name: "Chain" or the step it is at (not twice when the label says it already)
+        local chip
         if quest.id and FLT.QUEST_PREREQ_CHAINS and FLT.QUEST_PREREQ_CHAINS[quest.id] then
           if (questStatus=="inlog" or questStatus=="ready") and not stepIdx and stepTotal then stepIdx = stepTotal end
-          m=m.."  |  "..(stepIdx and string.format(L["Chain %d/%d"],stepIdx,stepTotal) or L["Chain"])
+          chip=(stepIdx and questStatus~="chain") and string.format(L["Chain %d/%d"],stepIdx,stepTotal) or L["Chain"]
         end
+        row.tag:Set(chip,{0.70,0.68,0.62},0.22)
         row.meta:SetText(m)
       end
     end
     refreshRowStatus()
 
-    local right=dynFrame("Frame"); right:SetPoint("TOPLEFT",405,0); right:SetPoint("BOTTOMRIGHT",0,0)
+    local right=dynFrame("Frame"); right:SetPoint("TOPRIGHT",0,0); right:SetPoint("BOTTOMRIGHT",0,0); right:SetWidth(RIGHT_W)
     framedPanel(right)
-    detailBackdrop(right,d,0.45)
+    -- the details on a dark panel (6.2.17-beta45, user 25.11. 18:00 with the concept: "No parchment. Same dark panel as the rest of the
+    -- addon"; the parchment of beta16 had too little contrast for coloured text); it follows the window opacity like the other panels
+    do
+      local pa=CreateFrame("Frame",nil,right); pa:SetPoint("TOPLEFT",4,-2); pa:SetPoint("BOTTOMLEFT",4,4); pa:SetWidth(466+DW)
+      Card(pa,pa,5,{0.34,0.29,0.21,0.85},{0.060,0.058,0.064,0.92},"BACKGROUND",-1)
+    end
     if #quests==0 then
-      local none=dynText(right,"GameFontDisable"); none:SetPoint("TOPLEFT",18,-18); none:SetWidth(460); none:SetJustifyH("LEFT")
+      local none=dynText(right,"GameFontDisable"); none:SetPoint("TOPLEFT",18,-18); none:SetWidth(460+DW); none:SetJustifyH("LEFT"); ink(none,INK.dim)
       if #allQuests==0 then
         none:SetText(L[d.dataStatus=="partial" and N"No quests have been recorded for this new Forever dungeon yet." or N"No dungeon quests are recorded for this dungeon."])
       else
@@ -1629,30 +1749,10 @@ local function createDungeonPanel(parent)
       if #quests==0 then return end
       if newIdx<1 then newIdx=1 elseif newIdx>#quests then newIdx=#quests end
       questSelection[d.key]=newIdx
+      -- the colours come from refreshRowStatus; here only the selection: the gold frame (beta45, concept: "selection and status are
+      -- two separate signals")
       for i,row in ipairs(rows) do
-        for _,o in ipairs(row.orn or {}) do o:SetShown(i==newIdx) end
-        -- the name keeps its status colour when selected (6.1.6, Discord Stole Ton 06.11.: the yellow of the selected
-        -- quest looked like a higher-level quest); the plate and the gold corners show the selection
-        -- 6.1.9 (user 07.11.): completed = bright green on a light green row (no check mark any more), in the log =
-        -- the darker green
-        row.bg:SetFill(row.status == "completed" and 0.10 or nil, 0.34, 0.12, 0.42)
-        row.bg:SetHalfFill(row.status == "ready" and 0.10 or nil, 0.34, 0.12, 0.42) -- ready: green to the middle
-        -- 6.2.2 (user 08.11.): white = not taken, teal = chain started (an earlier step in the log), green text = the
-        -- quest itself in the log; ready = green text + half green row, done = green text + green row
-        if row.status == "chain" then
-          row.bg:SetColorTexture(FLT.SkinC(0.068,0.070,0.080,0.95))
-          row.name:SetTextColor(FLT.TextC(0.45,0.85,0.70))
-        elseif row.status == "inlog" or row.status == "ready" or row.status == "completed" then
-          row.bg:SetColorTexture(FLT.SkinC(0.068,0.070,0.080,0.95))
-          row.name:SetTextColor(FLT.TextC(0.25,1,0.35))
-        elseif row.status == "unavailable" or row.status == "missed" then
-          row.bg:SetColorTexture(FLT.SkinC(0.07,0.06,0.05,0.72))
-          row.name:SetTextColor(FLT.TextC(0.58,0.56,0.52))
-        else
-          row.bg:SetColorTexture(FLT.SkinC(0.068,0.070,0.080,0.95))
-          row.name:SetTextColor(FLT.TextC(0.92,0.90,0.84))
-        end
-        if i==newIdx then row.bg:SetColorTexture(FLT.SkinC(0.22,0.155,0.055,0.98,true)) end
+        row.bg:SetColorTexture(FLT.SkinC(0.068,0.070,0.080,0.95,i==newIdx))
       end
 
       for i,pane in pairs(detailPanes) do if i~=newIdx then pane:Hide() end end
@@ -1670,7 +1770,9 @@ local function createDungeonPanel(parent)
       local pane=host
       local chainRows={}
 
-      local qn=dtext(host,"GameFontNormalLarge"); qn:SetPoint("TOPLEFT",18,-16); qn:SetWidth(475); qn:SetJustifyH("LEFT"); qn:SetText(NM(q.name)); qn:SetTextColor(FLT.TextC(1,0.82,0.20))
+      inkMode=true; PDW=DW -- until the pane is built (chips, rows, sections in the quest pane's colours, its width)
+      local qn=dtext(host,"GameFontNormalLarge"); qn:SetPoint("TOPLEFT",18,-16); qn:SetWidth(440+DW); qn:SetJustifyH("LEFT"); qn:SetText(NM(q.name)); ink(qn,INK.title)
+      do local f,sz,fl=qn:GetFont(); if f and sz then qn:SetFont(f,sz+4,fl) end end -- a little bigger (beta35, user 25.11.)
       -- chips: required level, faction, class, dungeon quest, status
       local chips={}
       chips[#chips+1]=makeChip(host,string.format(L["Req. %s"],tostring(q.required or q.level or "?")))
@@ -1680,34 +1782,46 @@ local function createDungeonPanel(parent)
       local statusChip=makeChip(host,"")
       chips[#chips+1]=statusChip
       layoutChips(chips,18,-44)
-      local qdv=host:CreateTexture(nil,"ARTWORK"); FLT.SetTex(qdv, ASSET_ROOT.."divider_ornate"); qdv:SetPoint("TOPLEFT",14,-70); qdv:SetPoint("TOPRIGHT",-24,-70); qdv:SetHeight(18)
+      local qdv=host:CreateTexture(nil,"ARTWORK"); FLT.SetTex(qdv, ASSET_ROOT.."divider_ornate"); qdv:SetPoint("TOPLEFT",14,-70); qdv:SetPoint("TOPRIGHT",host,"TOPLEFT",458+DW,-70); qdv:SetHeight(20)
+      -- a muted gold on the dark panel (beta45); ends inside the panel (x 4..470)
+      qdv:SetVertexColor(0.78,0.60,0.28,0.85)
 
       local rsf=dframe("ScrollFrame",host,"UIPanelScrollFrameTemplate"); rsf:SetPoint("TOPLEFT",10,-92); rsf:SetPoint("BOTTOMRIGHT",-2,8); tidyScroll(rsf,right)
-      local rchild=dframe("Frame",rsf); rchild:SetSize(LAYOUT.QUEST_DETAIL_CHILD_WIDTH,1); rsf:SetScrollChild(rchild)
+      local rchild=dframe("Frame",rsf); rchild:SetSize(LAYOUT.QUEST_DETAIL_CHILD_WIDTH+DW,1); rsf:SetScrollChild(rchild)
       local ry=-4
       local statusValue
       do
         local sLoc,eLoc=questPlaces(d,q.id,q.starts,q.turnin)
         ry=placeRow(rchild,ry,N"Starts at",q.starts,sLoc)
+        -- a chain that starts elsewhere: its first step's start right under it (6.2.17-beta14, Discord shemshari 25.11.: The
+        -- Spider God "starts with Master Gadrin ... but really, it starts by obtaining a Venom Bottle")
+        local ch=q.id and FLT.QUEST_PREREQ_CHAINS and FLT.QUEST_PREREQ_CHAINS[q.id]
+        local first=ch and ch[1]
+        if first and first.id and first.id~=q.id then
+          local fd=FLT.QUEST_PREREQ_DETAILS and FLT.QUEST_PREREQ_DETAILS[first.id]
+          local fLoc=FLT.QuestLoc and FLT:QuestLoc(first.id,fd and fd.pickup or nil)
+          local what=(fd and fd.pickup and fd.pickup~="" and fd.pickup) or NM(first.name)
+          if what then ry=placeRow(rchild,ry,N"Chain starts at",what,fLoc) end
+        end
         if (q.turnin and q.turnin~="") or eLoc then ry=placeRow(rchild,ry,N"Turn in",q.turnin~="" and q.turnin or nil,eLoc) end
       end
-      ry=infoRow(rchild,ry,N"Dungeon",DN(d.name))
-      ry,statusValue=infoRow(rchild,ry,N"Status","")
-      -- why it is unavailable, under the status (6.2.6, user 11.11.); the pane is rebuilt when the reason changes
+      -- no "Dungeon" row (we are in its tab) and "Status" only when the quest is not available - the chip above shows it
+      -- (6.2.17-beta16, user 25.11.); the pane is rebuilt when the reason changes
       local builtReason=getDungeonQuestStatus(d, q)=="unavailable" and unavailableText(q) or nil
       if builtReason then
-        local rv; ry,rv=infoRow(rchild,ry,N"Reason",builtReason); rv:SetTextColor(FLT.TextC(0.80,0.74,0.62))
+        ry,statusValue=infoRow(rchild,ry,N"Status","")
+        local rv; ry,rv=infoRow(rchild,ry,N"Reason",builtReason); ink(rv,INK.dim)
       end
-      -- next to "In log": open the quest in the quest log (user 06.11.; chain quests have it per step below)
-      local statusLog=questLogButton(rchild); statusLog:SetQuest(q.id,q.name)
+      -- next to the status chip: open the quest in the quest log (user 06.11.; chain quests have it per step below)
+      local statusLog=questLogButton(host); statusLog:SetQuest(q.id,q.name)
       local chain=q.id and FLT.QUEST_PREREQ_CHAINS and FLT.QUEST_PREREQ_CHAINS[q.id]
       if q.prereq and q.prereq~="" and not (chain and #chain>0) then ry=infoRow(rchild,ry,N"Prerequisite",NM(q.prereq)) end
-      local sdv=rchild:CreateTexture(nil,"ARTWORK"); FLT.SetTex(sdv, ASSET_ROOT.."divider_ornate"); sdv:SetPoint("TOPLEFT",4,ry+2); sdv:SetPoint("TOPRIGHT",rchild,"TOPLEFT",448,ry+2); sdv:SetHeight(14)
+      local sdv=rchild:CreateTexture(nil,"ARTWORK"); FLT.SetTex(sdv, ASSET_ROOT.."divider_ornate"); sdv:SetPoint("TOPLEFT",4,ry+2); sdv:SetPoint("TOPRIGHT",rchild,"TOPLEFT",444+DW,ry+2); sdv:SetHeight(16); sdv:SetVertexColor(0.78,0.60,0.28,0.85)
       ry=ry-16
 
       if q.objective then
         local box,cy,close=openBox(rchild,ry,N"Objective")
-        local ob=FLT.NewFS(box,nil,"OVERLAY","GameFontHighlightSmall"); ob:SetPoint("TOPLEFT",10,-28); ob:SetWidth(420); ob:SetJustifyH("LEFT"); ob:SetText(NM(q.objective)); ob:SetWordWrap(true)
+        local ob=FLT.NewFS(box,nil,"OVERLAY","GameFontHighlight"); ob:SetPoint("TOPLEFT",10,-30); ob:SetWidth(420+DW); ob:SetJustifyH("LEFT"); ob:SetText(NM(q.objective)); ob:SetWordWrap(true); ink(ob,INK.text)
         ry=close(cy-math.max(14,ob:GetStringHeight() or 14))
       end
 
@@ -1722,12 +1836,15 @@ local function createDungeonPanel(parent)
         end
         if not currentIncluded then steps[#steps+1]={id=q.id,name=q.name,current=true} end
         for ci,step in ipairs(steps) do
-          local row=dframe("Button",rchild); row:SetSize(424,26); row:SetPoint("TOPLEFT",16,ry); ry=ry-28
+          local row=dframe("Button",rchild); row:SetSize(424+DW,26); row:SetPoint("TOPLEFT",16,ry); ry=ry-28
           local isCurrent=step.id==q.id
-          local bg=cardBg(row,0.055,0.067,0.080,0.82)
+          -- a neutral dark row with a thin edge (beta45); this page's quest a warm tint (pane.update)
+          UI.UnmarkBG(Card(row,row,4,{0.26,0.24,0.21,0.85},{0,0,0,0},"BORDER",0))
+          local bg=row:CreateTexture(nil,"BACKGROUND"); bg:SetAllPoints()
+          local rhl=row:CreateTexture(nil,"HIGHLIGHT"); rhl:SetAllPoints(); rhl:SetColorTexture(0.55,0.36,0.10,0.10)
           local detail=step.id and FLT.QUEST_PREREQ_DETAILS and FLT.QUEST_PREREQ_DETAILS[step.id]
           local stepLoc=FLT.QuestLoc and FLT:QuestLoc(step.id,detail and detail.pickup or (isCurrent and q.starts) or nil)
-          local nm=FLT.NewFS(row, nil,"OVERLAY","GameFontHighlightSmall"); nm:SetPoint("LEFT",8,0); nm:SetWidth(stepLoc and 214 or 280); nm:SetJustifyH("LEFT"); nm:SetText(tostring(ci)..".  "..(NM(step.name) or (L["Quest"].." "..tostring(step.id or "?"))))
+          local nm=FLT.NewFS(row, nil,"OVERLAY","GameFontHighlightSmall"); nm:SetPoint("LEFT",8,0); nm:SetWidth((stepLoc and 214 or 280)+DW); nm:SetJustifyH("LEFT"); nm:SetText(tostring(ci)..".  "..(NM(step.name) or (L["Quest"].." "..tostring(step.id or "?")))); ink(nm,INK.text)
           if stepLoc then
             local stepMapBtn=UI.GoldButton(row,L["Map"],54,18,ASSET_ROOT.."icon_map",11)
             stepMapBtn:SetPoint("RIGHT",-94,0)
@@ -1741,7 +1858,7 @@ local function createDungeonPanel(parent)
             end)
             stepMapBtn:SetScript("OnLeave",function() GameTooltip:Hide() end)
           end
-          local stp=FLT.NewFS(row, nil,"OVERLAY","GameFontDisableSmall"); stp:SetPoint("RIGHT",-8,0); stp:SetWidth(stepLoc and 82 or 110); stp:SetJustifyH("RIGHT")
+          local stp=FLT.NewFS(row, nil,"OVERLAY","GameFontDisableSmall"); stp:SetPoint("RIGHT",-8,0); stp:SetWidth(stepLoc and 82 or 110); stp:SetJustifyH("RIGHT"); ink(stp,INK.dim)
           local stepLog=questLogButton(row); stepLog:SetPoint("RIGHT",stp,"RIGHT",-(stp:GetWidth()+4),0); stepLog:SetQuest(step.id,step.name)
           chainRows[#chainRows+1]={id=step.id,isCurrent=isCurrent,optional=step.optional,inside=(q.inside and q.inside==step.id) or false,bg=bg,name=nm,state=stp,logBtn=stepLog}
           row:SetScript("OnEnter",function(self)
@@ -1765,48 +1882,114 @@ local function createDungeonPanel(parent)
 
       if q.note then
         local box,cy,close=openBox(rchild,ry,N"Notes")
-        local nt=FLT.NewFS(box,nil,"OVERLAY","GameFontHighlightSmall"); nt:SetPoint("TOPLEFT",10,-28); nt:SetWidth(420); nt:SetJustifyH("LEFT"); nt:SetText(L[q.note]); nt:SetWordWrap(true)
+        local nt=FLT.NewFS(box,nil,"OVERLAY","GameFontHighlight"); nt:SetPoint("TOPLEFT",10,-30); nt:SetWidth(420+DW); nt:SetJustifyH("LEFT"); nt:SetText(L[q.note]); nt:SetWordWrap(true); ink(nt,INK.text)
         ry=close(cy-math.max(14,nt:GetStringHeight() or 14))
       end
 
-      local function rewardRows(list,label)
+      -- rewards like a quest window (6.2.17-beta16, user 25.11.: "rewards sehen bei dungeon journal auch besser aus, zumindest die
+      -- xp, ruf und gold mit den icons bzw. kaestchen"): items as dark tiles, two per line; XP, money and reputation as small boxes
+      local function rewardTiles(list,label)
+        local TW,TH=math.floor((424+DW-8)/2),50
         for ri,rec in ipairs(list) do
-          local reward=dframe("Button",rchild); reward:SetSize(424,48); reward:SetPoint("TOPLEFT",16,ry); ry=ry-50
-          cardBg(reward,0.055,0.067,0.080,(ri%2==0) and 0.96 or 0.88)
-          local rhi=makeTexture(reward,"HIGHLIGHT",0.22,0.34,0.46,0.20); rhi:SetAllPoints()
-          local ric=reward:CreateTexture(nil,"ARTWORK"); ric:SetSize(32,32); ric:SetPoint("LEFT",9,0); FLT.SetTex(ric, dungeonItemIcon(rec))
-          local rw=FLT.NewFS(reward, nil,"OVERLAY","GameFontHighlight"); rw:SetPoint(rec.slot and "TOPLEFT" or "LEFT",50,rec.slot and -7 or 0); rw:SetWidth(330); rw:SetJustifyH("LEFT"); rw:SetText(FLT.ItemName and FLT.ItemName(rec.id,rec.name) or rec.name)
-          pane.items[#pane.items+1]={text=rw,icon=ric,rec=rec,r=0.92,g=0.90,b=0.84}
-          if rec.slot then local sl=FLT.NewFS(reward, nil,"OVERLAY","GameFontDisableSmall"); sl:SetPoint("TOPLEFT",50,-27); sl:SetWidth(330); sl:SetJustifyH("LEFT"); sl:SetText(FLT.SlotText and FLT.SlotText(rec.slot) or rec.slot) end
-          if rec.id and UI.WishStar then local st=UI.WishStar(reward); st:SetPoint("RIGHT",-12,0); st:SetItem(rec.id) end
+          local col=(ri-1)%2
+          local reward=dframe("Button",rchild); reward:SetSize(TW,TH); reward:SetPoint("TOPLEFT",16+col*(TW+6),ry)
+          if col==1 or ri==#list then ry=ry-TH-8 end
+          -- beta46 (user 25.11. 18:38: "die rewards aus der vorlage schauen viel besser aus"): a dark card with a faint edge in the item's
+          -- quality colour, a stripe of it on the left and a thin frame around the icon (refreshItemVisuals)
+          local card=Card(reward,reward,4,{0.24,0.24,0.26,0.95},{0.090,0.090,0.098,0.96},"BACKGROUND",0)
+          local acc=reward:CreateTexture(nil,"ARTWORK",nil,2); acc:SetPoint("TOPLEFT",1,-1); acc:SetPoint("BOTTOMLEFT",1,1); acc:SetWidth(3); acc:SetColorTexture(0.5,0.5,0.5,1)
+          local rhi=makeTexture(reward,"HIGHLIGHT",0.90,0.66,0.22,0.08); rhi:SetAllPoints()
+          local ricE=reward:CreateTexture(nil,"BORDER"); ricE:SetSize(38,38); ricE:SetPoint("LEFT",12,0); ricE:SetColorTexture(0.03,0.03,0.035,1) -- a dark frame, no quality colour (user 25.11. 20:00: "den gruenen rand um die items ... weg")
+          local ric=reward:CreateTexture(nil,"ARTWORK"); ric:SetSize(36,36); ric:SetPoint("CENTER",ricE); FLT.SetTex(ric, dungeonItemIcon(rec))
+          -- name one size bigger in a lighter quality colour, the slot under it (beta35, user 25.11.: "das blau auf dem dunklen
+          -- hintergrund ist auch nicht gut lesbar" + screenshot "Forsaken Greataxe / Two-Hand - Axe")
+          local rw=FLT.NewFS(reward, nil,"OVERLAY","GameFontNormal"); rw:SetPoint("TOPLEFT",60,-9); rw:SetPoint("RIGHT",rec.id and -26 or -8,0); rw:SetJustifyH("LEFT")
+          rw:SetWordWrap(false)
+          rw:SetText(FLT.ItemName and FLT.ItemName(rec.id,rec.name) or rec.name)
+          local rs=FLT.NewFS(reward, nil,"OVERLAY","GameFontHighlightSmall"); rs:SetPoint("BOTTOMLEFT",60,9); rs:SetPoint("RIGHT",rec.id and -26 or -8,0); rs:SetJustifyH("LEFT")
+          rs:SetWordWrap(false); rs:SetTextColor(0.64,0.62,0.57)
+          pane.items[#pane.items+1]={text=rw,icon=ric,rec=rec,r=0.92,g=0.90,b=0.84,light=true,slotText=rs,card=card,accent=acc}
+          if rec.id and UI.WishStar then local st=UI.WishStar(reward); st:SetPoint("RIGHT",-6,0); st:SetItem(rec.id); st:SetAlpha(0.75) end
           reward:SetScript("OnEnter",function(self) showLootTooltip(self,rec,label) end); reward:SetScript("OnLeave",function() GameTooltip:Hide() end)
           reward:RegisterForClicks("LeftButtonUp"); reward:SetScript("OnClick",function(_,button) handleDungeonItemClick(rec,button) end)
         end
       end
+      -- "3,100 XP · 18s · +100 Ratchet": the parts as boxes; what cannot be read stays as text
+      local COINS={g=10000,s=100,c=1}
+      local function summaryChips(text)
+        if type(text)~="string" or text=="" then return end
+        local x,rest=16,{}
+        -- a box at the next free place; done(f, w) sizes it and moves to the next line when it does not fit
+        local function box(fill,edge)
+          local f=dframe("Frame",rchild); f:SetHeight(24)
+          UI.UnmarkBG(Card(f,f,4,edge,fill,"BACKGROUND",0))
+          return f
+        end
+        local function done(f,w)
+          if x>16 and x+w>16+424+DW then x=16; ry=ry-30 end
+          f:SetWidth(w); f:SetPoint("TOPLEFT",x,ry); x=x+w+6
+        end
+        for part in (text.." · "):gmatch("(.-)%s*[·•]%s*") do
+          part=part:gsub("^%s+",""):gsub("%s+$","")
+          local xp=part:match("^([%d,%.]+)%s*XP$")
+          local rep,fac=part:match("^%+(%d+)%s+(.+)$")
+          local copper=0
+          if not xp and not rep then for n,u in part:gmatch("(%d+)%s*([gsc])") do copper=copper+tonumber(n)*COINS[u] end end
+          local onlyCoins=copper>0 and part:gsub("%d+%s*[gsc]",""):gsub("%s",""):len()==0
+          -- our own colours (beta36, user 25.11.: "andere farben ... damit mir nicht vorgeworfen wird, dass wir kopieren"):
+          -- XP in our gold, reputation in teal
+          if xp then
+            local f=box({0.24,0.16,0.04,0.95},{0.78,0.58,0.20,1})
+            local tag=FLT.NewFS(f,nil,"OVERLAY","GameFontNormalSmall"); tag:SetPoint("LEFT",7,0); tag:SetText("XP"); tag:SetTextColor(1,0.82,0.25)
+            local v=FLT.NewFS(f,nil,"OVERLAY","GameFontHighlight"); v:SetPoint("LEFT",tag,"RIGHT",8,0); v:SetText(xp)
+            done(f,math.ceil(7+(tag:GetStringWidth() or 16)+8+(v:GetStringWidth() or 40)+10))
+          elseif rep then
+            local f=box({0.04,0.18,0.20,0.95},{0.24,0.56,0.58,1})
+            local v=FLT.NewFS(f,nil,"OVERLAY","GameFontHighlight"); v:SetPoint("LEFT",7,0); v:SetText("+"..rep); v:SetTextColor(0.50,0.95,0.92)
+            local n=FLT.NewFS(f,nil,"OVERLAY","GameFontHighlight"); n:SetPoint("LEFT",v,"RIGHT",8,0); n:SetText(PT(fac))
+            done(f,math.ceil(7+(v:GetStringWidth() or 30)+8+(n:GetStringWidth() or 80)+10))
+          elseif onlyCoins then
+            local f=box({0.20,0.13,0.06,0.95},{0.80,0.56,0.28,1}) -- bronze, as bright as XP / reputation (beta46, user 25.11. 18:38)
+            local v=FLT.NewFS(f,nil,"OVERLAY","GameFontHighlight"); v:SetPoint("LEFT",7,0)
+            v:SetText(FLT.QoL and FLT.QoL.Money and FLT.QoL.Money(copper) or part)
+            done(f,math.ceil(7+(v:GetStringWidth() or 40)+10))
+          elseif part~="" then rest[#rest+1]=part end
+        end
+        ry=ry-30
+        if #rest>0 then
+          local t=dtext(rchild,"GameFontHighlightSmall"); t:SetPoint("TOPLEFT",18,ry); t:SetWidth(420+DW); t:SetJustifyH("LEFT"); t:SetText(table.concat(rest," " .. FLT.DOT .. " ")); ink(t,INK.dim)
+          ry=ry-math.max(14,t:GetStringHeight() or 14)-6
+        end
+      end
       do
         local rewards=q.rewards or {}
-        local box,cy,close=openBox(rchild,ry,(q.rewardChoice and #rewards>1) and (L["Rewards"].."  |cff9d9d9d"..L["(choose one)"].."|r") or N"Rewards")
+        local box,cy,close=openBox(rchild,ry,(q.rewardChoice and #rewards>1) and (L["Rewards"].."  |cff9a968c"..L["(choose one)"].."|r") or N"Rewards")
         ry=cy
         if #rewards==0 then
-          local summary=FLT.NewFS(box,nil,"OVERLAY","GameFontHighlightSmall"); summary:SetPoint("TOPLEFT",10,-28); summary:SetWidth(420); summary:SetJustifyH("LEFT")
-          summary:SetText(q.rewardSummary or L["No item reward is listed in the current beta data for this quest."]); summary:SetTextColor(FLT.TextC(0.80,0.78,0.72))
-          ry=cy-math.max(14,summary:GetStringHeight() or 14)
+          if q.rewardSummary then summaryChips(q.rewardSummary)
+          else
+            local summary=FLT.NewFS(box,nil,"OVERLAY","GameFontHighlightSmall"); summary:SetPoint("TOPLEFT",10,-30); summary:SetWidth(420+DW); summary:SetJustifyH("LEFT")
+            summary:SetText(L["No item reward is listed in the current beta data for this quest."]); ink(summary,INK.dim)
+            ry=cy-math.max(14,summary:GetStringHeight() or 14)
+          end
         else
-          rewardRows(rewards,N"Quest reward")
+          rewardTiles(rewards,N"Quest reward")
           if q.alsoRewards and #q.alsoRewards>0 then
-            local al=dtext(rchild,"GameFontHighlightSmall"); al:SetPoint("TOPLEFT",18,ry-2); al:SetText(L["You will also receive:"]); al:SetTextColor(FLT.TextC(0.80,0.78,0.72)); ry=ry-20
-            rewardRows(q.alsoRewards,N"Quest reward")
+            local al=dtext(rchild,"GameFontHighlight"); al:SetPoint("TOPLEFT",18,ry-2); al:SetText(L["You will also receive:"]); ink(al,INK.label); ry=ry-22
+            rewardTiles(q.alsoRewards,N"Quest reward")
           end
           if q.rewardSummary then
-            local sum=dtext(rchild,"GameFontHighlightSmall"); sum:SetPoint("TOPLEFT",18,ry-2); sum:SetWidth(420); sum:SetJustifyH("LEFT"); sum:SetText(q.rewardSummary); sum:SetTextColor(FLT.TextC(0.80,0.78,0.72)); ry=ry-20
+            local al=dtext(rchild,"GameFontHighlight"); al:SetPoint("TOPLEFT",18,ry-2); al:SetText(L["You will also receive:"]); ink(al,INK.label); ry=ry-22
+            summaryChips(q.rewardSummary)
           end
         end
         ry=close(ry)
       end
       if q.noteRewards and #q.noteRewards>0 then
         local box,cy,close=openBox(rchild,ry,N"Follow-up rewards")
-        ry=cy; rewardRows(q.noteRewards,N"Follow-up quest reward"); ry=close(ry)
+        ry=cy; rewardTiles(q.noteRewards,N"Follow-up quest reward"); ry=close(ry)
       end
+      inkMode=false; PDW=0
 
       pane.update=function()
         local questStatus=getDungeonQuestStatus(d, q)
@@ -1814,25 +1997,23 @@ local function createDungeonPanel(parent)
         if reason~=builtReason then pane:Hide(); detailPanes[newIdx]=nil; if questSelection[d.key]==newIdx then selectQuest(newIdx) end; return end
         local stepIdx, stepTotal, stepInLog = getChainProgress(q)
         local statusLabel=(questStatus=="chain" and not stepInLog) and L["Chain started"] or L[QUEST_STATUS_LABELS[questStatus] or questStatus]
-        local col=STATUS_COLOR[questStatus] or STATUS_COLOR.available
-        statusChip:Set(statusLabel,col); layoutChips(chips,18,-44)
-
+        local col=STATUS_INK[questStatus] or STATUS_INK.available
         if questStatus=="chain" and stepIdx then statusLabel=statusLabel.." - "..string.format(L["chain step %d of %d"],stepIdx,stepTotal) end
-        statusValue:SetText(statusLabel); statusValue:SetTextColor(FLT.TextC(col[1],col[2],col[3]))
+        statusChip:Set(statusLabel,col); layoutChips(chips,18,-44)
+        if statusValue then statusValue:SetText(statusLabel); ink(statusValue,col) end
         local ownInLog=(questStatus=="inlog" or questStatus=="ready") and not stepIdx and getQuestLogInfo(q)
-        statusLog:ClearAllPoints(); statusLog:SetPoint("LEFT",statusValue,"LEFT",(statusValue:GetStringWidth() or 40)+8,0)
+        statusLog:ClearAllPoints(); statusLog:SetPoint("LEFT",statusChip,"RIGHT",6,0)
         statusLog:SetShown(ownInLog and true or false)
         for _,cr in ipairs(chainRows) do
           local done=(cr.id and FLT:IsQuestDone(cr.id)) or false
           local inLog=(not done and cr.id and getQuestLogInfo({ id = cr.id })) or false
           -- done wins over "this page's quest" (user 07.11.: the last step stayed gold although done); the page's own
           -- quest keeps a brighter shade
-          if cr.isCurrent and done then cr.bg:SetColorTexture(FLT.SkinC(0.05,0.24,0.08,0.95))
-          elseif cr.isCurrent then cr.bg:SetColorTexture(FLT.SkinC(0.24,0.17,0.055,0.95))
-          elseif done then cr.bg:SetColorTexture(FLT.SkinC(0.035,0.16,0.055,0.86))
-          elseif inLog then cr.bg:SetColorTexture(FLT.SkinC(0.035,0.20,0.065,0.90))
-          else cr.bg:SetColorTexture(FLT.SkinC(0.055,0.067,0.080,0.82)) end
-          if cr.isCurrent and not done then cr.name:SetTextColor(FLT.TextC(1,0.82,0.20)) elseif done or inLog then cr.name:SetTextColor(FLT.TextC(0.35,1,0.45)) elseif cr.optional then cr.name:SetTextColor(FLT.TextC(0.62,0.60,0.56)) else cr.name:SetTextColor(FLT.TextC(0.90,0.88,0.82)) end
+          -- beta45 (concept "Quest chain: neutral rows, with Done as a small green label"): dark rows, the name light, the state in its
+          -- status colour (done green, in the log blue, this page's quest gold)
+          if cr.isCurrent and not done then cr.bg:SetColorTexture(FLT.SkinC(0.20,0.15,0.06,0.85))
+          else cr.bg:SetColorTexture(FLT.SkinC(0.085,0.083,0.090,0.90)) end
+          if cr.isCurrent and not done then ink(cr.name,INK.head) elseif cr.optional and not done and not inLog then ink(cr.name,INK.dim) else ink(cr.name,INK.text) end
           local stateText = done and N"Done" or (inLog and N"In log" or (cr.optional and N"Optional" or N"Required"))
           -- q.inside (6.2.14, Discord 22.11.: The Drowned City): the step done in the dungeon is the "Dungeon quest", the listed
           -- quest only the turn-in with the rewards
@@ -1840,7 +2021,7 @@ local function createDungeonPanel(parent)
           cr.state:SetText(L[stateText])
           cr.logBtn:ClearAllPoints(); cr.logBtn:SetPoint("RIGHT",cr.state,"RIGHT",-((cr.state:GetStringWidth() or 30)+6),0)
           cr.logBtn:SetShown(inLog and true or false)
-          if cr.isCurrent and not done then cr.state:SetTextColor(FLT.TextC(1,0.82,0.20)) elseif done or inLog then cr.state:SetTextColor(FLT.TextC(0.35,1,0.45)) else cr.state:SetTextColor(FLT.TextC(0.66,0.66,0.66)) end
+          if done then ink(cr.state,STATUS_COLOR.completed) elseif inLog then ink(cr.state,STATUS_COLOR.inlog) elseif cr.isCurrent then ink(cr.state,INK.head) else ink(cr.state,INK.dim) end
         end
         refreshItemVisuals(pane.items)
       end
@@ -2106,7 +2287,7 @@ local function createDungeonPanel(parent)
     local d=selectedDungeon; if not d then return end
     dtitle:SetText(DN(d.name))
     local ap=dungeonBackdrop(d.key,"hdr")
-    if FLT.DUNGEON_LOADSCREENS and FLT.DUNGEON_LOADSCREENS[d.key] and setLoadscreen(detailArt,d.key,300,54) then
+    if FLT.DUNGEON_LOADSCREENS and FLT.DUNGEON_LOADSCREENS[d.key] and setLoadscreen(detailArt,d.key,300,62) then
       -- loading screen: fades out to the right like the "_hdr" picture, so the title stays readable
       if not detailArt._ofaFade then detailArt._ofaFade=alphaFade(detailArt,"HORIZONTAL",1,0) end
       detailArt:Show(); detailArtFrame:Show()

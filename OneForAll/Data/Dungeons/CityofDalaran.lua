@@ -97,6 +97,7 @@ FLT.DUNGEON_REGISTRY["City of Dalaran"] = {
         {
             level = 33,
             id = 92457,
+            liveXPFallback = 9400,
             name = "Starving Arcane",
             requires = 24,
             faction = "Alliance",
@@ -108,10 +109,12 @@ FLT.DUNGEON_REGISTRY["City of Dalaran"] = {
                 {279837, "Fallen Guard's Pendant", 2},
                 {279838, "Arcane Infused Rod", 2},
             },
+            rewardSummary = "9,400 XP · +100 Kirin Tor",
         },
         {
             level = 33,
             id = 92458,
+            liveXPFallback = 9400,
             name = "Heart of Disruption",
             requires = 24,
             faction = "Alliance",
@@ -124,10 +127,12 @@ FLT.DUNGEON_REGISTRY["City of Dalaran"] = {
                 {279840, "Renewing Footpads", 3},
                 {279841, "Defender of Dalaran", 3},
             },
+            rewardSummary = "9,400 XP · +100 Kirin Tor",
         },
         {
             level = 33,
             id = 96984,
+            liveXPFallback = 9400,
             name = "Heart of Disruption",
             requires = 24,
             faction = "Horde",
@@ -140,6 +145,7 @@ FLT.DUNGEON_REGISTRY["City of Dalaran"] = {
                 {279843, "Enchanted Sandals", 3},
                 {279844, "Striking Staff", 3},
             },
+            rewardSummary = "9,400 XP",
         },
         {
             level = 33,

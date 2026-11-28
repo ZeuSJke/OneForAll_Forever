@@ -14,6 +14,7 @@ FLT.DUNGEON_REGISTRY["Alcaz Prison"] = {
         {
             level = 53,
             id = 96772,
+            liveXPFallback = 14400,
             name = "The Dragon's Journal",
             requires = 46,
             faction = "Alliance",
@@ -21,6 +22,7 @@ FLT.DUNGEON_REGISTRY["Alcaz Prison"] = {
             objective = "Recover Zarla's Journal from the depths of Alcaz Prison.",
             rewardItems = {
             },
+            rewardSummary = "14,400 XP · 80s · +300 Kirin Tor · +150 Stormwind",
         },
         {
             level = 53,
@@ -30,17 +32,6 @@ FLT.DUNGEON_REGISTRY["Alcaz Prison"] = {
             faction = "Alliance",
             pickup = "Sully McCleary, Dustwallow Marsh (63.5, 42.3)",
             objective = "Enter Alcaz Prison and learn what became of the King of Stormwind.",
-            rewardItems = {
-            },
-        },
-        {
-            level = 53,
-            id = 95309,
-            name = "No Orc Left Behind",
-            requires = 48,
-            faction = "Horde",
-            pickup = "Sergeant Ulka, Dustwallow Marsh (70.3, 18.9)",
-            objective = "Enter the Alcaz Prison and find Commander Folkar.",
             rewardItems = {
             },
         },
@@ -57,6 +48,7 @@ FLT.DUNGEON_REGISTRY["Alcaz Prison"] = {
         {
             level = 53,
             id = 96332,
+            liveXPFallback = 9700,
             name = "A Little Payback",
             requires = 48,
             faction = "Horde",
@@ -69,10 +61,12 @@ FLT.DUNGEON_REGISTRY["Alcaz Prison"] = {
                 {279826, "Marshdweller's Pants", 2},
                 {279829, "Naga Scale Spaulders", 2},
             },
+            rewardSummary = "9,700 XP · +75 Orgrimmar",
         },
         {
             level = 53,
             id = 96334,
+            liveXPFallback = 9700,
             name = "Blood Red Bandanas",
             requires = 48,
             faction = "Horde",
@@ -84,6 +78,7 @@ FLT.DUNGEON_REGISTRY["Alcaz Prison"] = {
                 {279448, "Bloodsplattered Bandana", 2},
                 {279473, "Makeshift Belt", 2},
             },
+            rewardSummary = "9,700 XP · +75 Orgrimmar",
         },
         {
             level = 53,
@@ -98,6 +93,7 @@ FLT.DUNGEON_REGISTRY["Alcaz Prison"] = {
         {
             level = 53,
             id = 96381,
+            liveXPFallback = 11550,
             name = "A Bit of Wet Work",
             requires = 48,
             faction = "Alliance",
@@ -109,6 +105,34 @@ FLT.DUNGEON_REGISTRY["Alcaz Prison"] = {
                 {279825, "Theramore Defender's Gauntlets", 2},
                 {279826, "Marshdweller's Pants", 2},
                 {279829, "Naga Scale Spaulders", 2},
+            },
+            rewardSummary = "11,550 XP · +100 Ironforge · +100 Stormwind",
+        },
+        {
+            level = 53,
+            id = 96369,
+            name = "Bad News for Folkar",
+            requires = 48,
+            faction = "Horde",
+            objective = "Report back to Commander Folkar.",
+            note = "Follow-up of The Honor of the Kor'kron.",
+            rewardItems = {
+            },
+        },
+        {
+            level = 53,
+            id = 95483,
+            name = "Thrall Needs to Know",
+            requires = 48,
+            faction = "Horde",
+            objective = "Bring word of Varian Wrynn's fate to Thrall in Orgrimmar.",
+            note = "Follow-up of Bad News for Folkar.",
+            turnin = "Thrall, Orgrimmar",
+            rewardChoice = true,
+            rewardItems = {
+                {279474, "Dustwallow Dirk", 3},
+                {279831, "Fatebound Buckler", 3},
+                {279833, "Courier's Clasp", 3},
             },
         },
     },
@@ -162,12 +186,6 @@ FLT.DUNGEON_REGISTRY["Alcaz Prison"] = {
                 {276745, "Beastbond Robe", "Chest, Cloth", 3},
                 {276746, "Defias Enforcer's Legguards", "Legs, Leather", 3},
             },
-        },
-        {
-            name = "Zarla Ober",
-            npcID = 255707,
-            displayID = 139053,
-            loot = {},
         },
     },
     -- trash: blue bind-on-equip drops of the dungeon's enemies - Wowhead Forever, one item ID block per new dungeon

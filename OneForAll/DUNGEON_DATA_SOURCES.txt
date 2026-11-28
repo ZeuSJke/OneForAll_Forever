@@ -11,6 +11,10 @@ General sources
   QuestieDB Forever (https://github.com/Questie/questiedb, GPL-3, see
   THIRD_PARTY_LICENSES.txt), cross-checked with Wowhead Forever quest pages.
 - Quest rewards and XP: wowforevertalents.com quest pages and Wowhead Forever.
+  November 2026 (6.2.17): missing XP, money and reputation of the dungeon quests taken over from the quest data of the
+  addon "Dungeon Journal" 2.1.3 (game facts only, at the user's request).
+  Also 115 boss drops our data lacked (62 bosses, e.g. Zul'Farrak's Theka, Nekrum, Velratha, Sandarr; recipes and quest items
+  left out), marked "-- Dungeon Journal" in Data\Dungeons.
 - Boss and trash loot: foreverchanges.pro dungeon pages and wowtbc.gg loot
   tables; item names, slots and qualities from the Wowhead tooltip API
   (Forever data, Classic data as fallback).

@@ -47,7 +47,7 @@ FLT.DUNGEON_REGISTRY["The Stockade"] = {
         {
             level = 27,
             id = 378,
-            liveXPFallback = 5800,
+            liveXPFallback = 5750,
             name = "The Fury Runs Deep",
             requires = 22,
             faction = "Alliance",
@@ -60,7 +60,7 @@ FLT.DUNGEON_REGISTRY["The Stockade"] = {
                 {1264, "Headbasher", 3},
                 {270036, "Magistrate's Pantaloons", 3},
             },
-            rewardSummary = "5,800 XP · +150 Ironforge",
+            rewardSummary = "5,750 XP · +150 Ironforge",
             note = "First do The Dark Iron War from Motley Garmason.",
         },
         {

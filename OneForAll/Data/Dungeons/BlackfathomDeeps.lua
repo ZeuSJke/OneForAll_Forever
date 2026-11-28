@@ -108,7 +108,7 @@ FLT.DUNGEON_REGISTRY["Blackfathom Deeps"] = {
             turnin = "Je'neu Sancrea, Ashenvale (11.6, 34.3)",
             startItem = {16790, "Damp Note", 1, "Source: Blackfathom Tide Priestesses (tunnels outside the instance)."},
             rewardItems = {},
-            rewardSummary = "1,300 XP · 11s · +75 Darkspear Trolls",
+            rewardSummary = "1,300 XP · 11s · +150 Darkspear Trolls",
         },
         {
             level = 22,
@@ -198,6 +198,7 @@ FLT.DUNGEON_REGISTRY["Blackfathom Deeps"] = {
         {
             level = 22,
             id = 6562,
+            liveXPFallback = 440,
             name = "Trouble in the Deeps",
             requires = 17,
             faction = "Horde",
@@ -206,6 +207,7 @@ FLT.DUNGEON_REGISTRY["Blackfathom Deeps"] = {
             turnin = "Je'neu Sancrea, Ashenvale",
             rewardItems = {
             },
+            rewardSummary = "440 XP · +25 Darkspear Trolls · +100 Earthen Ring",
         },
         {
             level = 25,
@@ -226,6 +228,35 @@ FLT.DUNGEON_REGISTRY["Blackfathom Deeps"] = {
             },
             rewardSummary = "5,100 XP",
             note = "Warlock quest. You need fragments from two dungeons: Shadowfang Keep and Blackfathom Deeps.",
+        },
+        {
+            level = 22,
+            id = 1654,
+            name = "The Test of Righteousness",
+            requires = 20,
+            faction = "Alliance",
+            class = "PALADIN",
+            pickup = "Jordan Stilwell, Dun Morogh (52.5, 36.9)",
+            objective = "Using Jordan's Weapon Notes, find some Whitestone Oak Lumber, Bailor's Refined Ore Shipment, Jordan's Smithing Hammer, and a Kor Gem, and return them to Jordan Stilwell in Ironforge.",
+            turnin = "Jordan Stilwell, Dun Morogh",
+            rewardItems = {
+            },
+        },
+        {
+            level = 26,
+            id = 95140,
+            liveXPFallback = 2650,
+            name = "Old Fire-Eye",
+            requires = 20,
+            faction = "Horde",
+            class = "PALADIN",
+            pickup = "Lumina Windsinger, Silverpine Forest (43.4, 41.0)",
+            objective = "Use the Moonsilver Blade to destroy Old Fire-Eye in Silverpine Forest.",
+            turnin = "Lumina Windsinger, Silverpine Forest",
+            rewardItems = {
+                {267369, "Wolfsbane", 3},
+            },
+            rewardSummary = "2,650 XP · +150 Earthen Ring · +75 Orgrimmar · +150 Undercity",
         },
     },
     bosses = {
@@ -257,6 +288,7 @@ FLT.DUNGEON_REGISTRY["Blackfathom Deeps"] = {
             displayID = 1773,
             aliases = {"Gelihast", "Geilhast"},
             loot = {
+                {273141, "Blueprint: Fishing Rack", "Blueprint", 2}, -- Dungeon Journal (user 25.11.2026)
                 {273840, "Cursed Murloc Eye", "Trinket", 3},
                 {6906, "Algae Fists", "Hands, Mail", 3},
                 {6905, "Reef Axe", "Two-Hand, Axe", 3},
@@ -278,6 +310,7 @@ FLT.DUNGEON_REGISTRY["Blackfathom Deeps"] = {
             description = "Summoned with the Fathom Core (quest Amongst the Ruins). Optional, not on the usual route.",
             name = "Baron Aquanis",
             npcID = 12876,
+            optional = true,
             displayID = 110,
             aliases = {"Baron Aquanis"},
             loot = {

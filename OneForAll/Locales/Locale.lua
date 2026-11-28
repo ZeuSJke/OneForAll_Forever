@@ -9,9 +9,14 @@
 --    when the text is shown (tools/locale/extract.py warns about L[ at the start of a line).
 local ADDON, FLT = ...
 local active -- the table of the language in use, or nil (English)
+-- 6.2.18-beta3 (Discord refaim_vl 26.11.): the Cyrillic game font has no middle dot "·" (it showed as a box in the Armory);
+-- on a Russian client our separators use "∙" (U+2219) instead - FLT.DOT in the code, and inside translated / English texts
+local DOT_FIX = type(GetLocale) == "function" and GetLocale() == "ruRU"
+FLT.DOT = DOT_FIX and "∙" or "·"
 FLT.L = setmetatable({}, { __index = function(_, k)
-  local v = active and active[k]
-  return v or k
+  local v = (active and active[k]) or k
+  if DOT_FIX and type(v) == "string" and v:find("·", 1, true) then v = v:gsub("·", "∙") end
+  return v
 end })
 FLT.LOCALES = FLT.LOCALES or {} -- [code] = function returning the table, put there by the language files
 

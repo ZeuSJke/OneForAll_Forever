@@ -1,4 +1,5 @@
 local _, FLT = ...
+FLT.DOT = FLT.DOT or "·" -- separator dot (Locales/Locale.lua; another one on Russian clients)
 local UI = FLT.UI
 local L = FLT.L or setmetatable({}, { __index = function(_, k) return k end }) -- (tests without Locales)
 local function N(s) return s end -- marks an English text translated where it is shown (tools/locale/extract.py)
@@ -439,7 +440,9 @@ local function buildIndex()
     for id, req, qs, name in QR.items:gmatch("(%d+),(%d+),([%d/]+),([^\n]*)") do
       local pick
       for q in qs:gmatch("%d+") do
-        local info = not closedQuests[tonumber(q)] and FLT.QuestInfo(tonumber(q))
+        -- 6.2.17-beta2 (Discord 1574452568271228988): a quest of a raid that opens later (QR.later, Head of Onyxia) from that day on
+        local lr = QR.later and QR.later[tonumber(q)]
+        local info = not closedQuests[tonumber(q)] and not (lr and not FLT.RaidOpen(lr)) and FLT.QuestInfo(tonumber(q))
         if info and (not pick or (info.side == fac and pick.side ~= fac)) then pick = info end
       end
       if pick then
@@ -640,6 +643,8 @@ function FLT.ToggleWishlist(id)
   if not id then return false end
   local w = wishlist()
   if w[id] then w[id] = nil else w[id] = true end
+  -- 6.2.18-beta9: the dungeon tracker's stars follow at once
+  if FLT.RunTracker and FLT.RunTracker.WishChanged then FLT.SafeCall("RunTracker", FLT.RunTracker.WishChanged) end
   return w[id] and true or false
 end
 
@@ -743,7 +748,7 @@ function FLT.ShowQuestChain(qid)
     if q and q.lvl and q.lvl > 0 then parts[#parts + 1] = string.format(L["Level %s"], q.lvl) end
     if q and q.giver then parts[#parts + 1] = q.giver end
     if #ids > 1 then parts[#parts + 1] = #ids > 2 and string.format(L["or one of %d others"], #ids - 1) or L["or one other"] end
-    r.sub:SetText(table.concat(parts, "  ·  "))
+    r.sub:SetText(table.concat(parts, "  " .. FLT.DOT .. "  "))
     if state == "done" then r.card:SetFill(FLT.SkinC(0.035, 0.16, 0.055, 0.90)); r.name:SetTextColor(FLT.TextC(0.35, 1, 0.45))
     elseif state == "log" then r.card:SetFill(FLT.SkinC(0.22, 0.17, 0.04, 0.92)); r.name:SetTextColor(FLT.TextC(1, 0.82, 0.20))
     else r.card:SetFill(FLT.SkinC(0.055, 0.067, 0.080, 0.90)); r.name:SetTextColor(FLT.TextC(0.92, 0.90, 0.84)) end
@@ -964,7 +969,7 @@ function UI.CreateGearPlanner(parent)
     local _, cls = UnitClass("player")
     -- the spec the Value is for (talent tree with the most points)
     local spec = FLT.GearValue and FLT.GearValue.SpecName()
-    who:SetText(name .. "  |cffb0b0b0" .. string.format(L["Level %s"], lvl) .. (spec and "  ·" or "") .. "|r")
+    who:SetText(name .. "  |cffb0b0b0" .. string.format(L["Level %s"], lvl) .. (spec and "  " .. FLT.DOT or "") .. "|r")
     specBtn.text:SetText(spec and L[spec] or ""); specBtn:SetShown(spec ~= nil)
     specBtn:SetWidth((specBtn.text:GetStringWidth() or 60) + 18)
     -- centre name + spec together
@@ -1025,7 +1030,6 @@ function UI.CreateGearPlanner(parent)
   -- 6.2.14 (Discord miti86 21.11., French "Liste de souhaits" / "Ameliorations bon marche" ran into each other): one after the
   -- other, a smaller text when the row is wider than the panel
   UI.ButtonRow(right, { tabs.suggest, tabs.wish, tabs.cheap, tabs.bis }, { 92, 92, 128, 70 }, 4, 12, -10, { 12, 11, 10 })
-  for _, k in ipairs({ "cheap", "bis" }) do local m = UI.NewMark(tabs[k], L["New in this version."]); m:SetPoint("CENTER", tabs[k], "TOPRIGHT", -2, -2) end -- 6.2.13 (TODO.md "Neu-Markierungen")
   tabs.suggest:SetActive(true)
   -- Cheap Upgrades: how old the prices are (6.2.13-beta20, user 21.11.: "ein hinweis mit last scan"), above the tab (beta22)
   local scanInfo = CreateFrame("Frame", nil, right); scanInfo:SetSize(200, 12); scanInfo:SetPoint("BOTTOM", tabs.cheap, "TOP", 0, 3)
@@ -1785,7 +1789,7 @@ function UI.CreateGearPlanner(parent)
       local parts = {}
       if ce and not o.worn then parts[#parts + 1] = ce[1] end
       if where then parts[#parts + 1] = where end
-      r.sub:SetText(table.concat(parts, "  ·  "))
+      r.sub:SetText(table.concat(parts, "  " .. FLT.DOT .. "  "))
       if o.e == cur then r.val:SetText("|cffb0b0b0" .. L["worn"] .. "|r")
       elseif o.v and o.v > 0 and gearTot and gearTot > 0 then
         -- % of the whole gear's Value, like the items (6.2.5)
@@ -2034,7 +2038,7 @@ function UI.CreateGearPlanner(parent)
       if lv and lv > 0 then parts[#parts + 1] = string.format(L[e.req and N"lvl %d" or N"lvl ~%d"], lv) end
       if search ~= "" then parts[#parts + 1] = SW(SLOT_NAME[(LOC_SLOTS[e.loc] or {})[1]]) or "" end
       if e.src then parts[#parts + 1] = e.src end
-      r.sub:SetText(table.concat(parts, "  ·  "))
+      r.sub:SetText(table.concat(parts, "  " .. FLT.DOT .. "  "))
       -- star, then Chain or the map icon in the same place (a chain has its maps in the popup)
       local d = e.d
       local hasMap = e.qid and FLT.QuestStart(e.qid)

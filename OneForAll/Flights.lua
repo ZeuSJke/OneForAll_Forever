@@ -8,6 +8,9 @@ local L = FLT.L or setmetatable({}, { __index = function(_, k) return k end }) -
 -- the flight map (OneForAllDB.flightPace), marked "about".
 -- Shows: a small bar with the destination and the time left while flying, and the time in the tooltip of the
 -- destinations on the flight map. Option "Flight times" (QoL > World Map). A 1 s ticker runs only while flying.
+-- 6.2.18-beta5 (user 26.11.2026 22:39: "das endziel und den naechsten zwischenstopp ... den button ... damit er einen raus
+-- laesst"): the bar names the destination and, on a route over several flight masters, the next stop with its time; its
+-- button asks the game to land at the next flight master (TaxiRequestEarlyLanding, the call of the game's own "Request Stop").
 
 local Q = FLT.QoL
 local function on() return Q and Q.Get and Q.Get("flightTimes") end
@@ -88,32 +91,96 @@ FLT.FlightTimeTo = timeTo -- tests
 
 -- the flight that was picked, and the one in the air
 local picked, flight
+-- the stops of the route to node i: { {name, at = share of the whole flight when it is reached}, ... } (the last one is the
+-- destination); by the path data of each leg, else by the map distance; nil for a direct flight
+local function routeStops(i)
+  local ok, n = pcall(function() return GetNumRoutes and GetNumRoutes(i) end)
+  if not (ok and n and n > 1 and TaxiGetNodeSlot) then return nil end
+  local stops, sum, byDist = {}, 0, false
+  for r = 1, n do
+    local a, b = TaxiGetNodeSlot(i, r, true), TaxiGetNodeSlot(i, r, false)
+    local len = pathSecs(nodeID(a), nodeID(b))
+    if not len then byDist = true end
+    stops[r] = { name = nodeName(b), len = len, d = dist(a, b) or 1 }
+  end
+  for _, st in ipairs(stops) do st.len = byDist and st.d or st.len; sum = sum + st.len end
+  if sum <= 0 then return nil end
+  local acc = 0
+  for _, st in ipairs(stops) do acc = acc + st.len; st.at = acc / sum; st.len, st.d = nil, nil end
+  return stops
+end
 local function onTake(i)
   if not on() then return end
   local cur = currentNode()
   local from, to = cur and nodeName(cur), nodeName(i)
   if not (from and to) then return end
   local est, about, raw = timeTo(i)
-  picked = { from = from, to = to, d = cur and dist(cur, i), est = est, about = about, raw = raw }
+  picked = { from = from, to = to, d = cur and dist(cur, i), est = est, about = about, raw = raw, stops = routeStops(i) }
 end
 if hooksecurefunc and TakeTaxiNode then hooksecurefunc("TakeTaxiNode", function(i) FLT.SafeCall("Flights", onTake, i) end) end
 
--- the small window while flying (user 05.11.): the flight master icon and the time left; drag to move (kept in
--- OneForAllDB.qol.flightPos), the destination in its tooltip
+-- the small window while flying (user 05.11.): the flight master icon, the destination and the time left; drag to move
+-- (kept in OneForAllDB.qol.flightPos). 6.2.18-beta5/6 (user 26.11.2026 22:51: "der knopf sollte in unserem stil sein ... und ein
+-- schoenerer aufbau"): destination (gold) and time (large) on top, below the next stop of the route (or the destination's zone),
+-- at the bottom a progress line with a mark for each stop; the gold button on the right asks to land at the next flight master
 local bar
+local W, PAD, H = 210, 7, 44 -- 6.2.18-beta7 (user 26.11. 22:58: "kompakter ... zu gross"): was 244 x 54
+local function short(name) return name and (name:match("^(.-),%s") or name) end -- "Camp Taurajo, The Barrens" -> "Camp Taurajo"
+local function zoneOf(name) return name and name:match(",%s*(.+)$") end
+local function nextStop(f, t)
+  if not (f and f.stops and f.est) then return nil end
+  for k = 1, #f.stops - 1 do
+    local st = f.stops[k]
+    if st.at * f.est > t then return st, st.at * f.est - t end
+  end
+end
+local function requestStop()
+  if not (flight and TaxiRequestEarlyLanding) then return end
+  TaxiRequestEarlyLanding()
+  flight.noKeep = true -- a flight cut short is not a measured time for its route
+  local st = nextStop(flight, (GetTime and GetTime() or 0) - flight.start)
+  flight.landAt = st and st.name or true
+  flight.landT = st and st.at * flight.est -- the time left counts to that stop
+  if bar and bar.stop.SetLook then bar.stop:SetLook(false); bar.stop:Disable() end
+end
 local function makeBar()
   local UI = FLT.UI
   bar = CreateFrame("Frame", "OneForAllFlightTimer", UIParent)
-  bar:SetSize(96, 30); bar:SetFrameStrata("MEDIUM"); bar:SetClampedToScreen(true)
+  bar:SetSize(W, H); bar:SetFrameStrata("MEDIUM"); bar:SetClampedToScreen(true)
   bar:SetMovable(true); bar:EnableMouse(true); bar:RegisterForDrag("LeftButton")
   local pos = Q and Q.Get and Q.Get("flightPos")
   if type(pos) == "table" then bar:SetPoint("CENTER", UIParent, "BOTTOMLEFT", pos[1], pos[2]) else bar:SetPoint("TOP", UIParent, "TOP", 0, -110) end
   if UI and UI.FramedPanel then UI.FramedPanel(bar) end
-  bar.icon = bar:CreateTexture(nil, "ARTWORK"); bar.icon:SetSize(20, 20); bar.icon:SetPoint("LEFT", 6, 0)
+  -- 6.2.18-beta8 (user 26.11. 23:04, his sketch: "die zeiten auch direkt untereinander"): the icon on a dark square, the
+  -- times in one column on the right (time left on top, time to the next stop in gold below)
+  bar.iconBG = (UI.makeTexture or function(p, l) return p:CreateTexture(nil, l) end)(bar, "ARTWORK", 0, 0, 0, 0.45)
+  bar.iconBG:SetSize(26, 26); bar.iconBG:SetPoint("TOPLEFT", PAD, -5)
+  bar.icon = bar:CreateTexture(nil, "OVERLAY"); bar.icon:SetSize(22, 22); bar.icon:SetPoint("CENTER", bar.iconBG, "CENTER")
   FLT.SetTex(bar.icon, "Interface\\Minimap\\Tracking\\FlightMaster")
-  bar.text = FLT.NewFS(bar, nil, "OVERLAY", "GameFontHighlight"); bar.text:SetPoint("LEFT", bar.icon, "RIGHT", 6, 0)
-  bar.fill = bar:CreateTexture(nil, "OVERLAY"); bar.fill:SetColorTexture(1, 0.78, 0.25, 0.9); bar.fill:SetHeight(2)
-  bar.fill:SetPoint("BOTTOMLEFT", 6, 4)
+  -- our gold button with a "down to land" arrow (Assets/icon_land.tga = the quest share arrow turned)
+  bar.stop = UI.GoldButton(bar, "", 22, 20, UI.ASSET_ROOT .. "icon_land", 11); bar.stop:SetPoint("TOPRIGHT", -PAD, -7)
+  bar.stop:SetScript("OnClick", function() FLT.SafeCall("Flights", requestStop) end)
+  bar.stop:HookScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_BOTTOM"); GameTooltip:AddLine(L["Request stop"], 1, 0.82, 0)
+    GameTooltip:AddLine(L["Land at the next flight master on the route."], 1, 1, 1, true); GameTooltip:Show()
+  end)
+  bar.stop:HookScript("OnLeave", function() GameTooltip:Hide() end)
+  bar.text = FLT.NewFS(bar, nil, "OVERLAY", "GameFontHighlight"); bar.text:SetPoint("TOPRIGHT", bar.stop, "TOPLEFT", -6, 1)
+  bar.text:SetJustifyH("RIGHT")
+  do local font, _, flags = bar.text:GetFont(); if font then bar.text:SetFont(font, 14, flags) end end
+  bar.ntime = FLT.NewFS(bar, nil, "OVERLAY", "GameFontHighlightSmall"); bar.ntime:SetPoint("TOPRIGHT", bar.text, "BOTTOMRIGHT", 0, -1)
+  bar.ntime:SetJustifyH("RIGHT"); bar.ntime:SetTextColor(1, 0.82, 0.38)
+  bar.dest = FLT.NewFS(bar, nil, "OVERLAY", "GameFontNormal"); bar.dest:SetPoint("TOPLEFT", bar.iconBG, "TOPRIGHT", 6, -1)
+  bar.dest:SetJustifyH("LEFT"); bar.dest:SetWordWrap(false); if FLT.TextC then bar.dest:SetTextColor(FLT.TextC(1, 0.82, 0.25)) else bar.dest:SetTextColor(1, 0.82, 0.25) end
+  bar.next = FLT.NewFS(bar, nil, "OVERLAY", "GameFontHighlightSmall"); bar.next:SetPoint("TOPLEFT", bar.dest, "BOTTOMLEFT", 0, -1)
+  bar.next:SetJustifyH("LEFT"); bar.next:SetWordWrap(false); bar.next:SetTextColor(0.72, 0.72, 0.72)
+  -- the progress line: a dark track, the gold part flown so far, a small mark for every stop
+  local mk = UI.makeTexture or function(p, layer, r, g, b, a) local t = p:CreateTexture(nil, layer); t:SetColorTexture(r, g, b, a); return t end
+  bar.track = mk(bar, "ARTWORK", 0, 0, 0, 0.55); bar.track:SetHeight(3)
+  bar.track:SetPoint("BOTTOMLEFT", PAD, 5); bar.track:SetPoint("BOTTOMRIGHT", -PAD, 5)
+  bar.fill = mk(bar, "OVERLAY", 1, 0.78, 0.25, 0.95); bar.fill:SetHeight(3); bar.fill:SetPoint("LEFT", bar.track, "LEFT")
+  bar.ticks = {}
+  bar.mk = mk
   bar:SetScript("OnDragStart", function(self) self:StartMoving() end)
   bar:SetScript("OnDragStop", function(self)
     self:StopMovingOrSizing()
@@ -123,24 +190,60 @@ local function makeBar()
   bar:SetScript("OnEnter", function(self)
     if not flight then return end
     GameTooltip:SetOwner(self, "ANCHOR_BOTTOM"); GameTooltip:AddLine(flight.to, 1, 0.82, 0)
+    if flight.stops then
+      for k = 1, #flight.stops - 1 do GameTooltip:AddLine(flight.stops[k].name or "?", 0.85, 0.85, 0.85) end
+    end
     GameTooltip:AddLine(L["Drag to move."], 0.75, 0.75, 0.75); GameTooltip:Show()
   end)
   bar:SetScript("OnLeave", function() GameTooltip:Hide() end)
   bar:Hide()
 end
+-- the stop marks on the progress line (once per flight, at takeoff)
+local function placeTicks(f)
+  for _, tk in ipairs(bar.ticks) do tk:Hide() end
+  if not (f and f.stops) then return end
+  local tw = W - 2 * PAD
+  for k = 1, #f.stops - 1 do
+    local tk = bar.ticks[k]
+    if not tk then tk = bar.mk(bar, "OVERLAY", 1, 0.93, 0.70, 1); tk:SetSize(2, 7); bar.ticks[k] = tk end
+    tk:ClearAllPoints(); tk:SetPoint("CENTER", bar.track, "LEFT", math.floor(f.stops[k].at * tw + 0.5), 0); tk:Show()
+  end
+end
 local ticker
 local function paint()
   if not (flight and bar) then return end
-  local t = (GetTime and GetTime() or 0) - flight.start
-  if flight.est then
-    local left = math.max(0, flight.est - t)
-    bar.text:SetText((flight.about and "~" or "") .. fmt(left))
-    bar.fill:SetWidth(math.max(1, 84 * (1 - math.min(1, t / flight.est)))); bar.fill:Show()
+  local f = flight
+  local t = (GetTime and GetTime() or 0) - f.start
+  if f.est then
+    local left = math.max(0, (f.landT or f.est) - t)
+    bar.text:SetText((f.about and "~" or "") .. fmt(left))
+    bar.fill:SetWidth(math.max(1, (W - 2 * PAD) * math.min(1, t / f.est))); bar.fill:Show()
   else
     bar.text:SetText("|cff9d9d9d" .. fmt(t) .. "|r")
     bar.fill:Hide()
   end
+  bar.dest:SetText(short(f.to))
+  -- the line below: where it lands after "Request stop", the next stop of the route, or the destination's zone
+  local line, ntime
+  if f.landAt then
+    line = f.landAt == true and L["Landing at the next flight master"] or string.format(L["Landing at %s"], short(f.landAt))
+  else
+    local st, inSecs = nextStop(f, t)
+    if st then line, ntime = string.format(L["Next: %s"], "|cffffffff" .. (short(st.name) or "?") .. "|r"), fmt(inSecs)
+    else line = zoneOf(f.to) end
+  end
+  bar.next:SetText(line or ""); bar.ntime:SetText(ntime or "")
+  -- the names take the room the time column leaves (both lines end before the wider of the two times)
+  local tw = math.max(bar.text:GetStringWidth() or 36, ntime and bar.ntime:GetStringWidth() or 0)
+  local room = math.max(40, W - PAD - 26 - 6 - tw - 6 - 22 - PAD - 4)
+  bar.dest:SetWidth(room); bar.next:SetWidth(room)
+  for k, tk in ipairs(bar.ticks) do -- passed stops fade
+    local st = f.stops and f.stops[k]
+    if st and f.est then tk:SetAlpha(st.at * f.est <= t and 0.35 or 1) end
+  end
+  bar.stop:SetShown(TaxiRequestEarlyLanding ~= nil)
 end
+FLT.FlightNow = function() return flight, nextStop, requestStop end -- tests
 local function stopTicker() if ticker then ticker:Cancel(); ticker = nil end end
 local function landed()
   stopTicker()
@@ -169,6 +272,8 @@ local function takeOff()
   flight = picked; picked = nil
   flight.start = GetTime and GetTime() or 0
   if not bar then makeBar() end
+  bar.stop:Enable(); if bar.stop.SetLook then bar.stop:SetLook(true) end
+  placeTicks(flight)
   -- no time known for this route (user 05.11.: counting up looked wrong): no window, the flight is still measured
   paint(); bar:SetShown(flight.est and true or false)
   stopTicker()

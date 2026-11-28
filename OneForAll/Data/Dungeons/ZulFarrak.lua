@@ -9,7 +9,7 @@ FLT.DUNGEON_REGISTRY["Zul'Farrak"] = {
     quests = {
         {
             id = 2936,
-            liveXPFallback = 4850,
+            liveXPFallback = 9700,
             name = "The Spider God",
             level = 45,
             requires = 40,
@@ -17,10 +17,11 @@ FLT.DUNGEON_REGISTRY["Zul'Farrak"] = {
             pickup = "Master Gadrin, Durotar (56.0, 74.7)",
             objective = "Read from the Tablet of Theka to learn the name of the Witherbark spider god, then return to Master Gadrin.",
             turnin = "Master Gadrin, Durotar",
+            rewardSummary = "9,700 XP · +150 Darkspear Trolls",
         },
         {
             id = 2991,
-            liveXPFallback = 5250,
+            liveXPFallback = 10500,
             name = "Nekrum's Medallion",
             level = 47,
             requires = 40,
@@ -29,10 +30,11 @@ FLT.DUNGEON_REGISTRY["Zul'Farrak"] = {
             objective = "Bring Nekrum's Medallion to Thadius Grimshade in the Blasted Lands.",
             turnin = "Thadius Grimshade, Blasted Lands",
             note = "Nekrum Gutchewer joins the fight on the temple stairs, after Sergeant Bly's group frees the prisoners.",
+            rewardSummary = "10,500 XP · 70s",
         },
         {
             id = 2768,
-            liveXPFallback = 6300,
+            liveXPFallback = 12600,
             name = "Divino-matic Rod",
             level = 47,
             requires = 40,
@@ -45,30 +47,33 @@ FLT.DUNGEON_REGISTRY["Zul'Farrak"] = {
                 {9534, "Engineer's Guild Headpiece", 3},
                 {270099, "Magister Cowl", 3},
             },
+            rewardSummary = "12,600 XP · +200 Gadgetzan",
         },
         {
             id = 2865,
-            liveXPFallback = 3900,
+            liveXPFallback = 7800,
             name = "Scarab Shells",
             level = 45,
             requires = 40,
             pickup = "Tran'rek, Tanaris (51.6, 26.8)",
             objective = "Bring 5 Uncracked Scarab Shells to Tran'rek in Gadgetzan.",
             turnin = "Tran'rek, Tanaris",
+            rewardSummary = "7,800 XP · 65s",
         },
         {
             id = 3042,
-            liveXPFallback = 3900,
+            liveXPFallback = 7800,
             name = "Troll Temper",
             level = 45,
             requires = 40,
             pickup = "Trenton Lighthammer, Tanaris (51.4, 28.8)",
             objective = "Bring 20 Vials of Troll Temper to Trenton Lighthammer in Gadgetzan.",
             turnin = "Trenton Lighthammer, Tanaris",
+            rewardSummary = "7,800 XP · 1g 95s",
         },
         {
             id = 2846,
-            liveXPFallback = 6050,
+            liveXPFallback = 12100,
             name = "Tiara of the Deep",
             level = 46,
             requires = 40,
@@ -83,10 +88,11 @@ FLT.DUNGEON_REGISTRY["Zul'Farrak"] = {
             rewardAlso = {
                 {9527, "Spellshifter Rod", 2},
             },
+            rewardSummary = "12,100 XP · 65s",
         },
         {
             id = 2770,
-            liveXPFallback = 7100,
+            liveXPFallback = 14200,
             name = "Gahz'rilla",
             level = 50,
             requires = 40,
@@ -95,20 +101,23 @@ FLT.DUNGEON_REGISTRY["Zul'Farrak"] = {
             turnin = "Wizzle Brassbolts, Thousand Needles",
             rewardItems = {{11122, "Carrot on a Stick", 2}},
             note = "Someone in the group needs the Mallet of Zul'Farrak to summon Gahz'rilla at the pool. It is made from the Sacred Mallet (Qiaga the Keeper, The Hinterlands) at the altar of Jintha'Alor.",
+            rewardSummary = "14,200 XP · 75s",
         },
         {
             id = 3527,
-            liveXPFallback = 5250,
+            liveXPFallback = 10500,
             name = "The Prophecy of Mosh'aru",
             level = 47,
             requires = 40,
             pickup = "Yeh'kinya, Tanaris (67.0, 22.4)",
             objective = "Bring the First and Second Mosh'aru Tablets to Yeh'kinya in Tanaris.",
             turnin = "Yeh'kinya, Tanaris",
+            rewardSummary = "10,500 XP",
         },
         {
             level = 46,
             id = 2769,
+            liveXPFallback = 410,
             name = "The Brassbolts Brothers",
             requires = 40,
             faction = "Alliance",
@@ -117,10 +126,12 @@ FLT.DUNGEON_REGISTRY["Zul'Farrak"] = {
             turnin = "Wizzle Brassbolts, Thousand Needles",
             rewardItems = {
             },
+            rewardSummary = "410 XP",
         },
         {
             level = 46,
             id = 2861,
+            liveXPFallback = 410,
             name = "Tabetha's Task",
             requires = 40,
             faction = "Both",
@@ -129,10 +140,12 @@ FLT.DUNGEON_REGISTRY["Zul'Farrak"] = {
             turnin = "Tabetha, Dustwallow Marsh",
             rewardItems = {
             },
+            rewardSummary = "410 XP",
         },
         {
             level = 50,
             id = 80411,
+            liveXPFallback = 4700,
             name = "The Talisman of Kazdor",
             requires = 45,
             faction = "Both",
@@ -142,10 +155,12 @@ FLT.DUNGEON_REGISTRY["Zul'Farrak"] = {
             turnin = "Fahrad, Alterac Mountains",
             rewardItems = {
             },
+            rewardSummary = "4,700 XP · 1g 4s 12c",
         },
         {
             level = 46,
             id = 96770,
+            liveXPFallback = 10100,
             name = "The Witch Doctor's Head",
             requires = 39,
             faction = "Alliance",
@@ -154,10 +169,12 @@ FLT.DUNGEON_REGISTRY["Zul'Farrak"] = {
             turnin = "Archmage Lan'dalock, Alterac Mountains",
             rewardItems = {
             },
+            rewardSummary = "10,100 XP · 1g 30s · +300 Kirin Tor",
         },
         {
             level = 46,
             id = 96775,
+            liveXPFallback = 10100,
             name = "Zum'rah's Head",
             requires = 42,
             faction = "Horde",
@@ -166,6 +183,22 @@ FLT.DUNGEON_REGISTRY["Zul'Farrak"] = {
             turnin = "Mazu'kon, Mulgore",
             rewardItems = {
             },
+            rewardSummary = "10,100 XP · 65s · +150 Darkspear Trolls · +300 Earthen Ring",
+        },
+        {
+            level = 45,
+            id = 82084,
+            liveXPFallback = 3900,
+            name = "A Lesson in Literacy",
+            requires = 42,
+            faction = "Both",
+            class = "MAGE",
+            pickup = "Owen Thadd, Undercity (73.4, 33.0)",
+            objective = "Track down and collect the spellbook materials requested by the librarian.",
+            turnin = "Owen Thadd, Undercity",
+            rewardItems = {
+            },
+            rewardSummary = "3,900 XP",
         },
     },
     bosses = {
@@ -174,6 +207,7 @@ FLT.DUNGEON_REGISTRY["Zul'Farrak"] = {
             npcID = 8127,
             displayID = 7353,
             loot = {
+                {9484, "Spellshock Leggings", "Legs, Cloth", 3}, -- Dungeon Journal (user 25.11.2026)
                 {9379, "Sang'thraze the Deflector", "One-Hand, Sword", 3},
                 {9639, "The Hand of Antu'sul", "Main Hand, Mace", 3},
                 {9640, "Vice Grips", "Hands, Plate", 3},
@@ -184,7 +218,11 @@ FLT.DUNGEON_REGISTRY["Zul'Farrak"] = {
             name = "Theka the Martyr",
             npcID = 7272,
             displayID = 6696,
-            loot = {},
+            loot = {
+                {274641, "Theka's Last Breath", "Trinket", 3}, -- Dungeon Journal (user 25.11.2026)
+                {274639, "Sacrificial Chain Vest", "Chest, Mail", 3}, -- Dungeon Journal (user 25.11.2026)
+                {274638, "Sandfury Pauldrons", "Shoulder, Mail", 3}, -- Dungeon Journal (user 25.11.2026)
+            },
         },
         {
             name = "Witch Doctor Zum'rah",
@@ -200,7 +238,11 @@ FLT.DUNGEON_REGISTRY["Zul'Farrak"] = {
             name = "Nekrum Gutchewer",
             npcID = 7796,
             displayID = 6690,
-            loot = {},
+            loot = {
+                {274644, "Undying Headdress", "Head, Mail", 3}, -- Dungeon Journal (user 25.11.2026)
+                {274645, "Desert Ziggurat Drape", "Back", 3}, -- Dungeon Journal (user 25.11.2026)
+                {274643, "Gutcutter Hatchet", "Thrown", 3}, -- Dungeon Journal (user 25.11.2026)
+            },
         },
         {
             -- fights with Nekrum Gutchewer; Wowhead Forever zone drops 13.11.2026
@@ -208,6 +250,7 @@ FLT.DUNGEON_REGISTRY["Zul'Farrak"] = {
             npcID = 7797,
             displayID = 6687, -- CMaNGOS classic-db creature_template (user 23.11.2026)
             loot = {
+                {9511, "Bloodletter Scalpel", "One-Hand, Sword", 3}, -- Dungeon Journal (user 25.11.2026)
                 {274654, "Sandfury Guillotine", "Two-Hand, Axe", 3},
                 {274655, "Peacekeeper Wand", "Ranged, Wand", 3},
             },
@@ -227,6 +270,9 @@ FLT.DUNGEON_REGISTRY["Zul'Farrak"] = {
             name = "Sergeant Bly",
             npcID = 7604,
             displayID = 6433,
+            -- only fights when you talk to him after the stairs event, and he has no boss encounter the tracker could hear
+            -- (6.2.17-beta14, Discord djmarscomet 25.11.: "Counts dungeon as not finished")
+            optional = true,
             description = "Fights you on the temple stairs after the prisoner event.",
             loot = {
                 {5616, "Gutwrencher", "One-Hand, Dagger", 3},
@@ -239,7 +285,11 @@ FLT.DUNGEON_REGISTRY["Zul'Farrak"] = {
             name = "Hydromancer Velratha",
             npcID = 7795,
             displayID = 6685,
-            loot = {},
+            loot = {
+                {274653, "Deep Ritual Girdle", "Waist, Mail", 3}, -- Dungeon Journal (user 25.11.2026)
+                {274651, "Zealot Plate", "Chest, Plate", 3}, -- Dungeon Journal (user 25.11.2026)
+                {274652, "Wall of Water", "Off Hand, Shield", 3}, -- Dungeon Journal (user 25.11.2026)
+            },
         },
         {
             name = "Gahz'rilla",
@@ -280,7 +330,10 @@ FLT.DUNGEON_REGISTRY["Zul'Farrak"] = {
             npcID = 10080,
             displayID = 9291,
             rare = true,
-            loot = {},
+            loot = {
+                {274660, "Sandarr's Shoulders", "Shoulder, Mail", 3}, -- Dungeon Journal (user 25.11.2026)
+                {274659, "Bloodsand Belt", "Waist, Plate", 3}, -- Dungeon Journal (user 25.11.2026)
+            },
         },
         {
             name = "Dustwraith",

@@ -14,6 +14,7 @@ FLT.DUNGEON_REGISTRY["Blackmaw Hold"] = {
         {
             level = 55,
             id = 92343,
+            liveXPFallback = 11300,
             name = "Get to the Roots of It",
             requires = 45,
             faction = "Horde",
@@ -22,10 +23,12 @@ FLT.DUNGEON_REGISTRY["Blackmaw Hold"] = {
             turnin = "Nara Wildmane, Thunder Bluff",
             rewardItems = {
             },
+            rewardSummary = "11,300 XP · +150 Thunder Bluff",
         },
         {
             level = 55,
             id = 92344,
+            liveXPFallback = 11300,
             name = "Get to the Roots of It",
             requires = 45,
             faction = "Alliance",
@@ -34,30 +37,36 @@ FLT.DUNGEON_REGISTRY["Blackmaw Hold"] = {
             turnin = "Mathrengyl Bearwalker, Darnassus",
             rewardItems = {
             },
+            rewardSummary = "11,300 XP · +150 Darnassus",
         },
         {
             level = 59,
             id = 97173,
+            liveXPFallback = 12800,
             name = "Blackmaw Magic",
             requires = 52,
             faction = "Alliance",
             objective = "Recover a Blackmaw Ritual Totem from Blackmaw Hold.",
             rewardItems = {
             },
+            rewardSummary = "12,800 XP · 90s · +150 Darnassus · +300 Kirin Tor",
         },
         {
             level = 59,
             id = 97198,
+            liveXPFallback = 16100,
             name = "Blackmaw Magic",
             requires = 52,
             faction = "Horde",
             objective = "Recover a Blackmaw Ritual Totem from Blackmaw Hold.",
             rewardItems = {
             },
+            rewardSummary = "16,100 XP · 90s · +300 Earthen Ring · +150 Thunder Bluff",
         },
         {
             level = 58,
             id = 92069,
+            liveXPFallback = 12400,
             name = "Claws That Rend, Tusks that Gore",
             faction = "Both",
             pickup = "Ogtinc, Azshara (42.4, 42.6)",
@@ -70,10 +79,12 @@ FLT.DUNGEON_REGISTRY["Blackmaw Hold"] = {
                 {260215, "Wild Malleus", 2},
             },
             note = "Still being discovered: who gives this quest and its rewards are not known yet.",
+            rewardSummary = "12,400 XP · +150 Timbermaw Hold",
         },
         {
             level = 55,
             id = 92070,
+            liveXPFallback = 11300,
             name = "A Lost Memento",
             faction = "Both",
             pickup = "Feathered Charm Necklace, dropped by Legashi Satyr",
@@ -83,10 +94,12 @@ FLT.DUNGEON_REGISTRY["Blackmaw Hold"] = {
             rewardItems = {
                 {279893, "Nama's Cherished Necklace", 2},
             },
+            rewardSummary = "11,300 XP",
         },
         {
             level = 55,
             id = 92066,
+            liveXPFallback = 11300,
             name = "The Twin Bears",
             requires = 55,
             faction = "Both",
@@ -98,10 +111,12 @@ FLT.DUNGEON_REGISTRY["Blackmaw Hold"] = {
                 {279891, "Guidance of Ursoc", 2},
                 {279892, "Wisdom of Ursol", 2},
             },
+            rewardSummary = "11,300 XP · +150 Timbermaw Hold",
         },
         {
             level = 60,
             id = 97327,
+            liveXPFallback = 13200,
             name = "Blackmaw Pouches",
             requires = 60,
             faction = "Both",
@@ -110,16 +125,50 @@ FLT.DUNGEON_REGISTRY["Blackmaw Hold"] = {
             turnin = "Ekkal, Azshara",
             rewardItems = {
             },
+            rewardSummary = "13,200 XP · 90s · +150 Timbermaw Hold",
         },
         {
             level = 58,
             id = 99187,
+            liveXPFallback = 13550,
             name = "The Reliquary of Tyr",
             requires = 50,
             faction = "Horde",
             class = "PALADIN",
             objective = "Travel to Blackmaw Hold in Kalimdor, and recover the Reliquary of Tyr.",
             rewardItems = {{286408, "Sword of Mourning", 3}},
+            rewardSummary = "13,550 XP",
+        },
+        {
+            level = 60,
+            id = 92065,
+            liveXPFallback = 13200,
+            name = "Blackmaw Reclamation",
+            requires = 47,
+            faction = "Both",
+            pickup = "Gatekeeper Rageroar, Azshara (42.3, 20.1)",
+            objective = "Bring Varrox Bleakhoof's Head to Gatekeeper Rageroar at Ursolan.",
+            turnin = "Gatekeeper Rageroar, Azshara",
+            rewardChoice = true,
+            rewardItems = { -- the other three rings: wowtbc.gg (user 27.11.2026)
+                {260216, "Ouroboros Ring", 3},
+                {260217, "Eagle's Head Signet", 3},
+                {260218, "Malefactor's End", 3},
+                {260219, "Engraved Band", 3},
+            },
+            rewardSummary = "13,200 XP · +150 Timbermaw Hold",
+        },
+        {
+            level = 60,
+            id = 96246,
+            name = "Blackmaw Pouches",
+            requires = 55,
+            faction = "Both",
+            pickup = "Ekkal, Azshara (42.0, 38.9)",
+            turnin = "Ekkal, Azshara",
+            rewardItems = {
+            },
+            rewardSummary = "+100 Timbermaw Hold",
         },
     },
     bosses = {
@@ -210,6 +259,7 @@ FLT.DUNGEON_REGISTRY["Blackmaw Hold"] = {
             displayID = 145808,
             rare = true,
             loot = {
+                {280078, "Apprentice's Protective Treads", "Feet, Leather", 3}, -- Dungeon Journal (user 25.11.2026)
                 {280077, "Fist of Revelation", "One-Hand, Fist Weapon", 3},
             },
         },
@@ -222,6 +272,15 @@ FLT.DUNGEON_REGISTRY["Blackmaw Hold"] = {
             loot = {
                 {280085, "Tunnelweb Pincer", "One-Hand, Dagger", 3},
                 {280086, "Octofinger Gauntlets", "Hands, Plate", 3},
+            },
+        },
+        {
+            name = "Sabella No-Eyes",
+            npcID = 269151,
+            optional = true,
+            loot = {
+                {280083, "Truesight Rifle", "Ranged, Gun", 3}, -- Dungeon Journal (user 25.11.2026)
+                {280084, "Furbolg Rib Protector", "Chest, Mail", 3}, -- Dungeon Journal (user 25.11.2026)
             },
         },
     },

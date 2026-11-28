@@ -15,6 +15,7 @@ FLT.DUNGEON_REGISTRY["Krol'dok Stronghold"] = {
         {
             level = 42,
             id = 94975,
+            liveXPFallback = 8200,
             name = "A Token of Vengeance",
             requires = 38,
             faction = "Horde",
@@ -24,10 +25,12 @@ FLT.DUNGEON_REGISTRY["Krol'dok Stronghold"] = {
             rewardItems = {
                 {267090, "Semblance of Twilight", 2},
             },
+            rewardSummary = "8,200 XP",
         },
         {
             level = 42,
             id = 94983,
+            liveXPFallback = 10200,
             name = "Twilight Mementos",
             requires = 38,
             faction = "Alliance",
@@ -37,10 +40,12 @@ FLT.DUNGEON_REGISTRY["Krol'dok Stronghold"] = {
             note = "The part inside the dungeon. Its reward comes two steps later with Curios of Curiosity (Lingering Essence, then Curios of Curiosity - both outside).",
             rewardItems = {
             },
+            rewardSummary = "10,200 XP · +150 Brotherhood of the Horse",
         },
         {
             level = 42,
             id = 94998,
+            liveXPFallback = 3450,
             name = "Curios of Curiosity",
             requires = 38,
             faction = "Alliance",
@@ -52,10 +57,12 @@ FLT.DUNGEON_REGISTRY["Krol'dok Stronghold"] = {
             rewardItems = {
                 {279850, "Curio-Adorned Necklace", 3},
             },
+            rewardSummary = "3,450 XP · 55s · +100 Brotherhood of the Horse",
         },
         {
             level = 44,
             id = 94972,
+            liveXPFallback = 11050,
             name = "Tome of Twilight",
             requires = 39,
             faction = "Horde",
@@ -67,10 +74,12 @@ FLT.DUNGEON_REGISTRY["Krol'dok Stronghold"] = {
                 {279859, "Indoctrinated Choker", 2},
                 {279860, "Convert's Bindings", 2},
             },
+            rewardSummary = "11,050 XP",
         },
         {
             level = 44,
             id = 94984,
+            liveXPFallback = 11050,
             name = "Tome of Twilight",
             requires = 39,
             faction = "Alliance",
@@ -82,10 +91,12 @@ FLT.DUNGEON_REGISTRY["Krol'dok Stronghold"] = {
                 {279854, "Twilight Initiate's Belt", 2},
                 {279855, "Torn Cultist Cloak", 2},
             },
+            rewardSummary = "11,050 XP · +150 Brotherhood of the Horse",
         },
         {
             level = 45,
             id = 94968,
+            liveXPFallback = 11500,
             name = "Eye of Mugg",
             requires = 40,
             faction = "Horde",
@@ -98,10 +109,12 @@ FLT.DUNGEON_REGISTRY["Krol'dok Stronghold"] = {
                 {279480, "Bigger Rock on Bigger Stick", 3},
                 {279853, "Stick No Rock", 3},
             },
+            rewardSummary = "11,500 XP · 1g 30s",
         },
         {
             level = 45,
             id = 94982,
+            liveXPFallback = 11500,
             name = "Eye of Mugg",
             requires = 40,
             faction = "Alliance",
@@ -114,16 +127,19 @@ FLT.DUNGEON_REGISTRY["Krol'dok Stronghold"] = {
                 {279853, "Stick No Rock", 3},
                 {279480, "Bigger Rock on Bigger Stick", 3},
             },
+            rewardSummary = "11,500 XP · 1g 30s · +150 Brotherhood of the Horse",
         },
         {
             level = 45,
             id = 96771,
+            liveXPFallback = 11500,
             name = "Vengeance of the Highborne",
             requires = 37,
             faction = "Alliance",
             objective = "Travel to Krol'dok Stronghold and slay Zalfan Moonshadow.",
             rewardItems = {
             },
+            rewardSummary = "11,500 XP · 65s · +150 Brotherhood of the Horse · +250 Kirin Tor",
         },
     },
     bosses = {
@@ -132,6 +148,7 @@ FLT.DUNGEON_REGISTRY["Krol'dok Stronghold"] = {
             npcID = 258966,
             displayID = 141217,
             loot = {
+                {273101, "Blueprint: Expert Campfire", "Blueprint", 2}, -- Dungeon Journal (user 25.11.2026)
                 {274996, "Resistance Breaker Spaulder", "Shoulder, Mail", 3},
                 {274995, "Slavecrusher Scepter", "One-Hand, Mace", 3},
                 {274997, "Chain of Binding", "Waist, Mail", 3},

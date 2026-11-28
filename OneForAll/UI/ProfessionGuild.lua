@@ -1,4 +1,6 @@
 local _, FLT = ...
+-- a readable text from the game or nil (FLT.Str in Core.lua; the same here for the mock tests, no extra local)
+FLT.Str = FLT.Str or function(v) if type(v) ~= "string" or (issecretvalue and issecretvalue(v)) then return nil end return v end
 local L = FLT.L or setmetatable({}, { __index = function(_, k) return k end }) -- (tests without Locales)
 
 -- Recipe sharing for the "All recipes" browser.
@@ -462,7 +464,8 @@ end
 -- Hide join/leave notices of the share channels.
 if ChatFrame_AddMessageEventFilter then
   local function ours(s)
-    if type(s) ~= "string" then return false end
+    s = FLT.Str(s) -- (channel names can come as secret values)
+    if not s then return false end
     s = s:lower()
     return s:find(OLD_CHANNEL:lower(), 1, true) ~= nil -- also matches OFAShare2
   end
@@ -908,7 +911,7 @@ local function onChannelMessage(prefix, msg, channel, sender)
 end
 
 local function onAddonMessage(prefix, msg, channel, sender)
-  if type(msg) ~= "string" then return end
+  if type(msg) ~= "string" or (FLT.IsSecret and FLT.IsSecret(prefix, msg, channel, sender)) then return end
   if prefix == PREFIX then
     if channel == "GUILD" then local who = shortName(sender); if who then onGuildMessage(msg, who) end end
   elseif prefix == PREFIX2 then

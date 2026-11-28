@@ -108,20 +108,6 @@ FLT.DUNGEON_REGISTRY["Excavation Site: Wetlands"] = {
         },
         {
             level = 31,
-            id = 95810,
-            liveXPFallback = 1250,
-            name = "Lost Relic Carry",
-            requires = 24,
-            faction = "Alliance",
-            pickup = "Titan Relic, a drop inside Excavation Site: Wetlands",
-            objective = "Bring the Titan Relic to Prospector Whelgar in the Wetlands excavation site.",
-            turnin = "Prospector Whelgar, Wetlands (38.8, 52.4)",
-            rewardItems = {},
-            rewardSummary = "1,250 XP",
-            note = "Next step: Prehistoric Prism.",
-        },
-        {
-            level = 31,
             id = 98824,
             liveXPFallback = 6150,
             name = "Prehistoric Prism",
@@ -140,20 +126,6 @@ FLT.DUNGEON_REGISTRY["Excavation Site: Wetlands"] = {
         },
         {
             level = 31,
-            id = 95664,
-            liveXPFallback = 1400,
-            name = "Elder Knowledge",
-            requires = 24,
-            faction = "Horde",
-            pickup = "Titan Relic, a drop inside Excavation Site: Wetlands",
-            objective = "Take the Titan Relic to the Elder Rise in Thunder Bluff and look for someone who can tell you more about it.",
-            turnin = "Bashana Runetotem, Thunder Bluff (71.1, 34.2)",
-            rewardItems = {},
-            rewardSummary = "1,400 XP",
-            note = "Next step: Earthen Echo.",
-        },
-        {
-            level = 31,
             id = 98823,
             liveXPFallback = 6950,
             name = "Earthen Echo",
@@ -169,20 +141,6 @@ FLT.DUNGEON_REGISTRY["Excavation Site: Wetlands"] = {
                 {271719, "Furs of the Earthen Ring", 3},
             },
             rewardSummary = "6,950 XP · 60s",
-        },
-        {
-            level = 31,
-            id = 95663,
-            liveXPFallback = 550,
-            name = "Dragonmaw Rumors",
-            requires = 24,
-            faction = "Horde",
-            pickup = "Zaruk, Arathi Highlands (74.5, 35.6)",
-            objective = "Travel to the Wetlands and meet the Deathstalker Agent in the hills above the Dragonmaw camp.",
-            turnin = "Deathstalker Agent, inside Excavation Site: Wetlands",
-            rewardItems = {},
-            rewardSummary = "550 XP",
-            note = "Optional lead-in for Open the Maw.",
         },
         {
             level = 31,
@@ -255,6 +213,7 @@ FLT.DUNGEON_REGISTRY["Excavation Site: Wetlands"] = {
             npcID = 260325,
             displayID = 144210,
             loot = {
+                {273106, "Blueprint: Greenhouse", "Blueprint", 2}, -- Dungeon Journal (user 25.11.2026)
                 {273025, "Raptorclaw Greaves", "Feet, Mail", 3},
                 {273026, "Garb of Florid Feathers", "Chest, Leather", 3},
                 {273027, "Raptor's Gaze", "Held In Off-Hand", 3},
@@ -273,6 +232,7 @@ FLT.DUNGEON_REGISTRY["Excavation Site: Wetlands"] = {
             npcID = 260326,
             displayID = 144224,
             loot = {
+                {273097, "Blueprint: Rock Garden", "Blueprint", 2}, -- Dungeon Journal (user 25.11.2026)
                 {273028, "Reliquary Mantle", "Shoulder, Mail", 3},
                 {273030, "Ring of Power Regulation", "Finger", 3},
                 {270865, "Titan Relic", "Miscellaneous", 1},

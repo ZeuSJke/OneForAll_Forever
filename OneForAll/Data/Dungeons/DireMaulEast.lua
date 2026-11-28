@@ -9,7 +9,7 @@ FLT.DUNGEON_REGISTRY["Dire Maul: East"] = {
     quests = {
         {
             id = 7489,
-            liveXPFallback = 7550,
+            liveXPFallback = 20200,
             name = "Lethtendris's Web",
             level = 57,
             requires = 54,
@@ -23,10 +23,11 @@ FLT.DUNGEON_REGISTRY["Dire Maul: East"] = {
                 {270124, "Warpwood Bracers", 3},
                 {270125, "Satyrhide Armbands", 3},
             },
+            rewardSummary = "20,200 XP · 1g 70s",
         },
         {
             id = 7488,
-            liveXPFallback = 7550,
+            liveXPFallback = 20200,
             name = "Lethtendris's Web",
             level = 57,
             requires = 54,
@@ -40,10 +41,11 @@ FLT.DUNGEON_REGISTRY["Dire Maul: East"] = {
                 {270124, "Warpwood Bracers", 3},
                 {270125, "Satyrhide Armbands", 3},
             },
+            rewardSummary = "20,200 XP · 1g 70s",
         },
         {
             id = 7441,
-            liveXPFallback = 7750,
+            liveXPFallback = 20750,
             name = "Pusillin and the Elder Azj'Tordin",
             level = 58,
             requires = 54,
@@ -57,10 +59,11 @@ FLT.DUNGEON_REGISTRY["Dire Maul: East"] = {
                 {270127, "Incanter's Pantaloons", 2},
             },
             note = "Chase Pusillin through the quarter until he gives up the Crescent Key.",
+            rewardSummary = "20,750 XP · 1g 75s",
         },
         {
             id = 5526,
-            liveXPFallback = 8300,
+            liveXPFallback = 22200,
             name = "Shards of the Felvine",
             level = 60,
             requires = 56,
@@ -69,10 +72,11 @@ FLT.DUNGEON_REGISTRY["Dire Maul: East"] = {
             turnin = "Rabine Saturna, Moonglade",
             rewardItems = {{18535, "Milli's Shield", 3}, {18536, "Milli's Lexicon", 3}},
             rewardChoice = true,
+            rewardSummary = "22,200 XP",
         },
         {
             id = 7463,
-            liveXPFallback = 6600,
+            liveXPFallback = 13200,
             name = "Arcane Refreshment",
             level = 60,
             requires = 60,
@@ -80,6 +84,7 @@ FLT.DUNGEON_REGISTRY["Dire Maul: East"] = {
             pickup = "Lorekeeper Lydros, inside Dire Maul",
             objective = "Travel to the Warpwood Quarter of Dire Maul and slay the water elemental, Hydrospawn. Return to Lorekeeper Lydros in the Athenaeum with the Hydrospawn Essence.",
             turnin = "Lorekeeper Lydros, inside Dire Maul",
+            rewardSummary = "13,200 XP",
         },
         {
             level = 60,
@@ -113,7 +118,10 @@ FLT.DUNGEON_REGISTRY["Dire Maul: East"] = {
             name = "Pusillin",
             npcID = 14354,
             displayID = 7552,
-            loot = {},
+            loot = {
+                {18316, "Obsidian Bauble", "Off Hand", 3}, -- Dungeon Journal (user 25.11.2026)
+                {18320, "Demondash Spaulders", "Shoulder, Mail", 3}, -- Dungeon Journal (user 25.11.2026)
+            },
         },
         {
             name = "Zevrim Thornhoof",
@@ -144,6 +152,7 @@ FLT.DUNGEON_REGISTRY["Dire Maul: East"] = {
             npcID = 14327,
             displayID = 14378,
             loot = {
+                {18354, "Pimgib's Collar", "Trinket", 3}, -- Dungeon Journal (user 25.11.2026)
                 {18301, "Lethtendris's Wand", "Ranged, Wand", 2},
                 {18302, "Band of Vigor", "Finger", 2},
                 {18311, "Quel'dorai Channeling Rod", "Two-Hand, Staff", 3},
@@ -170,6 +179,7 @@ FLT.DUNGEON_REGISTRY["Dire Maul: East"] = {
         {
             name = "Isalien",
             npcID = 16097,
+            rare = true,
             displayID = 16000, -- CMaNGOS classic-db creature_template (user 23.11.2026)
             description = "Summoned with a brazier from the Tier 0.5 set quests.",
             loot = {

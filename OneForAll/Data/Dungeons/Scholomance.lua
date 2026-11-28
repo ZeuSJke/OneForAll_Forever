@@ -9,13 +9,14 @@ FLT.DUNGEON_REGISTRY["Scholomance"] = {
     quests = {
         {
             id = 5529,
-            liveXPFallback = 6200,
+            liveXPFallback = 14750,
             name = "Plagued Hatchlings",
             level = 58,
             requires = 55,
             pickup = "Betina Bigglezink, Eastern Plaguelands (71.7, 49.9)",
             objective = "Kill 20 Plagued Hatchlings, then return to Betina Bigglezink at the Light's Hope Chapel.",
             turnin = "Betina Bigglezink, Eastern Plaguelands",
+            rewardSummary = "14,750 XP · 90s",
         },
         {
             id = 5582,
@@ -28,7 +29,7 @@ FLT.DUNGEON_REGISTRY["Scholomance"] = {
         },
         {
             id = 5341,
-            liveXPFallback = 6600,
+            liveXPFallback = 15700,
             name = "Barov Family Fortune",
             level = 60,
             requires = 52,
@@ -36,10 +37,11 @@ FLT.DUNGEON_REGISTRY["Scholomance"] = {
             pickup = "Alexi Barov, Tirisfal Glades (83.1, 71.6)",
             objective = "Venture to the Scholomance and recover the Barov family fortune. Four deeds make up this fortune: The Deed to Caer Darrow; The Deed to Brill; The Deed to Tarren Mill; and The Deed to Southshore. Return to Alexi Barov when you have completed this task.",
             turnin = "Alexi Barov, Tirisfal Glades",
+            rewardSummary = "15,700 XP · 1g 80s",
         },
         {
             id = 5343,
-            liveXPFallback = 6600,
+            liveXPFallback = 15700,
             name = "Barov Family Fortune",
             level = 60,
             requires = 52,
@@ -47,30 +49,33 @@ FLT.DUNGEON_REGISTRY["Scholomance"] = {
             pickup = "Weldon Barov, Western Plaguelands (43.5, 83.7)",
             objective = "Venture to the Scholomance and recover the Barov family fortune. Four deeds make up this fortune: The Deed to Caer Darrow; The Deed to Brill; The Deed to Tarren Mill; and The Deed to Southshore. Return to Weldon Barov when you have completed this task.",
             turnin = "Weldon Barov, Western Plaguelands",
+            rewardSummary = "15,700 XP · 1g 80s",
         },
         {
             id = 5382,
-            liveXPFallback = 6600,
+            liveXPFallback = 15700,
             name = "Doctor Theolen Krastinov, the Butcher",
             level = 60,
             requires = 55,
             pickup = "Eva Sarkhoff, Western Plaguelands (70.2, 73.7)",
             objective = "Find Doctor Theolen Krastinov inside the Scholomance. Destroy him, then burn the Remains of Eva Sarkhoff and the Remains of Lucien Sarkhoff. Return to Eva Sarkhoff when the task is complete. ",
             turnin = "Eva Sarkhoff, Western Plaguelands",
+            rewardSummary = "15,700 XP",
         },
         {
             id = 5515,
-            liveXPFallback = 6600,
+            liveXPFallback = 15700,
             name = "Krastinov's Bag of Horrors",
             level = 60,
             requires = 55,
             pickup = "Eva Sarkhoff, Western Plaguelands (70.2, 73.7)",
             objective = "Locate Jandice Barov in the Scholomance and destroy her. From her corpse recover Krastinov's Bag of Horrors. Return the bag to Eva Sarkhoff.",
             turnin = "Eva Sarkhoff, Western Plaguelands",
+            rewardSummary = "15,700 XP",
         },
         {
             id = 5384,
-            liveXPFallback = 8300,
+            liveXPFallback = 19700,
             name = "Kirtonos the Herald",
             level = 60,
             requires = 55,
@@ -86,10 +91,11 @@ FLT.DUNGEON_REGISTRY["Scholomance"] = {
                 {13544, "Spectral Essence", 2},
             },
             note = "Place the Blood of Innocents in the brazier on the porch to summon Kirtonos.",
+            rewardSummary = "19,700 XP",
         },
         {
             id = 5466,
-            liveXPFallback = 9950,
+            liveXPFallback = 23650,
             name = "The Lich, Ras Frostwhisper",
             level = 60,
             requires = 57,
@@ -105,10 +111,11 @@ FLT.DUNGEON_REGISTRY["Scholomance"] = {
             rewardAlso = {
                 {14002, "Darrowshire Strongguard", 3},
             },
+            rewardSummary = "23,650 XP",
         },
         {
             id = 4771,
-            liveXPFallback = 9950,
+            liveXPFallback = 23650,
             name = "Dawn's Gambit",
             level = 60,
             requires = 57,
@@ -118,32 +125,11 @@ FLT.DUNGEON_REGISTRY["Scholomance"] = {
             rewardItems = {{15853, "Windreaper", 3}, {15854, "Dancing Sliver", 3}},
             rewardChoice = true,
             note = "Place Dawn's Gambit in the Viewing Room, then defeat Vectus.",
-        },
-        {
-            id = 5505,
-            liveXPFallback = 9950,
-            name = "The Key to Scholomance",
-            level = 60,
-            requires = 55,
-            faction = "Alliance",
-            pickup = "Alchemist Arbington, Western Plaguelands (42.7, 83.8)",
-            turnin = "Alchemist Arbington, Western Plaguelands",
-            rewardItems = {{13704, "Skeleton Key", 1}},
-        },
-        {
-            id = 5511,
-            liveXPFallback = 9950,
-            name = "The Key to Scholomance",
-            level = 60,
-            requires = 55,
-            faction = "Horde",
-            pickup = "High Executor Derrington, Tirisfal Glades (83.1, 68.9)",
-            turnin = "High Executor Derrington, Tirisfal Glades",
-            rewardItems = {{13704, "Skeleton Key", 1}},
+            rewardSummary = "23,650 XP · 2g 70s",
         },
         {
             id = 7629,
-            liveXPFallback = 6600,
+            liveXPFallback = 13200,
             name = "Imp Delivery",
             level = 60,
             requires = 60,
@@ -151,10 +137,11 @@ FLT.DUNGEON_REGISTRY["Scholomance"] = {
             pickup = "Gorzeeki Wildeyes, Burning Steppes (12.4, 31.6)",
             objective = "Bring the Imp in a Jar to the alchemy lab in the Scholomance. After the parchment is created, return the jar to Gorzeeki Wildeyes.",
             turnin = "Gorzeeki Wildeyes, Burning Steppes",
+            rewardSummary = "13,200 XP",
         },
         {
             id = 7647,
-            liveXPFallback = 9950,
+            liveXPFallback = 19900,
             name = "Judgment and Redemption",
             level = 60,
             requires = 60,
@@ -163,6 +150,7 @@ FLT.DUNGEON_REGISTRY["Scholomance"] = {
             pickup = "Lord Grayson Shadowbreaker, Stormwind City (48.4, 50.2)",
             objective = "Use the Divination Scryer in the heart of the Great Ossuary's basement in the Scholomance. Doing so will bring forth the spirits you must judge. Defeating these spirits will summon forth Death Knight Darkreaver. Defeat him and reclaim the lost soul of the fallen charger.  Give the Charger's Redeemed Soul and the Blessed Enchanted Barding to Darkreaver's Fallen Charger.",
             turnin = "Darkreaver's Fallen Charger, inside Scholomance",
+            rewardSummary = "19,900 XP",
         },
         {
             id = 8258,
@@ -180,6 +168,7 @@ FLT.DUNGEON_REGISTRY["Scholomance"] = {
         {
             level = 60,
             id = 7668,
+            liveXPFallback = 19900,
             name = "The Darkreaver Menace",
             requires = 58,
             faction = "Horde",
@@ -190,18 +179,7 @@ FLT.DUNGEON_REGISTRY["Scholomance"] = {
             rewardItems = {
                 {18807, "Helm of Latent Power", 3},
             },
-        },
-        {
-            level = 60,
-            id = 5531,
-            name = "Betina Bigglezink",
-            requires = 57,
-            faction = "Both",
-            pickup = "Leonid Barthalomew the Revered, Eastern Plaguelands (71.9, 48.3)",
-            objective = "Bring the Frozen Eggs to Betina Bigglezink.",
-            turnin = "Betina Bigglezink, Eastern Plaguelands",
-            rewardItems = {
-            },
+            rewardSummary = "19,900 XP",
         },
     },
     bosses = {
@@ -255,6 +233,8 @@ FLT.DUNGEON_REGISTRY["Scholomance"] = {
             npcID = 10433,
             displayID = 10248,
             loot = {
+                {276069, "Gravetoll Gavel", "Two-Hand, Mace", 3}, -- Dungeon Journal (user 25.11.2026)
+                {276071, "The Black Helm", "Head, Plate", 3}, -- Dungeon Journal (user 25.11.2026)
                 {14576, "Ebon Hilt of Marduk", "Main Hand, Sword", 3},
                 {18692, "Death Knight Sabatons", "Feet, Plate", 3},
             },
@@ -264,6 +244,9 @@ FLT.DUNGEON_REGISTRY["Scholomance"] = {
             npcID = 10432,
             displayID = 2606,
             loot = {
+                {276073, "Band of the Damned", "Finger", 3}, -- Dungeon Journal (user 25.11.2026)
+                {276072, "Soulwoven Drape", "Back", 3}, -- Dungeon Journal (user 25.11.2026)
+                {273121, "Blueprint: Sewing Machine", "Blueprint", 2}, -- Dungeon Journal (user 25.11.2026)
                 {14577, "Skullsmoke Pants", "Legs, Cloth", 3},
                 {18691, "Dark Advisor's Pendant", "Neck", 3},
             },
@@ -273,6 +256,7 @@ FLT.DUNGEON_REGISTRY["Scholomance"] = {
             npcID = 10508,
             displayID = 7919,
             loot = {
+                {273112, "Blueprint: Alchemy Laboratory", "Blueprint", 2}, -- Dungeon Journal (user 25.11.2026)
                 {16689, "Magister's Mantle", "Shoulder, Cloth", 3},
                 {13314, "Alanna's Embrace", "Chest, Cloth", 4},
                 {13952, "Iceblade Hacker", "Main Hand, Axe", 3},
@@ -293,6 +277,8 @@ FLT.DUNGEON_REGISTRY["Scholomance"] = {
             npcID = 10505,
             displayID = 11069,
             loot = {
+                {23201, "Libram of Divinity", "Relic, Libram", 3}, -- Dungeon Journal (user 25.11.2026)
+                {23200, "Totem of Sustaining", "Relic, Totem", 3}, -- Dungeon Journal (user 25.11.2026)
                 {16710, "Shadowcraft Bracers", "Wrist, Leather", 3},
                 {18681, "Burial Shawl", "Shoulder, Cloth", 3},
                 {14633, "Necropile Mantle", "Shoulder, Cloth", 3},
@@ -326,6 +312,10 @@ FLT.DUNGEON_REGISTRY["Scholomance"] = {
             npcID = 11261,
             displayID = 10901,
             loot = {
+                {14617, "Sawbones Shirt", "Shirt", 1}, -- Dungeon Journal (user 25.11.2026)
+                {23201, "Libram of Divinity", "Relic, Libram", 3}, -- Dungeon Journal (user 25.11.2026)
+                {23200, "Totem of Sustaining", "Relic, Totem", 3}, -- Dungeon Journal (user 25.11.2026)
+                {273118, "Blueprint: Plague Doctor's Laboratory", "Blueprint", 2}, -- Dungeon Journal (user 25.11.2026)
                 {16684, "Magister's Gloves", "Hands, Cloth", 3},
                 {18681, "Burial Shawl", "Shoulder, Cloth", 3},
                 {14633, "Necropile Mantle", "Shoulder, Cloth", 3},
@@ -359,6 +349,8 @@ FLT.DUNGEON_REGISTRY["Scholomance"] = {
             npcID = 10901,
             displayID = 11492,
             loot = {
+                {23201, "Libram of Divinity", "Relic, Libram", 3}, -- Dungeon Journal (user 25.11.2026)
+                {23200, "Totem of Sustaining", "Relic, Totem", 3}, -- Dungeon Journal (user 25.11.2026)
                 {16705, "Dreadmist Wraps", "Hands, Cloth", 3},
                 {18681, "Burial Shawl", "Shoulder, Cloth", 3},
                 {14633, "Necropile Mantle", "Shoulder, Cloth", 3},
@@ -392,6 +384,8 @@ FLT.DUNGEON_REGISTRY["Scholomance"] = {
             npcID = 10507,
             displayID = 10433,
             loot = {
+                {23201, "Libram of Divinity", "Relic, Libram", 3}, -- Dungeon Journal (user 25.11.2026)
+                {23200, "Totem of Sustaining", "Relic, Totem", 3}, -- Dungeon Journal (user 25.11.2026)
                 {16716, "Wildheart Belt", "Waist, Leather", 3},
                 {18681, "Burial Shawl", "Shoulder, Cloth", 3},
                 {14633, "Necropile Mantle", "Shoulder, Cloth", 3},
@@ -425,6 +419,8 @@ FLT.DUNGEON_REGISTRY["Scholomance"] = {
             npcID = 10504,
             displayID = 11072,
             loot = {
+                {23201, "Libram of Divinity", "Relic, Libram", 3}, -- Dungeon Journal (user 25.11.2026)
+                {23200, "Totem of Sustaining", "Relic, Totem", 3}, -- Dungeon Journal (user 25.11.2026)
                 {16722, "Lightforge Bracers", "Wrist, Plate", 3},
                 {18681, "Burial Shawl", "Shoulder, Cloth", 3},
                 {14633, "Necropile Mantle", "Shoulder, Cloth", 3},
@@ -458,6 +454,8 @@ FLT.DUNGEON_REGISTRY["Scholomance"] = {
             npcID = 10502,
             displayID = 11835,
             loot = {
+                {23201, "Libram of Divinity", "Relic, Libram", 3}, -- Dungeon Journal (user 25.11.2026)
+                {23200, "Totem of Sustaining", "Relic, Totem", 3}, -- Dungeon Journal (user 25.11.2026)
                 {18681, "Burial Shawl", "Shoulder, Cloth", 3},
                 {14633, "Necropile Mantle", "Shoulder, Cloth", 3},
                 {14626, "Necropile Robe", "Chest, Cloth", 3},
@@ -486,16 +484,9 @@ FLT.DUNGEON_REGISTRY["Scholomance"] = {
             },
         },
         {
-            name = "Lord Blackwood",
-            npcID = 14695,
-            displayID = 14699, -- CMaNGOS classic-db creature_template (user 23.11.2026)
-            description = "Summoned with a brazier from the Tier 0.5 set quests.",
-            loot = {
-            },
-        },
-        {
             name = "Kormok",
             npcID = 16118,
+            rare = true,
             displayID = 16020, -- CMaNGOS classic-db creature_template (user 23.11.2026)
             description = "Summoned with a brazier from the Tier 0.5 set quests.",
             loot = {
@@ -509,6 +500,7 @@ FLT.DUNGEON_REGISTRY["Scholomance"] = {
         {
             name = "Death Knight Darkreaver",
             npcID = 14516,
+            rare = true,
             displayID = 14591,
             description = "Summoned in the Great Ossuary for the paladin and shaman class quests.",
             loot = {

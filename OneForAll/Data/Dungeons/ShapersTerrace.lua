@@ -14,6 +14,7 @@ FLT.DUNGEON_REGISTRY["Shaper's Terrace"] = {
         {
             level = 60,
             id = 95928,
+            liveXPFallback = 17650,
             name = "Crystalline Elements",
             requires = 55,
             faction = "Horde",
@@ -25,10 +26,12 @@ FLT.DUNGEON_REGISTRY["Shaper's Terrace"] = {
                 {279904, "Crystalline Pauldrons", 3},
                 {279906, "Potent Treads", 3},
             },
+            rewardSummary = "17,650 XP · +100 Earthen Ring · +50 Orgrimmar",
         },
         {
             level = 60,
             id = 95790,
+            liveXPFallback = 17650,
             name = "Digestible Research",
             requires = 55,
             faction = "Alliance",
@@ -39,10 +42,12 @@ FLT.DUNGEON_REGISTRY["Shaper's Terrace"] = {
                 {279931, "Lost Researcher's Hood", 3},
                 {279901, "Expeditionary Legplates", 3},
             },
+            rewardSummary = "17,650 XP · +100 Ironforge · +100 Stormwind",
         },
         {
             level = 60,
             id = 95924,
+            liveXPFallback = 17650,
             name = "Panic at the Digsite",
             requires = 55,
             faction = "Alliance",
@@ -53,10 +58,12 @@ FLT.DUNGEON_REGISTRY["Shaper's Terrace"] = {
                 {279903, "Diemetradon Scale Spaulders", 3},
                 {279905, "Ravasaur Hide Footpads", 3},
             },
+            rewardSummary = "17,650 XP · 90s · +100 Ironforge · +50 Stormwind",
         },
         {
             level = 60,
             id = 95925,
+            liveXPFallback = 17650,
             name = "Mapping the Way Forward",
             requires = 55,
             faction = "Alliance",
@@ -68,10 +75,12 @@ FLT.DUNGEON_REGISTRY["Shaper's Terrace"] = {
                 {279910, "Beastslayer's Trident", 3},
                 {279912, "Faintly Glowing Orb", 3},
             },
+            rewardSummary = "17,650 XP · +100 Ironforge · +50 Stormwind",
         },
         {
             level = 60,
             id = 95926,
+            liveXPFallback = 17650,
             name = "The Dark Crystal",
             requires = 55,
             faction = "Horde",
@@ -83,10 +92,12 @@ FLT.DUNGEON_REGISTRY["Shaper's Terrace"] = {
                 {279910, "Beastslayer's Trident", 3},
                 {279912, "Faintly Glowing Orb", 3},
             },
+            rewardSummary = "17,650 XP · +50 Orgrimmar · +100 Undercity",
         },
         {
             level = 60,
             id = 97049,
+            liveXPFallback = 17650,
             name = "Essence of Seeping Slimes",
             requires = 55,
             faction = "Horde",
@@ -98,6 +109,7 @@ FLT.DUNGEON_REGISTRY["Shaper's Terrace"] = {
                 {279932, "Slime-Resistant Shroud", 3},
                 {279902, "Reinforced Muck Protectors", 3},
             },
+            rewardSummary = "17,650 XP · 90s · +50 Orgrimmar · +100 Undercity",
         },
     },
     bosses = {
@@ -106,6 +118,7 @@ FLT.DUNGEON_REGISTRY["Shaper's Terrace"] = {
             npcID = 253201,
             displayID = 142989,
             loot = {
+                {280011, "Deeproar Cord", "Waist, Cloth", 3}, -- Dungeon Journal (user 25.11.2026)
                 {280009, "Titanosaur Scale Pendant", "Neck", 3},
                 {280010, "Gargantuan Wristguards", "Wrist, Plate", 3},
             },
@@ -190,6 +203,9 @@ FLT.DUNGEON_REGISTRY["Shaper's Terrace"] = {
             npcID = 272561,
             displayID = 147098,
             loot = {
+                {280031, "Sparklance Wand", "Ranged, Wand", 3}, -- Dungeon Journal (user 25.11.2026)
+                {280029, "Cinderedge Crescent", "One-Hand, Axe", 3}, -- Dungeon Journal (user 25.11.2026)
+                {280028, "Heartflame Gauntlets", "Hands, Plate", 3}, -- Dungeon Journal (user 25.11.2026)
                 {280026, "Albinofur Grips", "Hands, Mail", 3},
                 {280027, "Crownroar Chestplate", "Chest, Plate", 3},
                 {280032, "Bolt's Charged Eyeball", "Trinket", 3},
@@ -200,6 +216,8 @@ FLT.DUNGEON_REGISTRY["Shaper's Terrace"] = {
             npcID = 261809,
             displayID = 143832,
             loot = {
+                {273128, "Maker's Spark", "Crafting Reagent", 2}, -- Dungeon Journal (user 25.11.2026)
+                {273116, "Blueprint: Arcane Forge", "Blueprint", 2}, -- Dungeon Journal (user 25.11.2026)
                 {280023, "Nanaya's Control Spire", "Two-Hand, Staff", 3},
                 {280024, "Legplates of Reinforced Crystal", "Legs, Plate", 3},
                 {280025, "Leggings of Curation", "Legs, Cloth", 3},

@@ -58,7 +58,7 @@ FLT.DUNGEON_REGISTRY["The Deadmines"] = {
             objective = "Find the forge hidden in the Deadmines, and plant the Extra-Destructive Explosives nearby. Then, meet up with Alba Fairmoon at the Deadmines exit.",
             turnin = "Alba Fairmoon, Westfall",
             rewardItems = {},
-            rewardSummary = "2,700 XP · 10s · +50 Stormwind",
+            rewardSummary = "2,700 XP · 10s · +100 Stormwind",
             note = "Afterwards Alba Fairmoon at the exit asks you to use the detonator (part 2).",
         },
         {
@@ -137,6 +137,7 @@ FLT.DUNGEON_REGISTRY["The Deadmines"] = {
         {
             level = 26,
             id = 95140,
+            liveXPFallback = 2650,
             name = "Old Fire-Eye",
             requires = 20,
             faction = "Horde",
@@ -147,6 +148,20 @@ FLT.DUNGEON_REGISTRY["The Deadmines"] = {
             turnin = "Lumina Windsinger, Silverpine Forest",
             rewardItems = {
                 {267369, "Wolfsbane", 3},
+            },
+            rewardSummary = "2,650 XP · +150 Earthen Ring · +75 Orgrimmar · +150 Undercity",
+        },
+        {
+            level = 22,
+            id = 1654,
+            name = "The Test of Righteousness",
+            requires = 20,
+            faction = "Alliance",
+            class = "PALADIN",
+            pickup = "Jordan Stilwell, Dun Morogh (52.5, 36.9)",
+            objective = "Using Jordan's Weapon Notes, find some Whitestone Oak Lumber, Bailor's Refined Ore Shipment, Jordan's Smithing Hammer, and a Kor Gem, and return them to Jordan Stilwell in Ironforge.",
+            turnin = "Jordan Stilwell, Dun Morogh",
+            rewardItems = {
             },
         },
     },
@@ -191,6 +206,7 @@ FLT.DUNGEON_REGISTRY["The Deadmines"] = {
             displayID = 7125,
             aliases = {"Sneed"},
             loot = {
+                {273092, "Blueprint: Repair Bot", "Engineering", 2}, -- Dungeon Journal (user 25.11.2026)
                 {5194, "Taskmaster Axe", "Two-Hand, Axe", 3},
                 {5195, "Gold-flecked Gloves", "Hands, Cloth", 3},
                 {273293, "Bandsaw Wristbands", "Wrist, Mail", 3},
@@ -202,6 +218,7 @@ FLT.DUNGEON_REGISTRY["The Deadmines"] = {
             displayID = 7124,
             aliases = {"Gilnid"},
             loot = {
+                {273086, "Blueprint: Anvil", "Blueprint", 2}, -- Dungeon Journal (user 25.11.2026)
                 {273297, "Goblin Hammer", "Main Hand, Mace", 3},
                 {1156, "Lavishly Jeweled Ring", "Finger", 3},
                 {5199, "Smelting Pants", "Legs, Leather", 3},
@@ -249,6 +266,7 @@ FLT.DUNGEON_REGISTRY["The Deadmines"] = {
             displayID = 1305,
             aliases = {"Cookie"},
             loot = {
+                {273102, "Blueprint: Cookie's Feast", "Blueprint", 2}, -- Dungeon Journal (user 25.11.2026)
                 {273298, "Lookie's Spyglass", "Trinket", 3},
                 {5198, "Cookie's Stirring Rod", "Ranged, Wand", 3},
                 {5197, "Cookie's Tenderizer", "One-Hand, Mace", 3},

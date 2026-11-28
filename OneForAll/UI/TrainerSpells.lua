@@ -159,6 +159,7 @@ local function readProfTrainer(all)
     end
   end
   local got = 0
+  local ranks = {} -- 6.2.18-beta13: the profession ranks this trainer offers (Professions > Trainers): [bit] = true
   for i = 1, GetNumTrainerServices() do
     local name, _, category = GetTrainerServiceInfo(i)
     if name and category ~= "header" then
@@ -166,6 +167,12 @@ local function readProfTrainer(all)
       rank = tonumber(rank)
       -- the trainer names the profession in the client's language ("Schneiderei"): our key (6.2.0)
       skill = FLT.ProfKey and FLT.ProfKey(skill) or skill
+      -- a rank of the profession itself ("Mining" needing Mining 50 = Journeyman; Apprentice needs no skill)
+      local pk = FLT.ProfKey and FLT.ProfKey(name)
+      if pk then
+        local req = (skill == pk and rank) or 0
+        ranks[(req >= 200 and 8) or (req >= 125 and 4) or (req >= 50 and 2) or 1] = true
+      end
       if type(skill) == "string" and rank then
         -- by name first (one table per profession, built once); the slow spell ID only when the name does not match
         local r = recipeByName(skill)[name]
@@ -188,6 +195,16 @@ local function readProfTrainer(all)
   end
   -- switch back only what was switched on above
   if saved then for t in pairs(saved) do pcall(SetTrainerServiceTypeFilter, t, false) end end
+  if next(ranks) and type(OneForAllDB) == "table" then
+    local guid = UnitGUID and UnitGUID("npc")
+    local id = type(guid) == "string" and tonumber((select(6, strsplit("-", guid))))
+    if id then
+      OneForAllDB.trainerRanks = OneForAllDB.trainerRanks or {}
+      local old, m = OneForAllDB.trainerRanks[id] or 0, 0
+      for _, b in ipairs({ 1, 2, 4, 8 }) do if ranks[b] or math.floor(old / b) % 2 == 1 then m = m + b end end
+      OneForAllDB.trainerRanks[id] = m
+    end
+  end
   if got > 0 then FLT.ApplyRecipeLearnLevels(); if FLT.RefreshProfessions then FLT.RefreshProfessions() end end
 end
 

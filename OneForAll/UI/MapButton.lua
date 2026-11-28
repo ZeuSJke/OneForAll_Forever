@@ -1,4 +1,6 @@
 local ADDON, FLT = ...
+-- a readable text from the game or nil (FLT.Str in Core.lua; the same here for the mock tests, no extra local)
+FLT.Str = FLT.Str or function(v) if type(v) ~= "string" or (issecretvalue and issecretvalue(v)) then return nil end return v end
 local L = FLT.L or setmetatable({}, { __index = function(_, k) return k end }) -- (tests without Locales)
 local function N(s) return s end -- marks an English text translated where it is shown (tools/locale/extract.py)
 
@@ -243,8 +245,8 @@ local function labelHook(label)
   local fs, extra = label.Name, label.ofaRange
   if extra then extra:Hide() end
   if not Q().Get("mapZoneLevel") then return end
-  local text = fs and fs.GetText and fs:GetText()
-  if type(text) ~= "string" or text == "" or not fs:IsShown() then return end
+  local text = fs and fs.GetText and FLT.Str(fs:GetText())
+  if not text or text == "" or not fs:IsShown() then return end
   if not byName then nameIndex() end
   local id = byName[text]
   local lo, hi

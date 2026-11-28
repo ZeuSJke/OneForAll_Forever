@@ -1,13 +1,13 @@
 local _, FLT = ...
 
 -- WoW Forever talent layouts (tree, row, column, max ranks, prerequisite).
--- Source: talentsforever.com exports (CC BY 4.0), beta build 1.60.1.70755, generated 2026-11-10
+-- Source: talentsforever.com exports (CC BY 4.0), beta build 1.60.1.70755, generated 2026-11-25
 -- (tools/talent-gen/talents.py, cross-checked with the wowtbc.gg calculator).
 -- The planner matches these entries to the live client talents by name; the
 -- client still provides icons, tooltips and node IDs.
 -- To update after a patch, only this file needs to change.
 -- Entry format: { tree, row, col, maxRanks, "Name", "Prerequisite name" or nil }
-FLT.TALENT_DATA_BUILD = "1.60.1.70755 (2026-11-10)"
+FLT.TALENT_DATA_BUILD = "1.60.1.70755 (2026-11-25)"
 
 FLT.TALENT_DATA = {
   [1] = { token="WARRIOR", name="Warrior", trees={"Arms", "Fury", "Protection"}, talents={
@@ -442,21 +442,21 @@ FLT.TALENT_DATA = {
     {3,7,2,1,"Incinerate","Bane of Havoc"},
   }},
   [11] = { token="DRUID", name="Druid", trees={"Balance", "Feral Combat", "Restoration"}, talents={
-    {1,1,2,5,"Improved Wrath"},
+    {1,1,2,5,"Starlight Wrath"},
     {1,1,3,5,"Genesis"},
     {1,2,1,3,"Moonglow"},
-    {1,2,2,2,"Improved Moonfire"},
+    {1,2,2,2,"Moon and Stars"},
     {1,2,3,2,"Nature's Majesty"},
     {1,2,4,2,"Nature's Reach"},
     {1,3,1,3,"Improved Entangling Roots"},
     {1,3,3,1,"Nature's Splendor","Nature's Majesty"},
     {1,4,1,1,"Insect Swarm"},
-    {1,4,2,5,"Vengeance","Improved Moonfire"},
-    {1,4,3,5,"Improved Starfire"},
+    {1,4,2,5,"Vengeance","Moon and Stars"},
+    {1,4,3,2,"Improved Starfire"},
     {1,5,1,2,"Overgrowth"},
     {1,5,2,1,"Nature's Grace"},
     {1,5,3,3,"Eclipse"},
-    {1,6,2,5,"Moonfury"},
+    {1,6,2,5,"Dreamstate"},
     {1,7,2,1,"Moonkin Form"},
     {2,1,2,5,"Ferocity"},
     {2,1,3,5,"Furor"},

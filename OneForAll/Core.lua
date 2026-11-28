@@ -63,6 +63,12 @@ function FLT.IsSecret(...)
   for i = 1, select("#", ...) do if issecretvalue((select(i, ...))) then return true end end
   return false
 end
+-- a text the game handed us, only when we may read it: a plain string, else nil (6.2.18-beta2, user 26.11.2026: check every place
+-- that reads names, tooltip text, chat lines, GUIDs - "secret" values cannot be searched, compared or cut and raise errors)
+function FLT.Str(v)
+  if type(v) ~= "string" or (issecretvalue and issecretvalue(v)) then return nil end
+  return v
+end
 
 -- [charkey] (tools/tests/charkey.lua loads this block)
 -- Account-wide data per character (gold of the info bar, recipes and stock of the alts). 6.2.5 (user 11.11.2026): on WoW
@@ -389,6 +395,10 @@ SlashCmdList.ONEFORALL = function(cmd)
     if UpdateAddOnMemoryUsage then UpdateAddOnMemoryUsage() end
     local kb = get and get("OneForAll")
     if kb then msg(string.format(L["Memory: %.1f MB (includes garbage the game has not cleaned up yet)."], kb / 1024)) end
+  elseif cmd == "cpu" or cmd == "cpu reset" then
+    -- which of our files use the CPU (6.2.17-beta54; only with /console scriptProfile 1 and a /reload, see Profiler.lua)
+    if not (FLT.Profiler and FLT.Profiler.on) then msg(L["CPU check: type /console scriptProfile 1, then /reload, play a few minutes and type /ofa cpu again. Turn it off afterwards with /console scriptProfile 0 and /reload."])
+    elseif cmd == "cpu reset" then FLT.Profiler.Reset() else FLT.Profiler.Report() end
   elseif cmd == "gv" or cmd:match("^gv%s") then
     if FLT.GearValue then FLT.GearValue.Debug(cmd:match("(item:[%-%d:]+)")) end
   elseif cmd == "trainer" then
@@ -483,4 +493,24 @@ SlashCmdList.ONEFORALL = function(cmd)
   else
     if FLT.ToggleUI then FLT:ToggleUI() end
   end
+end
+
+-- /rl = reload the interface (6.2.18, Discord Merdos 27.11.2026, user: "dann aufnehmen bitte"). Many players have /rl from another
+-- addon already: it is added at login (when every addon is loaded) and only when no other one uses it.
+do
+  local f = CreateFrame("Frame")
+  f:RegisterEvent("PLAYER_LOGIN")
+  f:SetScript("OnEvent", function(self)
+    self:UnregisterAllEvents()
+    if type(SlashCmdList) ~= "table" or not ReloadUI then return end
+    for name in pairs(SlashCmdList) do
+      for i = 1, 9 do
+        local s = _G["SLASH_" .. name .. i]
+        if s == nil then break end
+        if type(s) == "string" and s:lower() == "/rl" then return end
+      end
+    end
+    SLASH_OFARELOAD1 = "/rl"
+    SlashCmdList.OFARELOAD = function() ReloadUI() end
+  end)
 end

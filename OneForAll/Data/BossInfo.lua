@@ -38,11 +38,10 @@ FLT.BOSS_TYPES = {
   [258972] = "Humanoid", -- Twilight Commander Zarmok
   [259281] = "Humanoid", -- War Handler Ashka
   [261812] = "Beast", -- Thunderhoof
-  [263742] = "Beast", -- Zin'aka
   [264172] = "Humanoid", -- Umbra
   [264773] = "Humanoid", -- Bossman Toof
   [269104] = "Beast", -- Moontouched Wanderer
-  [270887] = "Elemental", -- Primeval Elemental
+  [263886] = "Elemental", -- Primeval Elemental
   [10184] = "Dragonkin", -- Onyxia
   [639] = "Humanoid", -- ?
   [642] = "Mechanical", -- ?
@@ -295,12 +294,12 @@ FLT.BOSS_TYPES = {
   [261311] = "Elemental", -- Plunder
   [261316] = "Elemental", -- Magmatus
   [261319] = "Humanoid", -- Durgen Dirgehammer
-  [270882] = "Undead", -- Zul'Alai
-  [270883] = "Humanoid", -- Var'Taka
-  [270884] = "Humanoid", -- Captain Dreadrise
-  [270885] = "Elemental", -- Deathless Marrow
-  [270886] = "Humanoid", -- Min'loth the Serpent
-  [270888] = "Elemental", -- Gill
+  [258905] = "Undead", -- Zul'Alai
+  [258924] = "Humanoid", -- Var'Taka
+  [260042] = "Humanoid", -- Captain Dreadrise
+  [260202] = "Elemental", -- Deathless Marrow
+  [260243] = "Humanoid", -- Min'loth the Serpent
+  [264177] = "Elemental", -- Gill
 }
 
 -- Bosses that only appear when summoned (quest item, brazier, event).

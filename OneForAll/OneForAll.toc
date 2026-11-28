@@ -4,12 +4,13 @@
 ## Notes-ruRU: Помощник для WoW Forever: подземелья, задания, добыча, комплекты и награды за репутацию, книги библиотеки, профессии, таланты, питомцы охотника и полезные мелочи. Русский перевод.
 ## Author: Smoergi
 ## X-License: GPL-3.0-or-later
-## Version: 6.2.15
+## Version: 6.3.0
 ## IconTexture: Interface\AddOns\OneForAll\Assets\minimap_icon
 ## OptionalDeps: Baganator
 ## SavedVariables: OneForAllDB, ForeverCompanionDB, ForeverLibraryTrackerDB
 ## SavedVariablesPerCharacter: OneForAllCharDB, ForeverCompanionCharDB
 
+Profiler.lua
 Locales\Locale.lua
 Locales\deDE.lua
 Locales\Names_deDE.lua
@@ -90,6 +91,8 @@ Data\PetTrainers.lua
 Data\ClassQuests.lua
 Data\ProfessionTrainers.lua
 Data\ProfessionFees.lua
+Data\GatheringGuide.lua
+Data\FavorCrates.lua
 Data\ProfessionTools.lua
 Data\Armory.lua
 Data\DungeonMaps.lua
@@ -137,7 +140,10 @@ Data\VendorReagents.lua
 UI\CraftList.lua
 SkillUp.lua
 AHScan.lua
+FavorCalc.lua
 UI\SkillUpUI.lua
+UI\GatherUI.lua
+UI\FavorCalcUI.lua
 UI\ProfitUI.lua
 UI\NodeGlow.lua
 UI\ProfessionGuild.lua
@@ -148,6 +154,7 @@ UI\GearMarks.lua
 UI\Armory.lua
 UI\QuestShare.lua
 UI\RunTracker.lua
+UI\LootRolls.lua
 UI\RunHistory.lua
 TalentData.lua
 TalentSpellIDs.lua

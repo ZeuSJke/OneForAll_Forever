@@ -1,4 +1,6 @@
 local ADDON, FLT = ...
+-- a readable text from the game or nil (FLT.Str in Core.lua; the same here for the mock tests, no extra local)
+FLT.Str = FLT.Str or function(v) if type(v) ~= "string" or (issecretvalue and issecretvalue(v)) then return nil end return v end
 local L = FLT.L or setmetatable({}, { __index = function(_, k) return k end }) -- (tests without Locales)
 local function N(s) return s end -- marks an English text translated where it is shown (tools/locale/extract.py)
 local UI = FLT.UI
@@ -184,20 +186,22 @@ local function groupUnits()
 end
 
 local function unitName(unit)
-  local name = UnitName and UnitName(unit)
-  return name
+  return UnitName and FLT.Str((UnitName(unit))) -- (names can be secret inside an instance)
 end
 
 -- Can this group member take the quest at all, as far as we know?
 local function memberCanTake(unit, name, q)
   if blocked[q.id] and blocked[q.id][name] then return false end
   if remoteDone[name] and remoteDone[name][q.id] then return false end
+  -- (inside an instance the game can hand these over as secret values: then we do not know and do not block)
   local lvl = UnitLevel and UnitLevel(unit)
+  if FLT.IsSecret and FLT.IsSecret(lvl) then lvl = nil end
   if lvl and lvl > 0 and q.required and lvl < q.required then return false end
-  local faction = UnitFactionGroup and UnitFactionGroup(unit)
+  local faction = UnitFactionGroup and FLT.Str((UnitFactionGroup(unit)))
   if faction and q.side and q.side ~= "Both" and q.side ~= "Neutral" and q.side ~= faction then return false end
   if q.class and UnitClass then
     local _, token = UnitClass(unit)
+    token = FLT.Str(token)
     if token and token ~= q.class then return false end
   end
   return true

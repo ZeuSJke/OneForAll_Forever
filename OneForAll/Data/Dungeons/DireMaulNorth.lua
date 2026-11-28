@@ -9,7 +9,7 @@ FLT.DUNGEON_REGISTRY["Dire Maul: North"] = {
     quests = {
         {
             id = 7481,
-            liveXPFallback = 8300,
+            liveXPFallback = 19700,
             name = "Elven Legends",
             level = 60,
             requires = 54,
@@ -17,10 +17,11 @@ FLT.DUNGEON_REGISTRY["Dire Maul: North"] = {
             pickup = "Sage Korolusk, Feralas (75.2, 43.8)",
             objective = "Search Dire Maul for Kariel Winthalus. Report back to Sage Korolusk at Camp Mojache with whatever information that you may find.",
             turnin = "Sage Korolusk, Feralas",
+            rewardSummary = "19,700 XP · 1g 80s",
         },
         {
             id = 7482,
-            liveXPFallback = 8300,
+            liveXPFallback = 19700,
             name = "Elven Legends",
             level = 60,
             requires = 54,
@@ -28,19 +29,21 @@ FLT.DUNGEON_REGISTRY["Dire Maul: North"] = {
             pickup = "Scholar Runethorn, Feralas (31.6, 43.5)",
             objective = "Search Dire Maul for Kariel Winthalus. Report back to Scholar Runethorn at Feathermoon with whatever information that you may find.",
             turnin = "Scholar Runethorn, Feralas",
+            rewardSummary = "19,700 XP · 1g 80s",
         },
         {
             id = 5525,
-            liveXPFallback = 6600,
+            liveXPFallback = 17650,
             name = "Free Knot!",
             level = 60,
             requires = 57,
             pickup = "Knot Thimblejack, inside Dire Maul",
             turnin = "Knot Thimblejack, inside Dire Maul",
+            rewardSummary = "17,650 XP",
         },
         {
             id = 5518,
-            liveXPFallback = 6600,
+            liveXPFallback = 17650,
             name = "The Gordok Ogre Suit",
             level = 60,
             requires = 56,
@@ -48,6 +51,7 @@ FLT.DUNGEON_REGISTRY["Dire Maul: North"] = {
             objective = "Bring 4 Bolts of Runecloth, 8 Rugged Leather, 2 Rune Threads, and Ogre Tannin to Knot Thimblejack. He is currently chained inside the Gordok wing of Dire Maul.",
             turnin = "Knot Thimblejack, inside Dire Maul",
             rewardItems = {{18258, "Gordok Ogre Suit", 2}},
+            rewardSummary = "17,650 XP",
         },
         {
             id = 5519,
@@ -71,7 +75,7 @@ FLT.DUNGEON_REGISTRY["Dire Maul: North"] = {
         },
         {
             id = 7703,
-            liveXPFallback = 8300,
+            liveXPFallback = 22200,
             name = "Unfinished Gordok Business",
             level = 60,
             requires = 56,
@@ -80,6 +84,7 @@ FLT.DUNGEON_REGISTRY["Dire Maul: North"] = {
             turnin = "Captain Kromcrush, inside Dire Maul",
             rewardItems = {{18366, "Gordok's Handguards", 3}, {18367, "Gordok's Gauntlets", 3}, {18368, "Gordok's Gloves", 3}, {18369, "Gordok's Handwraps", 3}},
             rewardChoice = true,
+            rewardSummary = "22,200 XP",
         },
         {
             id = 1193,
@@ -92,6 +97,7 @@ FLT.DUNGEON_REGISTRY["Dire Maul: North"] = {
         {
             level = 60,
             id = 7483,
+            liveXPFallback = 3300,
             name = "Libram of Rapidity",
             requires = 58,
             faction = "Both",
@@ -101,10 +107,12 @@ FLT.DUNGEON_REGISTRY["Dire Maul: North"] = {
             rewardItems = {
                 {18329, "Arcanum of Rapidity", 2},
             },
+            rewardSummary = "3,300 XP",
         },
         {
             level = 60,
             id = 7484,
+            liveXPFallback = 3300,
             name = "Libram of Focus",
             requires = 58,
             faction = "Both",
@@ -114,10 +122,12 @@ FLT.DUNGEON_REGISTRY["Dire Maul: North"] = {
             rewardItems = {
                 {18330, "Arcanum of Focus", 2},
             },
+            rewardSummary = "3,300 XP",
         },
         {
             level = 60,
             id = 7485,
+            liveXPFallback = 3300,
             name = "Libram of Protection",
             requires = 58,
             faction = "Both",
@@ -127,10 +137,12 @@ FLT.DUNGEON_REGISTRY["Dire Maul: North"] = {
             rewardItems = {
                 {18331, "Arcanum of Protection", 2},
             },
+            rewardSummary = "3,300 XP",
         },
         {
             level = 60,
             id = 7498,
+            liveXPFallback = 15700,
             name = "Garona: A Study on Stealth and Treachery",
             requires = 54,
             faction = "Both",
@@ -141,10 +153,12 @@ FLT.DUNGEON_REGISTRY["Dire Maul: North"] = {
             rewardItems = {
                 {18465, "Royal Seal of Eldre'Thalas", 3},
             },
+            rewardSummary = "15,700 XP",
         },
         {
             level = 60,
             id = 7499,
+            liveXPFallback = 15700,
             name = "Codex of Defense",
             requires = 54,
             faction = "Both",
@@ -155,10 +169,12 @@ FLT.DUNGEON_REGISTRY["Dire Maul: North"] = {
             rewardItems = {
                 {18466, "Royal Seal of Eldre'Thalas", 3},
             },
+            rewardSummary = "15,700 XP",
         },
         {
             level = 60,
             id = 7500,
+            liveXPFallback = 15700,
             name = "The Arcanist's Cookbook",
             requires = 54,
             faction = "Both",
@@ -169,10 +185,12 @@ FLT.DUNGEON_REGISTRY["Dire Maul: North"] = {
             rewardItems = {
                 {18468, "Royal Seal of Eldre'Thalas", 3},
             },
+            rewardSummary = "15,700 XP",
         },
         {
             level = 60,
             id = 7501,
+            liveXPFallback = 15700,
             name = "The Light and How To Swing It",
             requires = 54,
             faction = "Both",
@@ -183,10 +201,12 @@ FLT.DUNGEON_REGISTRY["Dire Maul: North"] = {
             rewardItems = {
                 {18472, "Royal Seal of Eldre'Thalas", 3},
             },
+            rewardSummary = "15,700 XP",
         },
         {
             level = 60,
             id = 7502,
+            liveXPFallback = 15700,
             name = "Harnessing Shadows",
             requires = 54,
             faction = "Both",
@@ -197,10 +217,12 @@ FLT.DUNGEON_REGISTRY["Dire Maul: North"] = {
             rewardItems = {
                 {18467, "Royal Seal of Eldre'Thalas", 3},
             },
+            rewardSummary = "15,700 XP",
         },
         {
             level = 60,
             id = 7503,
+            liveXPFallback = 15700,
             name = "The Greatest Race of Hunters",
             requires = 54,
             faction = "Both",
@@ -211,10 +233,12 @@ FLT.DUNGEON_REGISTRY["Dire Maul: North"] = {
             rewardItems = {
                 {18473, "Royal Seal of Eldre'Thalas", 3},
             },
+            rewardSummary = "15,700 XP",
         },
         {
             level = 60,
             id = 7504,
+            liveXPFallback = 15700,
             name = "Holy Bologna: What the Light Won't Tell You",
             requires = 54,
             faction = "Both",
@@ -225,10 +249,12 @@ FLT.DUNGEON_REGISTRY["Dire Maul: North"] = {
             rewardItems = {
                 {18469, "Royal Seal of Eldre'Thalas", 1},
             },
+            rewardSummary = "15,700 XP",
         },
         {
             level = 60,
             id = 7505,
+            liveXPFallback = 15700,
             name = "Frost Shock and You",
             requires = 54,
             faction = "Both",
@@ -239,10 +265,12 @@ FLT.DUNGEON_REGISTRY["Dire Maul: North"] = {
             rewardItems = {
                 {18471, "Royal Seal of Eldre'Thalas", 3},
             },
+            rewardSummary = "15,700 XP",
         },
         {
             level = 60,
             id = 7506,
+            liveXPFallback = 15700,
             name = "The Emerald Dream...",
             requires = 54,
             faction = "Both",
@@ -253,23 +281,7 @@ FLT.DUNGEON_REGISTRY["Dire Maul: North"] = {
             rewardItems = {
                 {18470, "Royal Seal of Eldre'Thalas", 3},
             },
-        },
-        {
-            level = 60,
-            id = 1318,
-            name = "Unfinished Gordok Business",
-            requires = 56,
-            faction = "Both",
-            pickup = "Captain Kromcrush, inside Dire Maul: North",
-            objective = "Find the Gauntlet of Gordok Might and return it to Captain Kromcrush in Dire Maul.  According to Kromcrush, the \"old timey story\" says that Tortheldrin - a \"creepy\" elf who called himself a prince - stole it from one of the Gordok kings.",
-            turnin = "Captain Kromcrush, inside Dire Maul: North",
-            rewardChoice = true,
-            rewardItems = {
-                {18366, "Gordok's Handguards", 3},
-                {18367, "Gordok's Gauntlets", 3},
-                {18368, "Gordok's Gloves", 3},
-                {18369, "Gordok's Handwraps", 3},
-            },
+            rewardSummary = "15,700 XP",
         },
     },
     bosses = {
@@ -306,6 +318,11 @@ FLT.DUNGEON_REGISTRY["Dire Maul: North"] = {
             npcID = 14321,
             displayID = 11561,
             loot = {
+                {18494, "Denwatcher's Shoulders", "Shoulder, Mail", 3}, -- Dungeon Journal (user 25.11.2026)
+                {18493, "Bulky Iron Spaulders", "Shoulder, Plate", 3}, -- Dungeon Journal (user 25.11.2026)
+                {18496, "Heliotrope Cloak", "Back", 3}, -- Dungeon Journal (user 25.11.2026)
+                {18497, "Sublime Wristguards", "Wrist, Cloth", 3}, -- Dungeon Journal (user 25.11.2026)
+                {18498, "Hedgecutter", "One-Hand, Axe", 3}, -- Dungeon Journal (user 25.11.2026)
                 {18450, "Robe of Combustion", "Chest, Cloth", 2},
                 {18458, "Modest Armguards", "Wrist, Mail", 2},
                 {18459, "Gallant's Wristguards", "Wrist, Plate", 2},
@@ -371,33 +388,6 @@ FLT.DUNGEON_REGISTRY["Dire Maul: North"] = {
                 {18525, "Bracers of Prosperity", "Wrist, Leather", 3},
                 {18526, "Crown of the Ogre King", "Head, Cloth", 3},
                 {18527, "Harmonious Gauntlets", "Hands, Mail", 3},
-            },
-        },
-        {
-            name = "Mizzle the Crafty",
-            npcID = 14353,
-            displayID = 14406, -- CMaNGOS classic-db creature_template (user 23.11.2026)
-            description = "Hands out the Gordok Tribute after King Gordok falls; the more guards alive, the better.",
-            loot = {
-                {18475, "Oddly Magical Belt", "Waist, Cloth", 2},
-                {18476, "Mud Stained Boots", "Feet, Leather", 2},
-                {18477, "Shaggy Leggings", "Legs, Leather", 2},
-                {18478, "Hyena Hide Jerkin", "Chest, Leather", 2},
-                {18479, "Carrion Scorpid Helm", "Head, Mail", 2},
-                {18480, "Scarab Plate Helm", "Head, Plate", 2},
-                {18481, "Skullcracking Mace", "Two-Hand, Mace", 2},
-                {18482, "Ogre Toothpick Shooter", "Ranged, Bow", 2},
-                {18495, "Redoubt Cloak", "Back", 3},
-                {18499, "Barrier Shield", "Off Hand, Shield", 3},
-                {18500, "Tarnished Elven Ring", "Finger", 3},
-                {18528, "Cyclone Spaulders", "Shoulder, Leather", 3},
-                {18529, "Elemental Plate Girdle", "Waist, Plate", 3},
-                {18530, "Ogre Forged Hauberk", "Chest, Mail", 3},
-                {18531, "Unyielding Maul", "Two-Hand, Mace", 3},
-                {18532, "Mindsurge Robe", "Chest, Cloth", 3},
-                {18533, "Gordok Bracers of Power", "Wrist, Plate", 3},
-                {18534, "Rod of the Ogre Magi", "Two-Hand, Staff", 3},
-                {18537, "Counterattack Lodestone", "Trinket", 3},
             },
         },
     },

@@ -30,6 +30,7 @@ Commands
 /oneforall gv           How the Gear Value of the item under the mouse comes about (or /ofa gv [item link])
 /oneforall errors       Show errors OneForAll caught (for bug reports); "errors clear" empties the list
 /oneforall mem          Show how much memory OneForAll uses right now
+/oneforall cpu          Which parts of OneForAll use the CPU (with /console scriptProfile 1); "cpu reset" starts again
 /oneforall thanks       Show the last buffs seen by "Thanks for buffs"
 /oneforall talentdump    Save all talent IDs to the SavedVariables (for the addon author)
 /oneforall scale [n]     Set the window size (60-140 or 0.6-1.4); without a value: reset to 100 %
@@ -70,6 +71,111 @@ and add the file to OneForAll.toc before UI\MainFrame.lua.
 
 Changelog (newest first)
 ========================
+
+6.3.0 - Gathering professions, Trainers, Merchant's Favor calculator
+====================================================================
+From now on every release is a new minor version (6.3.0, 6.4.0 ...), hotfixes count up the last number (6.3.1).
+Professions
+- Herbalism, Mining, Skinning and Fishing are in the list on the left (Lockpicking too, for rogues), each with a Skill-Up
+  Helper: what you can gather from which skill (coloured for your skill), where to level each skill range with zone buttons
+  that open the world map, the beasts for Skinning, the lockboxes for Lockpicking, the bars to smelt along for Mining, and for
+  Fishing how many fish to keep and what to cook to level Cooking at the same time, with map buttons to the NPCs.
+- New "Trainers" button on every profession: the four ranks (skill, level, cost, or the book / quest and where to get it) and
+  all trainers of your faction, grouped by the highest rank they teach - WoW Forever's own trainers included. Junior trainers
+  only teach up to 75; trainers OneForAll does not know yet are remembered once you talk to them.
+- Merchant's Favor: "Overview" and the new "Calculator" - enter how much Favor you want and it finds the cheapest way from your
+  auction house scan: which Waylaid Crates to buy, which bundle to fill each with, and a shopping list with amounts and prices.
+  "All crates compared" lists every crate with its cost per Favor. Crates and materials in your bags and bank are used first;
+  the one-time quest "Shipping Label" is counted, the Legacy "Performance Bonus" can be switched on, and "Auctionator shopping
+  list" sends the list to Auctionator. The "Cheap Upgrade Scan" at the auction house also keeps the crates and their materials;
+  without it the Calculator uses Auctionator's prices.
+- The Merchant's Favor recipe list of each profession has a search, a slot filter and "Hide known"; recipes are grouped by slot
+  (enchants by what they enchant, gear by slot with its armor type) or by kind (Elixirs, Potions, Gadgets ...).
+- Crafting List: switches "Without bank" and "Without other characters".
+- Profit: Mooncloth (and other recipes with days between crafts) counts at its auction house price as a material.
+- 22 recipe learn levels corrected to WoW Forever's values; new Leatherworking recipe Centaur Hoofwarmers. Skill-Up Helper:
+  Caryssia Moonhunter no longer shows as the Expert Leatherworking trainer.
+Armory
+- Reputation: the battleground factions of your side (Arathi Basin, Alterac Valley, Warsong Gulch) with their rewards and
+  quartermasters; their gear also shows up as a source in the Gear Planner. PvP Sets has a "Reputation" button for them.
+Dungeons
+- Dungeon tracker: the star of a boss with an item on your wishlist is gold and changes at once; in the boss's loot (right-click
+  its row) wishlist items carry a gold star and right-click on gear adds it to the wishlist or removes it.
+- New quests: Abandoned Hope (Blackrock Depths), Bad News for Folkar and Thrall Needs to Know (Alcaz Prison), the second
+  Remember That I Love You (Ruins of Lordaeron); Blackmaw Reclamation offers all four rings; Verek's Loyal Wraps added.
+Quality of Life
+- Flight times: a new window while flying - destination, time left, the next stop on longer routes and a "Request stop" button
+  that lands at the next flight master.
+- /rl reloads the interface (like /reload), unless another addon uses /rl already.
+- Info bar: the gold tooltip lists only the characters of the realm you are on, with surnames; no gap after Experience.
+- Check low spell ranks: no false popup any more for spells that already have their highest rank.
+Hunter Pets
+- More beasts that teach ability ranks (Savage Rend 4 and 5, Bite 8, Web 4, Sonic Blast 3-5, Swipe 3-4 and more).
+Talents
+- Balance hotfix of 25.11. (Improved Starfire 2 ranks, Starlight Wrath, Moon and Stars, Dreamstate); 15 new or renamed talents
+  are recognized on non-English game clients.
+Fixes
+- Fewer Lua errors with texts the game protects ("secret" values): every place that reads names, tooltip lines, chat lines or
+  enemy IDs checks them first (Profiler, short green stats, tooltips, loot rolls, quest share, guild games and more).
+- Russian client: no boxes instead of dots.
+- Quest data updated from QuestieDB; BiS lists updated from wowtbc.gg.
+
+6.2.17 - New dungeon tracker, loot rolls and dungeon quests
+===========================================================
+Dungeon tracker
+- A compact list: one row per boss with its portrait (rare and optional bosses round, at the end); the next boss has a gold
+  bar, killed bosses fold into "3 / 8 defeated" (unfolded in the order they died, with their kill times), the rest into
+  "N more" - click to unfold. A rare moves up as soon as you see it alive; a skipped boss waits in "N more" and the boss after
+  your last kill is next. A green triangle = an upgrade in its loot, "!" = a quest in your log needs it.
+- Left-click a boss: target it and pick a raid mark in a dropdown under its row (a rare only gets a skull; works in combat);
+  right-click: its loot (upgrades framed green with the green arrow); Shift-click: open it in OneForAll. Both close after
+  5 seconds unless the mouse is on them. A killed boss's tooltip shows what it dropped in this run and who got it.
+- The run's clock starts with the first kill (best and average times too). Time, Mob XP and Gold sit in the foot, the gold
+  with coin icons; "Add loot value to gold" (vendor or Auctionator prices) adds what you looted.
+- Loot rolls: a handle on the tracker's bottom edge opens the list of everything the group rolled on in this run - item,
+  winner with roll and choice, every player's roll on a click, names in class colours. Kept with the run (History shows it).
+  It can open by itself for a new roll, hide itself after a few seconds, leave out green items, and its handle can be hidden.
+- Settings in their own window (cog): hide time / XP / gold / bosses, dungeon picture, lock, visible bosses (3 - 20),
+  opacity, gold and loot roll options and "New run". New defaults: 5 visible bosses, 85 % opacity, loot value with auction
+  prices on, the current loot roll always shown, auto-hide after 10 seconds, green items hidden.
+- Resizing at the corner shows the size in %; the instances-per-hour counter is gone.
+- Fixes: in a group, bosses the game names only in the XP line (e.g. Arugal's Voidwalker) count as killed, so the run
+  finishes; a reset the tracker did not hear of starts a new run; a finished run no longer goes on with another group;
+  Horde-only bosses (the Lost Dwarves, the Lordaeron Captain) no longer block Alliance runs; Sergeant Bly is optional; the
+  new Forever dungeons are recognised in every client language; upgrade marks skip gear your class cannot use.
+
+Dungeons & Raids
+- Dungeon quests in a new look: neutral rows with a coloured bar and a status label (Completed, Ready to turn in, In log,
+  Chain, Available, Unavailable with its reason, No longer available) and a colour legend; the details on the dark panel
+  with gold headings, the whole quest chain, reward cards with a stripe in the item's quality colour and boxes for XP
+  (gold), money and reputation (teal). "Chain starts at" shows where a chain begins.
+- XP, money and reputation rewards filled in for 243 dungeon quests; 24 dungeon quests added and 26 doubles removed;
+  115 missing boss drops added to 62 bosses (e.g. Zul'Farrak, Uldaman, the new Forever Blueprints).
+- The "Dungeons" button, the arrows and Map / Bosses & Loot / Quests sit inside the dungeon's banner.
+
+Quality of Life and more
+- The loot feed shows your skill-ups (weapons, Defense, professions) - two new switches, on by default.
+- Thanks for buffs moved to Social > Thanks, with your own emote or text instead of /thank.
+- The nearby alert popup can be dragged; the Bags full helper has a "Never opens for" list.
+- Fixes: quest marks on nameplates no longer cause errors with other nameplate addons or Blizzard's auras; Skill-Up Helper
+  trainers (Artisan Leatherworking for both factions, Artisan Engineering) and the plain Blacksmith Hammer; Gear Planner
+  no longer suggests Onyxia and AQ war rewards too early; four Library Books marked unavailable.
+- New: /ofa cpu shows which parts of OneForAll use the most CPU (with the game's script profiling on).
+- Data: quest data (QuestieDB), BiS lists, recipes and talents updated.
+
+6.2.16 - Hotfix: boss lists for a clean dungeon tracker
+=======================================================
+- Boss lists checked against Dungeon Journal, so the dungeon tracker finishes runs cleanly: quest and event enemies are no
+  longer listed as bosses (Veng and Maraudos in Maraudon, Verek, Mizzle the Crafty, the Scourge Invasion bosses, Stratholme
+  Courier, Spawn of Hakkar, Zarla Ober, Zin'aka).
+- New "Optional" bosses (own row in the tracker, not needed to finish a run): summoned and quest bosses such as Theldren, Mor
+  Grayhoof, Lord Valthalak, Jarien and Sothos, Ribbly Screwspigot, Sabella No-Eyes, Baron Aquanis, Princess Moira, the Fel
+  Steed, Postmaster Malown and the Stratholme smiths.
+- Rare instead of needed: Isalien, Blind Hunter, Earthcaller Halmgar, Kormok, Death Knight Darkreaver; Pyromancer Loregrain is
+  a normal boss now.
+- The Drowned City: the bosses use their real NPC IDs; Var'Taka is listed once.
+- Boss levels for the optional bosses, Ruuzlu, the Lordaeron Captain and the Mana Wraith.
+- Boss portraits: a boss without a known model (e.g. Sabella No-Eyes) asks the game for it.
 
 6.2.15 - Dungeon tracker finds more kills and the right wing
 ============================================================

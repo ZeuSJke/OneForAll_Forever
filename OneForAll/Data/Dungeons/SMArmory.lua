@@ -9,7 +9,7 @@ FLT.DUNGEON_REGISTRY["Scarlet Monastery: Armory"] = {
     quests = {
         {
             id = 1048,
-            liveXPFallback = 5150,
+            liveXPFallback = 12250,
             name = "Into The Scarlet Monastery",
             level = 42,
             requires = 33,
@@ -20,10 +20,11 @@ FLT.DUNGEON_REGISTRY["Scarlet Monastery: Armory"] = {
             rewardItems = {{6802, "Sword of Omen", 3}, {6803, "Prophetic Cane", 3}, {10711, "Dragon's Blood Necklace", 3}},
             rewardChoice = true,
             note = "Covers bosses in three wings: Houndmaster Loksey (Library), Herod (Armory), Scarlet Commander Mograine and High Inquisitor Whitemane (Cathedral).",
+            rewardSummary = "12,250 XP",
         },
         {
             id = 1053,
-            liveXPFallback = 4700,
+            liveXPFallback = 15300,
             name = "In the Name of the Light",
             level = 40,
             requires = 34,
@@ -34,6 +35,21 @@ FLT.DUNGEON_REGISTRY["Scarlet Monastery: Armory"] = {
             rewardItems = {{6829, "Sword of Serenity", 3}, {6830, "Bonebiter", 3}, {6831, "Black Menace", 3}, {11262, "Orb of Lorica", 3}},
             rewardChoice = true,
             note = "Covers bosses in three wings: Houndmaster Loksey (Library), Herod (Armory), Scarlet Commander Mograine and High Inquisitor Whitemane (Cathedral).",
+            rewardSummary = "15,300 XP · +50 Alliance · +50 Darnassus · +50 Gnomeregan Exiles · +50 Ironforge · +200 Stormwind",
+        },
+        {
+            level = 33,
+            id = 1113,
+            liveXPFallback = 7850,
+            name = "Hearts of Zeal",
+            requires = 30,
+            faction = "Horde",
+            pickup = "Master Apothecary Faranell, Undercity (48.8, 69.3)",
+            objective = "Master Apothecary Faranell in the Undercity wants 20 Hearts of Zeal.",
+            turnin = "Master Apothecary Faranell, Undercity",
+            rewardItems = {
+            },
+            rewardSummary = "7,850 XP",
         },
     },
     bosses = {
@@ -42,6 +58,7 @@ FLT.DUNGEON_REGISTRY["Scarlet Monastery: Armory"] = {
             npcID = 3975,
             displayID = 2041,
             loot = {
+                {10330, "Scarlet Leggings", "Legs, Mail", 3}, -- Dungeon Journal (user 25.11.2026)
                 {7717, "Ravager", "Two-Hand, Axe", 3},
                 {7719, "Raging Berserker's Helm", "Head, Mail", 3},
                 {7718, "Herod's Shoulder", "Shoulder, Mail", 3},

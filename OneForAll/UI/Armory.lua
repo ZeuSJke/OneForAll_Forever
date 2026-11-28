@@ -1,4 +1,7 @@
 local _, FLT = ...
+FLT.DOT = FLT.DOT or "·" -- separator dot (Locales/Locale.lua; another one on Russian clients)
+-- a readable text from the game or nil (FLT.Str in Core.lua; the same here for the mock tests, no extra local)
+FLT.Str = FLT.Str or function(v) if type(v) ~= "string" or (issecretvalue and issecretvalue(v)) then return nil end return v end
 local L = FLT.L or setmetatable({}, { __index = function(_, k) return k end }) -- (tests without Locales)
 local function N(s) return s end -- marks an English text translated where it is shown (tools/locale/extract.py)
 local UI = FLT.UI
@@ -46,6 +49,9 @@ local TABS = {
           { N"Rank 14", { N"Rank 14 weapons" } } }, -- Arathi Basin under "Other Sets" (user 22.10.)
   crafted = { { "Leatherworking", { "Leatherworking" } }, { "Blacksmithing", { "Blacksmithing" } }, { "Tailoring", { "Tailoring" } } },
 }
+-- PvP Sets > "Reputation" (6.2.18-beta12, user 27.11.: "die pvp rufe auch bei pvp sets ... als zusaetzlicher button"):
+-- the battleground factions (Arathi Basin, Alterac Valley, Warsong Gulch) in the reputation view
+local PVP_FACTIONS = { [509] = true, [510] = true, [729] = true, [730] = true, [889] = true, [890] = true }
 for _, list in pairs(TABS) do
   for _, t in ipairs(list) do t.set = {}; for _, sub in ipairs(t[2]) do t.set[sub] = true end end
 end
@@ -192,7 +198,7 @@ local function clientSet(s)
   if not (ok and type(data) == "table" and type(data.lines) == "table") then return nil end
   local name, b = nil, {}
   for _, line in ipairs(data.lines) do
-    local t = (line.leftText or ""):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
+    local t = (FLT.Str(line.leftText) or ""):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
     if not name then name = textOf(t:match(pn)) end
     local x = pg and textOf(t:match(pg))
     if not x and pa then x = textOf(t:match(pa)) end
@@ -384,7 +390,7 @@ local function createQuestView(body)
     if c.side then bits[#bits + 1] = c.side == "A" and L["Alliance"] or L["Horde"] end
     if c.cls then bits[#bits + 1] = className(c.cls) end
     bits[#bits + 1] = string.format(L["%d / %d quests done"], done, total)
-    dSub:SetText(table.concat(bits, "  ·  "))
+    dSub:SetText(table.concat(bits, "  " .. FLT.DOT .. "  "))
     local y = -50
     rewTitle:ClearAllPoints(); rewTitle:SetPoint("TOPLEFT", 2, y); y = y - 28
     for _, r in ipairs(items) do r:Hide() end
@@ -415,14 +421,14 @@ local function createQuestView(body)
         else r.state:SetText("") end
         local zone = zoneName(q.map)
         local who = q.giver and (FLT.Name and FLT.Name(q.giver) or q.giver) or "?"
-        r.sub:SetText(who .. (zone and ("  ·  " .. zone .. (q.x and string.format(" (%.1f, %.1f)", q.x, q.y) or "")) or ""))
+        r.sub:SetText(who .. (zone and ("  " .. FLT.DOT .. "  " .. zone .. (q.x and string.format(" (%.1f, %.1f)", q.x, q.y) or "")) or ""))
         local e = data.ends and data.ends[id]
         local eName, eMap, eX, eY
         if e then eName, eMap, eX, eY = strsplit("|", e); eMap, eX, eY = tonumber(eMap), tonumber(eX), tonumber(eY) end
         local eZone = zoneName(eMap)
         local eWho = eName and (FLT.Name and FLT.Name(eName) or eName) or "?"
         local function place(l, nm, zn, mp, x, yy)
-          l.text:SetText(nm .. (zn and ("  ·  " .. zn .. (x and string.format(" (%.1f, %.1f)", x, yy) or "")) or ""))
+          l.text:SetText(nm .. (zn and ("  " .. FLT.DOT .. "  " .. zn .. (x and string.format(" (%.1f, %.1f)", x, yy) or "")) or ""))
           if mp and x then l.map:Show(); l.map:SetScript("OnClick", function() FLT:ShowOnMap({ mapID = mp, x = x, y = yy, zone = zn, name = nm }) end)
           else l.map:Hide() end
         end
@@ -433,7 +439,7 @@ local function createQuestView(body)
         if goMap and goX then
           r.map:Show(); r.map:SetScript("OnClick", function() FLT:ShowOnMap({ mapID = goMap, x = goX, y = goY, zone = goZone, name = goWho }) end)
         else r.map:Hide() end
-        if (inLog or ready) and eMap then r.sub:SetText(L["Turn in"] .. ": " .. eWho .. (eZone and ("  ·  " .. eZone .. (eX and string.format(" (%.1f, %.1f)", eX, eY) or "")) or "")) end
+        if (inLog or ready) and eMap then r.sub:SetText(L["Turn in"] .. ": " .. eWho .. (eZone and ("  " .. FLT.DOT .. "  " .. eZone .. (eX and string.format(" (%.1f, %.1f)", eX, eY) or "")) or "")) end
         local open = openStep == id
         local parts = { r.lStart.label, r.lStart.text, r.lStart.map, r.lEnd.label, r.lEnd.text, r.lEnd.map, r.objLabel, r.obj }
         for _, w in ipairs(parts) do w:SetShown(open) end
@@ -481,8 +487,8 @@ local function createQuestView(body)
       FLT.Desat(r.icon, not mine(c))
       local done, total = doneCount(c)
       local sub = string.format(L["Level %d"], c.lv or 1)
-      if c.cls then sub = sub .. "  ·  " .. className(c.cls) end
-      r.sub:SetText(sub .. "  ·  " .. (done >= total and ("|cff66dd66" .. L["Done"] .. "|r") or string.format("%d / %d", done, total)))
+      if c.cls then sub = sub .. "  " .. FLT.DOT .. "  " .. className(c.cls) end
+      r.sub:SetText(sub .. "  " .. FLT.DOT .. "  " .. (done >= total and ("|cff66dd66" .. L["Done"] .. "|r") or string.format("%d / %d", done, total)))
       r.card:SetSelected(c == sel)
     end
     more:ClearAllPoints(); more:SetPoint("TOPLEFT", 8, y - 4); y = y - 24
@@ -562,7 +568,10 @@ local function createArmoryPanel(parent)
   -- tabPick[group] = index of a button, or the sub name picked under "Other Sets"; starts on the first button
   local tabBar = CreateFrame("Frame", nil, body); tabBar:SetPoint("TOPLEFT", 0, -36); tabBar:SetPoint("TOPRIGHT", 0, -36); tabBar:SetHeight(26); tabBar:Hide()
   local tabButtons, tabPick = {}, {}
+  local pvpRep = false -- PvP Sets shows the battleground reputations instead of a set list
   local otherB = UI.GoldButton(tabBar, L["Other Sets"], 170, 24, nil, 12)
+  local repB = UI.GoldButton(tabBar, L["Reputation"], 126, 24, nil, 12)
+  repB:SetScript("OnClick", function() if not pvpRep then pvpRep = true; show("pvp") end end)
   -- a long source name ends with "..." on the button, the whole name is in its tooltip (user 22.10.)
   otherB._label:SetWidth(170 - 40); otherB._label:SetWordWrap(false)
   otherB:SetScript("OnEnter", function(self)
@@ -596,23 +605,26 @@ local function createArmoryPanel(parent)
         end
       end
     end
+    local inRep = current == "pvp" and pvpRep
     for i, b in ipairs(tabButtons) do
       local t = tabs and tabs[i]
       b:SetShown(t ~= nil)
       if t then
-        b:SetLabel(L[t[1]]); b:SetActive(tabPick[current] == i)
+        b:SetLabel(L[t[1]]); b:SetActive(not inRep and tabPick[current] == i)
       end
     end
     local pick = tabPick[current]
     local isOther = type(pick) == "string"
-    otherB:SetLabel(isOther and L[pick] or L["Other Sets"]); otherB:SetActive(isOther)
+    otherB:SetLabel(isOther and L[pick] or L["Other Sets"]); otherB:SetActive(isOther and not inRep)
     otherB:SetShown(tabs ~= nil and #otherSubs(current) > 0)
     otherB:ClearAllPoints(); otherB:SetPoint("LEFT", tabButtons[tabs and #tabs or 1], "RIGHT", 10, 0)
+    repB:SetShown(current == "pvp"); repB:SetActive(inRep)
+    repB:ClearAllPoints(); repB:SetPoint("LEFT", otherB:IsShown() and otherB or tabButtons[tabs and #tabs or 1], "RIGHT", 10, 0)
   end
   for i = 1, 4 do
     local b = UI.GoldButton(tabBar, "", 126, 24, nil, 12)
     if i == 1 then b:SetPoint("LEFT", 0, 0) else b:SetPoint("LEFT", tabButtons[i - 1], "RIGHT", 6, 0) end
-    b:SetScript("OnClick", function() tabPick[current] = i; paintTabs(); if refreshSets then refreshSets() end end)
+    b:SetScript("OnClick", function() tabPick[current] = i; if pvpRep and current == "pvp" then pvpRep = false; show(current) else paintTabs(); if refreshSets then refreshSets() end end end)
     tabButtons[i] = b
   end
   otherB:SetScript("OnClick", function(self)
@@ -622,7 +634,10 @@ local function createArmoryPanel(parent)
       longest = math.max(longest, #L[sub])
     end
     -- wide enough for the longest name (the list was narrower than its text, user 22.10.)
-    UI.OpenDropDown(self, opts, tabPick[current], function(k) tabPick[current] = k; paintTabs(); if refreshSets then refreshSets() end end,
+    UI.OpenDropDown(self, opts, tabPick[current], function(k)
+      tabPick[current] = k
+      if pvpRep and current == "pvp" then pvpRep = false; show(current) else paintTabs(); if refreshSets then refreshSets() end end
+    end,
       math.max(220, math.floor(longest * 7.6 + 44)))
   end)
 
@@ -680,7 +695,7 @@ local function createArmoryPanel(parent)
         local ok = true
         if tabs then
           if type(pick) == "string" then ok = s.sub == pick
-          else ok = tabs[pick or 1].set[s.sub or ""] or false end
+          else ok = (tabs[pick or 1] or tabs[1]).set[s.sub or ""] or false end
         end
         if ok then out[#out + 1] = s end
       end
@@ -715,7 +730,7 @@ local function createArmoryPanel(parent)
       local raw = s.sub or GROUP_LABEL[s.g]
       local d = findDungeon(raw)
       local sub = L[raw]
-      if d and d.level then sub = sub .. "  |cff9d9d9d·  " .. d.level .. "|r" end
+      if d and d.level then sub = sub .. "  |cff9d9d9d" .. FLT.DOT .. "  " .. d.level .. "|r" end
       if sub ~= lastSub then
         nh = nh + 1; local h = headRow(nh); h:ClearAllPoints(); h:SetPoint("TOPLEFT", 0, y); h:Show(); y = y - 24
         h.text:SetText(sub); lastSub = sub
@@ -729,9 +744,9 @@ local function createArmoryPanel(parent)
       local owned, _, total = setProgress(s)
       r.name:SetTextColor(qualityColor(first[4]))
       local info = string.format(L["%d / %d owned"], owned, total)
-      if s.arm then info = info .. "  ·  " .. L[s.arm] end
-      if s.lv then info = info .. "  ·  " .. string.format(L["Lvl %d"], s.lv) end
-      if s.st == 2 then info = info .. "  ·  |cfff2b347" .. L["no source yet"] .. "|r" end
+      if s.arm then info = info .. "  " .. FLT.DOT .. "  " .. L[s.arm] end
+      if s.lv then info = info .. "  " .. FLT.DOT .. "  " .. string.format(L["Lvl %d"], s.lv) end
+      if s.st == 2 then info = info .. "  " .. FLT.DOT .. "  |cfff2b347" .. L["no source yet"] .. "|r" end
       r.sub:SetText(info)
       r.card:SetSelected(s == sel)
     end
@@ -787,7 +802,7 @@ local function createArmoryPanel(parent)
     if s.arm then parts[#parts + 1] = L[s.arm] end
     if s.lv then parts[#parts + 1] = string.format(L["Requires level %d"], s.lv) end
     if #cls > 0 and #cls < 9 then parts[#parts + 1] = table.concat(cls, ", ") end
-    dSub:SetText(table.concat(parts, "  ·  "))
+    dSub:SetText(table.concat(parts, "  " .. FLT.DOT .. "  "))
     local st = STATUS[s.st]
     if s.st == 0 then dStatus:SetText("") -- no note any more (6.2.14-beta4), and no "obtainable" claim either
     elseif st then dStatus:SetText(L[st.text] .. ": " .. L[st.tip]); dStatus:SetTextColor(FLT.TextC(unpack(st.c)))
@@ -806,8 +821,8 @@ local function createArmoryPanel(parent)
       r.name:SetText(r.itName); r.name:SetTextColor(qualityColor(it[4]))
       local src = it[6] and it[6][1]
       local srcText = (it[3] and SW(it[3]) or "") .. (it[7] and (", " .. L[it[7]]) or "")
-      if src then srcText = srcText .. "  ·  " .. sourceText(src)
-      elseif s.st == 1 then srcText = srcText .. "  ·  " .. L["source not known yet"] end
+      if src then srcText = srcText .. "  " .. FLT.DOT .. "  " .. sourceText(src)
+      elseif s.st == 1 then srcText = srcText .. "  " .. FLT.DOT .. "  " .. L["source not known yet"] end
       if it[6] and #it[6] > 1 then srcText = srcText .. string.format("  (+%d)", #it[6] - 1) end
       r.src:SetText(srcText)
       r.star:SetItem(it[1])
@@ -878,7 +893,7 @@ local function createArmoryPanel(parent)
     facHeads[i] = h
     return h
   end
-  local factionVisible = sideOK
+  local function factionVisible(f) return sideOK(f) and (current ~= "pvp" or PVP_FACTIONS[f.id] ~= nil) end
 
   refreshRep = function(keepScroll)
     for _, r in ipairs(facRows) do r:Hide() end
@@ -1070,7 +1085,7 @@ local function createArmoryPanel(parent)
         setItemIcon(r.icon, it[1], it[5])
         r.name:SetText(r.itName); r.name:SetTextColor(qualityColor(it[4]))
         local kindText = it[7] == "recipe" and L["Recipe"] or it[3] and SW(it[3]) or L[it[7] == "gear" and N"Gear" or N"Item"]
-        if it[9] and #it[9] > 0 then kindText = kindText .. "  ·  " .. string.format(L["%d variants"], #it[9] + 1) end
+        if it[9] and #it[9] > 0 then kindText = kindText .. "  " .. FLT.DOT .. "  " .. string.format(L["%d variants"], #it[9] + 1) end
         r.sub:SetText(kindText)
         local reached = rankReached(it[6], stid)
         FLT.Desat(r.icon, not reached); r.icon:SetAlpha(reached and 1 or 0.6)
@@ -1099,14 +1114,20 @@ local function createArmoryPanel(parent)
     hideViews(); setNav(key)
     filterBar:SetShown(key ~= "rep" and key ~= "gear" and key ~= "quests")
     if key == "gear" then gear:Show(); gear:Refresh()
-    elseif key == "rep" then repView:Show(); refreshRep()
+    elseif key == "rep" then repView:ClearAllPoints(); repView:SetAllPoints(); repView:Show(); refreshRep()
     elseif key == "quests" then questView:Show(); questView:Refresh()
     else
       local tabs = TABS[key] ~= nil
       tabBar:SetShown(tabs)
       if tabs then paintTabs() end
-      setView:ClearAllPoints(); setView:SetPoint("TOPLEFT", 0, tabs and -68 or -36); setView:SetPoint("BOTTOMRIGHT", 0, 0)
-      setView:Show(); refreshSets()
+      if key == "pvp" and pvpRep then -- the battleground reputations under the set buttons (no class filter there;
+        filterBar:Hide()                -- the buttons stay where they are, so nothing jumps under the mouse)
+        repView:ClearAllPoints(); repView:SetPoint("TOPLEFT", 0, -68); repView:SetPoint("BOTTOMRIGHT", 0, 0)
+        repView:Show(); refreshRep()
+      else
+        setView:ClearAllPoints(); setView:SetPoint("TOPLEFT", 0, tabs and -68 or -36); setView:SetPoint("BOTTOMRIGHT", 0, 0)
+        setView:Show(); refreshSets()
+      end
     end
     if key == "gear" or key == "rep" or key == "quests" then tabBar:Hide() end
   end
@@ -1139,7 +1160,7 @@ local function createArmoryPanel(parent)
     lastRedraw = GetTime and GetTime() or 0
     local changed, itemsOnly = gearChanged, not otherEvent; gearChanged, otherEvent = false, false
     if not panel:IsVisible() then return end
-    if current == "rep" then refreshRep(true) elseif current == "quests" then questView:Refresh(true) elseif current == "gear" then gear:Refresh(changed, itemsOnly) elseif current then refreshSets(true) end
+    if current == "rep" or (current == "pvp" and pvpRep) then refreshRep(true) elseif current == "quests" then questView:Refresh(true) elseif current == "gear" then gear:Refresh(changed, itemsOnly) elseif current then refreshSets(true) end
   end
   local ev = CreateFrame("Frame", nil, panel)
   ev:RegisterEvent("GET_ITEM_INFO_RECEIVED")

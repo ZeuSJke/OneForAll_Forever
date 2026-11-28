@@ -9,21 +9,21 @@ local SRC = FLT.DUNGEON_REGISTRY or {}
 -- coordsUnverified marks entrances that still need an in-game /ofa where check.
 -- dataStatus: "forever" = Forever quests/loot recorded, "partial" = bosses only.
 local META = {
-  ["Hall of Thanes"] = {key="hall", short="Hall of Thanes", territory="Alliance", mapZone="Ironforge", mapX=27.63, mapY=47.83, betaNew=true, minLevel=13},
+  ["Hall of Thanes"] = {key="hall", instanceID=3065, short="Hall of Thanes", territory="Alliance", mapZone="Ironforge", mapX=27.63, mapY=47.83, betaNew=true, minLevel=13},
   ["Ragefire Chasm"] = {key="rfc", instanceID=389, territory="Horde", mapZone="Orgrimmar", mapX=52.6, mapY=49.0, minLevel=13},
-  ["Ruins of Lordaeron"] = {key="lordaeron", territory="Horde", mapZone="Undercity", mapX=72.48, mapY=11.33, betaNew=true, minLevel=15, coordsUnverified=true},
+  ["Ruins of Lordaeron"] = {key="lordaeron", instanceID=2999, territory="Horde", mapZone="Undercity", mapX=72.48, mapY=11.33, betaNew=true, minLevel=15, coordsUnverified=true},
   ["The Deadmines"] = {key="deadmines", instanceID=36, territory="Alliance", mapZone="Westfall", mapX=42.5, mapY=71.7, minLevel=15},
   ["Wailing Caverns"] = {key="wc", instanceID=43, territory="Horde", mapZone="The Barrens", mapX=46.0, mapY=36.5, minLevel=17},
   ["Shadowfang Keep"] = {key="sfk", instanceID=33, territory="Horde", mapZone="Silverpine Forest", mapX=44.8, mapY=67.8, minLevel=20},
   ["Blackfathom Deeps"] = {key="bfd", instanceID=48, territory="Contested", mapZone="Ashenvale", mapX=14.5, mapY=14.2, minLevel=22},
-  ["Excavation Site: Wetlands"] = {key="excavation", short="Excavation Site", territory="Contested", mapZone="Wetlands", mapX=47.79, mapY=56.16, betaNew=true, minLevel=26, coordsUnverified=true},
+  ["Excavation Site: Wetlands"] = {key="excavation", instanceID=2998, short="Excavation Site", territory="Contested", mapZone="Wetlands", mapX=47.79, mapY=56.16, betaNew=true, minLevel=26, coordsUnverified=true},
   ["The Stockade"] = {key="stockade", instanceID=34, territory="Alliance", mapZone="Stormwind City", mapX=52.41, mapY=70.01, minLevel=25, coordsUnverified=true},
-  ["City of Dalaran"] = {key="dalaran", territory="Contested", mapZone="Alterac Mountains", mapX=8.46, mapY=59.21, betaNew=true, minLevel=28, coordsUnverified=true},
+  ["City of Dalaran"] = {key="dalaran", instanceID=2959, territory="Contested", mapZone="Alterac Mountains", mapX=8.46, mapY=59.21, betaNew=true, minLevel=28, coordsUnverified=true},
   ["Gnomeregan"] = {key="gnomeregan", instanceID=90, territory="Alliance", mapZone="Dun Morogh", mapX=24.3, mapY=39.8, minLevel=29, coordsUnverified=true, openToBoth=true},
   ["Razorfen Kraul"] = {key="rfk", instanceID=47, territory="Horde", mapZone="The Barrens", mapX=42.9, mapY=90.2, minLevel=29, coordsUnverified=true},
   ["Scarlet Monastery: Library"] = {key="smlib", instanceID=189, short="SM: Library", uiMaps={303}, territory="Horde", mapZone="Tirisfal Glades", mapX=82.6, mapY=33.8, minLevel=33, coordsUnverified=true},
   ["Scarlet Monastery: Graveyard"] = {key="smgy", instanceID=189, uiMaps={302}, short="SM: Graveyard", territory="Horde", mapZone="Tirisfal Glades", mapX=82.6, mapY=33.8, minLevel=30, coordsUnverified=true},
-  ["The Drowned City"] = {key="drowned", short="Drowned City", territory="Contested", mapZone="Stranglethorn Vale", mapX=21.4, mapY=27.9, coordsUnverified=true, betaNew=true, minLevel=35},
+  ["The Drowned City"] = {key="drowned", instanceID=2970, short="Drowned City", territory="Contested", mapZone="Stranglethorn Vale", mapX=21.4, mapY=27.9, coordsUnverified=true, betaNew=true, minLevel=35},
   ["Scarlet Monastery: Armory"] = {key="smarm", instanceID=189, short="SM: Armory", uiMaps={304}, territory="Horde", mapZone="Tirisfal Glades", mapX=82.6, mapY=33.8, minLevel=36, coordsUnverified=true},
   ["Razorfen Downs"] = {key="rfd", instanceID=129, territory="Horde", mapZone="The Barrens", mapX=49.0, mapY=93.9, minLevel=37, coordsUnverified=true},
   ["Scarlet Monastery: Cathedral"] = {key="smcath", instanceID=189, short="SM: Cathedral", uiMaps={305}, territory="Horde", mapZone="Tirisfal Glades", mapX=82.6, mapY=33.8, minLevel=38, coordsUnverified=true},
@@ -34,21 +34,24 @@ local META = {
   -- (Sunken Hollow, about 21.4, 27.9), Blackmaw Hold the furbolg tunnel with the meeting stone in Azshara (38.4, 32.6; Warcraft
   -- Tavern 38.7, 33.4 - the portal itself is deep inside, Winterspring 66.6, 84.4), Shaper's Terrace the titan gate on the
   -- hill above Marshal's Refuge (48.1, 6.1)
-  ["Krol'dok Stronghold"] = {key="kroldok", territory="Contested", mapZone="Riverglades", mapX=37.5, mapY=39.0, betaNew=true, minLevel=40},
+  -- instanceID (6.2.17-beta9, a friend of the user 24.11.: the tracker did not notice Alcaz Prison): the five new dungeons had no ID,
+  -- so only the English name matched (GetInstanceInfo gives the client's language); IDs = the Forever client's Map table (1.60.1.71091),
+  -- also Hall of Thanes, Ruins of Lordaeron, Excavation Site and Dalaran; Barrow Deeps / Hyjal Summit are not in the client yet
+  ["Krol'dok Stronghold"] = {key="kroldok", instanceID=3039, territory="Contested", mapZone="Riverglades", mapX=37.5, mapY=39.0, betaNew=true, minLevel=40},
   ["Uldaman"] = {key="uldaman", instanceID=70, territory="Contested", mapZone="Badlands", mapX=44.6, mapY=12.1, minLevel=41, coordsUnverified=true},
   ["Zul'Farrak"] = {key="zf", instanceID=209, territory="Contested", mapZone="Tanaris", mapX=38.7, mapY=20.1, minLevel=44, coordsUnverified=true},
   ["Maraudon"] = {key="maraudon", instanceID=349, territory="Contested", mapZone="Desolace", mapX=29.1, mapY=62.5, minLevel=46, coordsUnverified=true},
-  ["Alcaz Prison"] = {key="alcaz", territory="Contested", mapZone="Dustwallow Marsh", mapX=75.5, mapY=13.7, coordsUnverified=true, betaNew=true, minLevel=48},
+  ["Alcaz Prison"] = {key="alcaz", instanceID=2994, territory="Contested", mapZone="Dustwallow Marsh", mapX=75.5, mapY=13.7, coordsUnverified=true, betaNew=true, minLevel=48},
   ["The Temple of Atal'Hakkar"] = {key="st", instanceID=109, short="Sunken Temple", territory="Contested", mapZone="Swamp of Sorrows", mapX=69.9, mapY=53.5, minLevel=50, coordsUnverified=true},
   ["Blackrock Depths"] = {key="brd", instanceID=230, territory="Contested", mapZone="Searing Gorge", mapX=34.8, mapY=85.3, minLevel=52, coordsUnverified=true},
   ["Dire Maul: East"] = {key="dme", instanceID=429, short="DM: East", territory="Contested", mapZone="Feralas", mapX=59.2, mapY=45.1, minLevel=54, coordsUnverified=true},
   ["Lower Blackrock Spire"] = {key="lbrs", instanceID=229, short="LBRS", territory="Contested", mapZone="Searing Gorge", mapX=34.8, mapY=85.3, minLevel=55, coordsUnverified=true},
-  ["Blackmaw Hold"] = {key="blackmaw", territory="Contested", mapZone="Azshara", mapX=38.4, mapY=32.6, coordsUnverified=true, betaNew=true, minLevel=55},
+  ["Blackmaw Hold"] = {key="blackmaw", instanceID=2974, territory="Contested", mapZone="Azshara", mapX=38.4, mapY=32.6, coordsUnverified=true, betaNew=true, minLevel=55},
   ["Dire Maul: West"] = {key="dmw", instanceID=429, short="DM: West", territory="Contested", mapZone="Feralas", mapX=59.2, mapY=45.1, minLevel=56, coordsUnverified=true},
   ["Dire Maul: North"] = {key="dmn", instanceID=429, short="DM: North", territory="Contested", mapZone="Feralas", mapX=59.2, mapY=45.1, minLevel=56, coordsUnverified=true},
   ["Scholomance"] = {key="scholo", instanceID=289, territory="Contested", mapZone="Western Plaguelands", mapX=69.7, mapY=73.2, minLevel=58, coordsUnverified=true},
   ["Stratholme"] = {key="strat", instanceID=329, territory="Contested", mapZone="Eastern Plaguelands", mapX=26.5, mapY=10.4, minLevel=58, coordsUnverified=true},
-  ["Shaper's Terrace"] = {key="shapers", territory="Contested", mapZone="Un'Goro Crater", mapX=48.1, mapY=6.1, coordsUnverified=true, betaNew=true, minLevel=58},
+  ["Shaper's Terrace"] = {key="shapers", instanceID=3001, territory="Contested", mapZone="Un'Goro Crater", mapX=48.1, mapY=6.1, coordsUnverified=true, betaNew=true, minLevel=58},
   ["Upper Blackrock Spire"] = {key="ubrs", instanceID=229, short="UBRS", territory="Contested", mapZone="Searing Gorge", mapX=34.8, mapY=85.3, minLevel=59, coordsUnverified=true},
   -- Raids (Raids view of the Dungeons tab): size = players, raidStatus as announced by Blizzard,
   -- attunement "unknown" = not known yet (Onyxia's comes from Data\RaidAttunements.lua)
@@ -118,7 +121,13 @@ local function convertBoss(b)
   return {
     name=b.name,
     npcID=b.npcID,
-    rare=b.rare,
+    -- optional (6.2.16, user 23.11.: like Dungeon Journal - summoned / quest bosses): not needed for a finished run, so it
+    -- counts as rare everywhere; only its label says "Optional"
+    rare=b.rare or b.optional,
+    optional=b.optional,
+    -- 6.2.17 (Discord djmarscomet 24.11.: the Lost Dwarves are friendly to the Alliance; Dungeon Journal does the same): only this
+    -- faction can fight the boss - the other one does not see it in the tracker and does not need it for a finished run
+    factionOnly=b.factionOnly,
     description=b.description,
     icon=b.icon,
     customIcon=b.customIcon,
@@ -488,15 +497,15 @@ FLT.BOSS_LEVELS = {
   [246020] = "33", -- Shade of the Archmage
   -- The Drowned City (6.2.7-beta8, user 13.11.2026: values from screenshots / another AI, source not known - the user's
   -- decision, see CLAUDE.md; a level learned in game by targeting the boss is shown instead once known)
-  [270882] = "37", -- Zul'Alai
-  [270883] = "38", -- Var'Taka
-  [270884] = "38", -- Captain Dreadrise
-  [270885] = "39", -- Deathless Marrow
-  [270887] = "38", -- Primeval Elemental
-  [270888] = "38", -- Gill (rare)
+  [258905] = "37", -- Zul'Alai
+  [258924] = "38", -- Var'Taka
+  [260042] = "38", -- Captain Dreadrise
+  [260202] = "39", -- Deathless Marrow
+  [263886] = "38", -- Primeval Elemental
+  [264177] = "38", -- Gill (rare)
   [264172] = "38", -- Umbra (rare)
   [260468] = "38", -- "Pyromancer" Braxton (rare)
-  [270886] = "40", -- Min'loth the Serpent
+  [260243] = "40", -- Min'loth the Serpent
   -- Krol'dok Stronghold (6.2.7-beta9, user 13.11.2026: "bei kroldok stronghold auch noch die Boss level eintragen" - same
   -- source and decision as The Drowned City above)
   [258966] = "42", -- Slavecrusher Grox
@@ -533,4 +542,25 @@ FLT.BOSS_LEVELS = {
   [257016] = "52", -- Katerina the Cleaner
   [256236] = "51", -- The Questioner
   [255702] = "53", -- Blazeroar
+  -- 6.2.16-beta3 (user 23.11.2026): the optional / quest bosses of the classic dungeons from CMaNGOS classic-db creature_template
+  -- (MinLevel - MaxLevel); Lordaeron Captain and Mana Wraith from the user's list (another AI, citing WoWCensus / Warcraft Wiki /
+  -- Efficient Games) - plain game facts, a level learned in game wins
+  [16059] = "60", -- Theldren
+  [9543] = "53", -- Ribbly Screwspigot
+  [16080] = "60", -- Mor Grayhoof
+  [11032] = "60", -- Malor the Zealous
+  [11120] = "60", -- Crimson Hammersmith
+  [11121] = "61-62", -- Black Guard Swordsmith
+  [11058] = "61", -- Ezra Grimm
+  [16101] = "59-60", -- Jarien and Sothos
+  [7797] = "46", -- Ruuzlu
+  [255699] = "19", -- Lordaeron Captain
+  [246931] = "27-28", -- Mana Wraith
 }
+
+-- a boss this character can fight (6.2.17: factionOnly bosses - the Lost Dwarves, the Lordaeron Captain - only for that faction)
+function FLT.BossForMe(b)
+  if not (b and b.factionOnly) then return true end
+  local f = UnitFactionGroup and UnitFactionGroup("player")
+  return not f or f == b.factionOnly
+end

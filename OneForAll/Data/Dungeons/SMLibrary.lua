@@ -60,19 +60,6 @@ FLT.DUNGEON_REGISTRY["Scarlet Monastery: Library"] = {
             rewardSummary = "8,450 XP · +150 Thunder Bluff",
         },
         {
-            level = 36,
-            id = 1160,
-            liveXPFallback = 5000,
-            name = "Test of Lore",
-            requires = 25,
-            faction = "Horde",
-            pickup = "Parqual Fintallas, Undercity (57.8, 65.4)",
-            objective = "Find The Beginnings of the Undead Threat, and return it to Parqual Fintallas in Undercity.",
-            turnin = "Parqual Fintallas, Undercity",
-            rewardItems = {},
-            rewardSummary = "5,000 XP · +75 Undercity",
-        },
-        {
             level = 35,
             id = 78676, -- the step done in the Monastery (78699 is the follow-up letter; Discord cralic 12.11.)
             name = "The Eye of Bhossca",
@@ -88,6 +75,7 @@ FLT.DUNGEON_REGISTRY["Scarlet Monastery: Library"] = {
         {
             level = 36,
             id = 1394,
+            liveXPFallback = 4200,
             name = "Final Passage",
             requires = 25,
             faction = "Horde",
@@ -99,12 +87,13 @@ FLT.DUNGEON_REGISTRY["Scarlet Monastery: Library"] = {
                 {6804, "Windstorm Hammer", 2},
                 {6806, "Dancing Flame", 2},
             },
+            rewardSummary = "4,200 XP",
         },
         -- 6.2.13 (Discord lobarne 21.11.): "Brother Anton" is only the optional first step in Stormwind - the chain goes on with
         -- "Down the Scarlet Path" (Desolace) to this quest, which needs Houndmaster Loksey here (like the Cathedral / Armory entry)
         {
             id = 1053,
-            liveXPFallback = 4700,
+            liveXPFallback = 15300,
             name = "In the Name of the Light",
             level = 40,
             requires = 34,
@@ -115,6 +104,54 @@ FLT.DUNGEON_REGISTRY["Scarlet Monastery: Library"] = {
             rewardItems = {{6829, "Sword of Serenity", 3}, {6830, "Bonebiter", 3}, {6831, "Black Menace", 3}, {11262, "Orb of Lorica", 3}},
             rewardChoice = true,
             note = "Covers bosses in three wings: Houndmaster Loksey (Library), Herod (Armory), Scarlet Commander Mograine and High Inquisitor Whitemane (Cathedral).",
+            rewardSummary = "15,300 XP · +50 Alliance · +50 Darnassus · +50 Gnomeregan Exiles · +50 Ironforge · +200 Stormwind",
+        },
+        {
+            level = 33,
+            id = 1113,
+            liveXPFallback = 7850,
+            name = "Hearts of Zeal",
+            requires = 30,
+            faction = "Horde",
+            pickup = "Master Apothecary Faranell, Undercity (48.8, 69.3)",
+            objective = "Master Apothecary Faranell in the Undercity wants 20 Hearts of Zeal.",
+            turnin = "Master Apothecary Faranell, Undercity",
+            rewardItems = {
+            },
+            rewardSummary = "7,850 XP",
+        },
+        {
+            level = 42,
+            id = 1048,
+            liveXPFallback = 12250,
+            name = "Into The Scarlet Monastery",
+            requires = 33,
+            faction = "Horde",
+            pickup = "Varimathras, Undercity (56.2, 92.2)",
+            objective = "Kill High Inquisitor Whitemane, Scarlet Commander Mograine, Herod, the Scarlet Champion and Houndmaster Loksey and then report back to Varimathras in the Undercity.",
+            turnin = "Varimathras, Undercity",
+            rewardChoice = true,
+            rewardItems = {
+                {6802, "Sword of Omen", 3},
+                {6803, "Prophetic Cane", 3},
+                {10711, "Dragon's Blood Necklace", 3},
+            },
+            rewardSummary = "12,250 XP",
+        },
+        {
+            level = 40,
+            id = 1951,
+            liveXPFallback = 6300,
+            name = "Rituals of Power",
+            requires = 30,
+            faction = "Both",
+            class = "MAGE",
+            pickup = "Magus Tirth, Thousand Needles (78.3, 75.7)",
+            objective = "Bring the book Rituals of Power to Tabetha in Dustwallow Marsh.",
+            turnin = "Tabetha, Dustwallow Marsh",
+            rewardItems = {
+            },
+            rewardSummary = "6,300 XP",
         },
     },
     bosses = {
@@ -123,6 +160,7 @@ FLT.DUNGEON_REGISTRY["Scarlet Monastery: Library"] = {
             npcID = 3974,
             displayID = 2040,
             loot = {
+                {273109, "Blueprint: Trapper's Workbench", "Blueprint", 2}, -- Dungeon Journal (user 25.11.2026)
                 {7710, "Loksey's Training Stick", "Two-Hand, Staff", 3},
                 {7756, "Dog Training Gloves", "Hands, Leather", 3},
                 {3456, "Dog Whistle", "Trinket", 3},
@@ -134,6 +172,7 @@ FLT.DUNGEON_REGISTRY["Scarlet Monastery: Library"] = {
             npcID = 6487,
             displayID = 5266,
             loot = {
+                {7146, "The Scarlet Key", "Key", 2}, -- Dungeon Journal (user 25.11.2026)
                 {7711, "Robe of Doan", "Chest, Cloth", 2},
                 {7712, "Mantle of Doan", "Shoulder, Cloth", 2},
                 {7713, "Illusionary Rod", "Two-Hand, Staff", 3},
