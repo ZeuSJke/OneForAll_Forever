@@ -9,7 +9,7 @@ FLT.DUNGEON_REGISTRY["Lower Blackrock Spire"] = {
     quests = {
         {
             id = 4724,
-            liveXPFallback = 6400,
+            liveXPFallback = 11850,
             name = "The Pack Mistress",
             level = 59,
             requires = 55,
@@ -19,10 +19,11 @@ FLT.DUNGEON_REGISTRY["Lower Blackrock Spire"] = {
             turnin = "Galamav the Marksman, Badlands",
             rewardItems = {{15824, "Astoria Robes", 2}, {15825, "Traphook Jerkin", 2}, {15827, "Jadescale Breastplate", 2}},
             rewardChoice = true,
+            rewardSummary = "11,850 XP",
         },
         {
             id = 4981,
-            liveXPFallback = 6400,
+            liveXPFallback = 11850,
             name = "Operative Bijou",
             level = 59,
             requires = 55,
@@ -30,6 +31,7 @@ FLT.DUNGEON_REGISTRY["Lower Blackrock Spire"] = {
             pickup = "Lexlort, Badlands (5.9, 47.6)",
             objective = "Travel to Blackrock Spire and find out what happened to Bijou.",
             turnin = "Bijou, inside Lower Blackrock Spire",
+            rewardSummary = "11,850 XP",
         },
         {
             id = 4903,
@@ -43,10 +45,11 @@ FLT.DUNGEON_REGISTRY["Lower Blackrock Spire"] = {
             turnin = "Warlord Goretooth, Badlands",
             rewardItems = {{13958, "Wyrmthalak's Shackles", 3}, {13959, "Omokk's Girth Restrainer", 3}, {13961, "Halycon's Muzzle", 3}, {13962, "Vosh'gajin's Strand", 3}, {13963, "Voone's Vice Grips", 3}},
             rewardChoice = true,
+            rewardSummary = "8,300 XP",
         },
         {
             id = 4701,
-            liveXPFallback = 6400,
+            liveXPFallback = 12500,
             name = "Put Her Down",
             level = 59,
             requires = 55,
@@ -56,10 +59,11 @@ FLT.DUNGEON_REGISTRY["Lower Blackrock Spire"] = {
             turnin = "Helendis Riverhorn, Burning Steppes",
             rewardItems = {{15824, "Astoria Robes", 2}, {15825, "Traphook Jerkin", 2}, {15827, "Jadescale Breastplate", 2}},
             rewardChoice = true,
+            rewardSummary = "12,500 XP",
         },
         {
             id = 5089,
-            liveXPFallback = 6600,
+            liveXPFallback = 12850,
             name = "General Drakkisath's Command",
             level = 60,
             requires = 55,
@@ -68,10 +72,11 @@ FLT.DUNGEON_REGISTRY["Lower Blackrock Spire"] = {
             objective = "Take General Drakkisath's Command to Marshal Maxwell in Burning Steppes.",
             turnin = "Marshal Maxwell, Burning Steppes (84.7, 69.0)",
             note = "Starts from General Drakkisath's Command, dropped by Overlord Wyrmthalak.",
+            rewardSummary = "12,850 XP",
         },
         {
             id = 5001,
-            liveXPFallback = 6400,
+            liveXPFallback = 12500,
             name = "Bijou's Belongings",
             level = 59,
             requires = 55,
@@ -79,10 +84,11 @@ FLT.DUNGEON_REGISTRY["Lower Blackrock Spire"] = {
             pickup = "Bijou, inside Lower Blackrock Spire",
             objective = "Find Bijou's Belongings and return them to her. Good luck! ",
             turnin = "Bijou, inside Lower Blackrock Spire",
+            rewardSummary = "12,500 XP",
         },
         {
             id = 4862,
-            liveXPFallback = 6400,
+            liveXPFallback = 12500,
             name = "En-Ay-Es-Tee-Why",
             level = 59,
             requires = 55,
@@ -90,10 +96,11 @@ FLT.DUNGEON_REGISTRY["Lower Blackrock Spire"] = {
             objective = "Travel to Blackrock Spire and collect 15 Spire Spider Eggs for Kibler.  By the sound of it, these eggs could be found near spiders. ",
             turnin = "Kibler, Burning Steppes",
             rewardItems = {{12529, "Smolderweb Carrier", 1}},
+            rewardSummary = "12,500 XP",
         },
         {
             id = 4729,
-            liveXPFallback = 6400,
+            liveXPFallback = 12500,
             name = "Kibler's Exotic Pets",
             level = 59,
             requires = 55,
@@ -101,10 +108,11 @@ FLT.DUNGEON_REGISTRY["Lower Blackrock Spire"] = {
             objective = "Travel to Blackrock Spire and find Bloodaxe Worg Pups. Use the cage to carry the ferocious little beasts. Bring back a Caged Worg Pup to Kibler.",
             turnin = "Kibler, Burning Steppes",
             rewardItems = {{12264, "Worg Carrier", 1}},
+            rewardSummary = "12,500 XP",
         },
         {
             id = 4866,
-            liveXPFallback = 9950,
+            liveXPFallback = 18900,
             name = "Mother's Milk",
             level = 60,
             requires = 55,
@@ -112,10 +120,11 @@ FLT.DUNGEON_REGISTRY["Lower Blackrock Spire"] = {
             objective = "In the heart of Blackrock Spire you will find Mother Smolderweb. Engage her and get her to poison you. Chances are good that you will have to kill her as well. Return to Ragged John when you are poisoned so that he can 'milk' you.",
             turnin = "Ragged John, Burning Steppes",
             rewardItems = {{15873, "Ragged John's Neverending Cup", 3}},
+            rewardSummary = "18,900 XP",
         },
         {
             id = 4742,
-            liveXPFallback = 8300,
+            liveXPFallback = 16200,
             name = "Seal of Ascension",
             level = 60,
             requires = 57,
@@ -123,10 +132,11 @@ FLT.DUNGEON_REGISTRY["Lower Blackrock Spire"] = {
             objective = "Find the three gemstones of command: The Gemstone of Smolderthorn, Gemstone of Spirestone, and Gemstone of Bloodaxe. Return them, along with the Unadorned Seal of Ascension, to Vaelan.  The Generals, as told to you by Vaelan, are: War Master Voone of the Smolderthorn; Highlord Omokk of the Spirestone; and Overlord Wyrmthalak of the Bloodaxe.",
             turnin = "Vaelan, inside Lower Blackrock Spire",
             note = "The Unadorned Seal of Ascension and the three gemstones drop in Lower Blackrock Spire; the forged seal opens Upper Blackrock Spire.",
+            rewardSummary = "16,200 XP",
         },
         {
             id = 4867,
-            liveXPFallback = 9950,
+            liveXPFallback = 18900,
             name = "Urok Doomhowl",
             level = 60,
             requires = 55,
@@ -134,20 +144,23 @@ FLT.DUNGEON_REGISTRY["Lower Blackrock Spire"] = {
             objective = "Read Warosh's Scroll. Bring Warosh's Mojo to Warosh.",
             turnin = "Warosh, inside Lower Blackrock Spire",
             rewardItems = {{15867, "Prismcharm", 2}},
+            rewardSummary = "18,900 XP",
         },
         {
             id = 4788,
-            liveXPFallback = 7750,
+            liveXPFallback = 15100,
             name = "The Final Tablets",
             level = 58,
             requires = 40,
             pickup = "Prospector Ironboot, Tanaris (66.9, 24.0)",
             objective = "Bring the Fifth and Sixth Mosh'aru Tablets to Prospector Ironboot in Tanaris.",
             turnin = "Prospector Ironboot, Tanaris",
+            rewardSummary = "15,100 XP",
         },
         {
             level = 59,
             id = 4982,
+            liveXPFallback = 11850,
             name = "Bijou's Belongings",
             requires = 55,
             faction = "Horde",
@@ -156,10 +169,12 @@ FLT.DUNGEON_REGISTRY["Lower Blackrock Spire"] = {
             turnin = "Bijou, inside Lower Blackrock Spire",
             rewardItems = {
             },
+            rewardSummary = "11,850 XP · 1g 80s",
         },
         {
             level = 60,
             id = 5081,
+            liveXPFallback = 16200,
             name = "Maxwell's Mission",
             requires = 55,
             faction = "Alliance",
@@ -174,6 +189,7 @@ FLT.DUNGEON_REGISTRY["Lower Blackrock Spire"] = {
                 {13962, "Vosh'gajin's Strand", 3},
                 {13963, "Voone's Vice Grips", 3},
             },
+            rewardSummary = "16,200 XP",
         },
         {
             level = 60,
@@ -239,6 +255,7 @@ FLT.DUNGEON_REGISTRY["Lower Blackrock Spire"] = {
             npcID = 9236,
             displayID = 9732,
             loot = {
+                {12654, "Doomshot", "Projectile, Arrow", 3}, -- Dungeon Journal (user 25.11.2026)
                 {16712, "Shadowcraft Gloves", "Hands, Leather", 3},
                 {13257, "Demonic Runed Spaulders", "Shoulder, Leather", 3},
                 {12626, "Funeral Cuffs", "Wrist, Cloth", 3},
@@ -289,6 +306,7 @@ FLT.DUNGEON_REGISTRY["Lower Blackrock Spire"] = {
             displayID = 11583,
             description = "Summoned with the quest Urok Doomhowl.",
             loot = {
+                {13053, "Doombringer", "Two-Hand, Sword", 3}, -- Dungeon Journal (user 25.11.2026)
                 {13258, "Slaghide Gauntlets", "Hands, Leather", 3},
                 {22232, "Marksman's Girdle", "Waist, Mail", 3},
                 {13259, "Ribsteel Footguards", "Feet, Plate", 3},
@@ -300,6 +318,15 @@ FLT.DUNGEON_REGISTRY["Lower Blackrock Spire"] = {
             npcID = 9736,
             displayID = 9738,
             loot = {
+                {16673, "Cord of Elements", "Waist, Mail", 3}, -- Dungeon Journal (user 25.11.2026)
+                {16680, "Beaststalker's Belt", "Waist, Mail", 3}, -- Dungeon Journal (user 25.11.2026)
+                {16683, "Magister's Bindings", "Wrist, Cloth", 3}, -- Dungeon Journal (user 25.11.2026)
+                {16696, "Devout Belt", "Waist, Cloth", 3}, -- Dungeon Journal (user 25.11.2026)
+                {16703, "Dreadmist Bracers", "Wrist, Cloth", 3}, -- Dungeon Journal (user 25.11.2026)
+                {16713, "Shadowcraft Belt", "Waist, Leather", 3}, -- Dungeon Journal (user 25.11.2026)
+                {16735, "Bracers of Valor", "Wrist, Plate", 3}, -- Dungeon Journal (user 25.11.2026)
+                {16716, "Wildheart Belt", "Waist, Leather", 3}, -- Dungeon Journal (user 25.11.2026)
+                {273115, "Blueprint: Iron Oven", "Blueprint", 2}, -- Dungeon Journal (user 25.11.2026)
                 {13253, "Hands of Power", "Hands, Cloth", 3},
                 {13252, "Cloudrunner Girdle", "Waist, Leather", 3},
             },
@@ -371,6 +398,20 @@ FLT.DUNGEON_REGISTRY["Lower Blackrock Spire"] = {
                 {13163, "Relentless Scythe", "Two-Hand, Sword", 3},
                 {13148, "Chillpike", "Two-Hand, Polearm", 3},
                 {13161, "Trindlehaven Staff", "Two-Hand, Staff", 3},
+            },
+        },
+        {
+            name = "Mor Grayhoof",
+            npcID = 16080,
+            optional = true,
+            displayID = 15997, -- CMaNGOS classic-db creature_template
+            description = "Summoned with the Brazier of Beckoning (Tier 0.5 set quests).",
+            loot = { -- loot: CMaNGOS classic-db (user 23.11.2026)
+                {22306, "Ironweave Belt", "Waist, Cloth", 3},
+                {22319, "Tome of Divine Right", "Held In Off-Hand", 3},
+                {22322, "The Jaw Breaker", "One-Hand, Mace", 3},
+                {22325, "Belt of the Trickster", "Waist, Leather", 3},
+                {22398, "Idol of Rejuvenation", "Relic, Idol", 3},
             },
         },
     },

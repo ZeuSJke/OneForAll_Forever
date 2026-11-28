@@ -96,6 +96,17 @@ local function createAlertFrame()
   local f = CreateFrame("Frame", "OneForAllNearbyAlert", UIParent)
   f:SetSize(470, 128)
   f:SetPoint("TOP", UIParent, "TOP", 0, -145)
+  -- drag it anywhere; the place is kept (6.2.17-beta27, user 25.11.: "das fenster ist nicht verschiebbar")
+  local pos = type(OneForAllDB) == "table" and OneForAllDB.nearbyAlertPos
+  if type(pos) == "table" and pos[1] then f:ClearAllPoints(); f:SetPoint(pos[1], UIParent, pos[2] or pos[1], pos[3] or 0, pos[4] or 0) end
+  f:SetMovable(true); f:RegisterForDrag("LeftButton")
+  f:SetScript("OnDragStart", function(self) self:StartMoving() end)
+  f:SetScript("OnDragStop", function(self)
+    self:StopMovingOrSizing()
+    if self.SetUserPlaced then self:SetUserPlaced(false) end -- our own saved place, not the game's layout cache
+    local p1, _, p2, x, y = self:GetPoint()
+    if type(OneForAllDB) == "table" and p1 then OneForAllDB.nearbyAlertPos = { p1, p2, math.floor((x or 0) + 0.5), math.floor((y or 0) + 0.5) } end
+  end)
   -- under the game's dialogs (group invites, ready checks ...), they share this place on the screen (6.2.11)
   f:SetFrameStrata("HIGH")
   f:SetClampedToScreen(true)

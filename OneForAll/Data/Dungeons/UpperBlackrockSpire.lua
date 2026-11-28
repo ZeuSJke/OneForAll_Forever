@@ -17,20 +17,22 @@ FLT.DUNGEON_REGISTRY["Upper Blackrock Spire"] = {
             objective = "Travel to the Wyrmbog in Dustwallow Marsh. Find the ancient drake, Emberstrife and beat him without mercy until his will is broken.  It is at that moment which you must place the Unforged Seal of Ascension before the great beast. You must then be quick to use the Orb of Draconic Energy on his weakened form and claim dominion over his mental faculties. Control the beast and force the Flames of the Black Dragonflight upon the Unforged Seal of Ascension!",
             turnin = "Vaelan, inside Upper Blackrock Spire",
             rewardItems = {{12344, "Seal of Ascension", 3}},
+            rewardSummary = "9,950 XP",
         },
         {
             id = 5160,
-            liveXPFallback = 6600,
+            liveXPFallback = 17650,
             name = "The Matron Protectorate",
             level = 60,
             requires = 57,
             pickup = "Awbee, inside Upper Blackrock Spire",
             objective = "Travel to Winterspring and find Haleh. Give her Awbee's scale.",
             turnin = "Haleh, Winterspring (54.5, 51.2)",
+            rewardSummary = "17,650 XP",
         },
         {
             id = 5127,
-            liveXPFallback = 8300,
+            liveXPFallback = 16600,
             name = "The Demon Forge",
             level = 60,
             requires = 55,
@@ -39,17 +41,7 @@ FLT.DUNGEON_REGISTRY["Upper Blackrock Spire"] = {
             turnin = "Lorax, Winterspring",
             rewardItems = {{9224, "Potion of Demon Slaying", 1}, {12696, "Plans: Demon Forged Breastplate", 3}, {12849, "Demon Kissed Sack", 2}},
             rewardChoice = true,
-        },
-        {
-            id = 4734,
-            liveXPFallback = 8300,
-            name = "Egg Freezing",
-            level = 60,
-            requires = 57,
-            pickup = "Tinkee Steamboil, Burning Steppes (65.2, 24.0)",
-            objective = "Use the Eggscilloscope Prototype on an egg in the Rookery.",
-            turnin = "Tinkee Steamboil, Burning Steppes",
-            rewardItems = {{12144, "Eggscilloscope", 1}},
+            rewardSummary = "16,600 XP",
         },
         {
             id = 4735,
@@ -60,20 +52,22 @@ FLT.DUNGEON_REGISTRY["Upper Blackrock Spire"] = {
             pickup = "Tinkee Steamboil, Burning Steppes (65.2, 24.0)",
             objective = "Bring 8 Collected Dragon Eggs and the Collectronic Module to Tinkee Steamboil at Flame Crest in the Burning Steppes.",
             turnin = "Tinkee Steamboil, Burning Steppes",
+            rewardSummary = "9,950 XP",
         },
         {
             id = 5047,
-            liveXPFallback = 6600,
+            liveXPFallback = 17650,
             name = "Pip Quickwit, At Your Service!",
             level = 60,
             requires = 55,
             pickup = "Pip Quickwit, inside Upper Blackrock Spire",
             objective = "Talk to Malyfous Darkhammer in Everlook.",
             turnin = "Malyfous Darkhammer, Winterspring (61.0, 38.8)",
+            rewardSummary = "17,650 XP",
         },
         {
             id = 4768,
-            liveXPFallback = 8300,
+            liveXPFallback = 22200,
             name = "The Darkstone Tablet",
             level = 60,
             requires = 57,
@@ -83,6 +77,7 @@ FLT.DUNGEON_REGISTRY["Upper Blackrock Spire"] = {
             turnin = "Shadowmage Vivian Lagrave, Badlands",
             rewardItems = {{15860, "Blinkstrike Armguards", 2}, {15861, "Swiftfoot Treads", 2}},
             rewardChoice = true,
+            rewardSummary = "22,200 XP · 2g 70s",
         },
         {
             id = 4974,
@@ -96,6 +91,7 @@ FLT.DUNGEON_REGISTRY["Upper Blackrock Spire"] = {
             turnin = "Thrall, Orgrimmar",
             rewardItems = {{13965, "Blackhand's Breadth", 3}, {13966, "Mark of Tyranny", 3}, {13968, "Eye of the Beast", 3}},
             rewardChoice = true,
+            rewardSummary = "9,950 XP",
         },
         {
             id = 6569,
@@ -107,6 +103,7 @@ FLT.DUNGEON_REGISTRY["Upper Blackrock Spire"] = {
             pickup = "Myranda the Hag, Western Plaguelands (50.8, 77.8)",
             objective = "Travel to Blackrock Spire and collect 20 Black Dragonspawn Eyes. Return to Myranda the Hag when the task is complete.",
             turnin = "Myranda the Hag, Western Plaguelands",
+            rewardSummary = "6,600 XP",
         },
         {
             id = 6602,
@@ -120,10 +117,11 @@ FLT.DUNGEON_REGISTRY["Upper Blackrock Spire"] = {
             turnin = "Rexxar, Feralas",
             rewardItems = {{16309, "Drakefire Amulet", 3}},
             note = "Part of the Onyxia attunement (Horde).",
+            rewardSummary = "9,950 XP",
         },
         {
             id = 5102,
-            liveXPFallback = 9950,
+            liveXPFallback = 26600,
             name = "General Drakkisath's Demise",
             level = 60,
             requires = 55,
@@ -133,6 +131,7 @@ FLT.DUNGEON_REGISTRY["Upper Blackrock Spire"] = {
             turnin = "Marshal Maxwell, Burning Steppes",
             rewardItems = {{13965, "Blackhand's Breadth", 3}, {13966, "Mark of Tyranny", 3}, {13968, "Eye of the Beast", 3}},
             rewardChoice = true,
+            rewardSummary = "26,600 XP",
         },
         {
             id = 6502,
@@ -146,6 +145,7 @@ FLT.DUNGEON_REGISTRY["Upper Blackrock Spire"] = {
             turnin = "Haleh, Winterspring",
             rewardItems = {{16309, "Drakefire Amulet", 3}},
             note = "Part of the Onyxia attunement (Alliance).",
+            rewardSummary = "8,300 XP",
         },
         {
             id = 7761,
@@ -156,10 +156,12 @@ FLT.DUNGEON_REGISTRY["Upper Blackrock Spire"] = {
             pickup = "Blackhand's Command, dropped by Scarshield Quartermaster",
             objective = "That is one stupid orc. It would appear as if you need to find this brand and gain the Mark of Drakkisath in order to access the Orb of Command.  The letter indicates that General Drakkisath guards the brand. Perhaps you should investigate.",
             turnin = "Drakkisath's Brand, inside Upper Blackrock Spire",
+            rewardSummary = "6,600 XP",
         },
         {
             level = 60,
             id = 4764,
+            liveXPFallback = 4400,
             name = "Doomrigger's Clasp",
             requires = 57,
             faction = "Alliance",
@@ -168,10 +170,12 @@ FLT.DUNGEON_REGISTRY["Upper Blackrock Spire"] = {
             turnin = "Mayara Brightwing, Burning Steppes",
             rewardItems = {
             },
+            rewardSummary = "4,400 XP · 2g 70s",
         },
         {
             level = 60,
             id = 4766,
+            liveXPFallback = 660,
             name = "Mayara Brightwing",
             requires = 57,
             faction = "Alliance",
@@ -180,6 +184,7 @@ FLT.DUNGEON_REGISTRY["Upper Blackrock Spire"] = {
             turnin = "Mayara Brightwing, Burning Steppes",
             rewardItems = {
             },
+            rewardSummary = "660 XP",
         },
     },
     bosses = {
@@ -235,6 +240,7 @@ FLT.DUNGEON_REGISTRY["Upper Blackrock Spire"] = {
             npcID = 10339,
             displayID = 9806,
             loot = {
+                {12871, "Chromatic Carapace", "Reagent", 4}, -- Dungeon Journal (user 25.11.2026)
                 {16669, "Pauldrons of Elements", "Shoulder, Mail", 3},
                 {22225, "Dragonskin Cowl", "Head, Cloth", 3},
                 {12960, "Tribal War Feathers", "Head, Leather", 3},
@@ -267,6 +273,7 @@ FLT.DUNGEON_REGISTRY["Upper Blackrock Spire"] = {
             npcID = 10430,
             displayID = 10193,
             loot = {
+                {273109, "Blueprint: Trapper's Workbench", "Blueprint", 2}, -- Dungeon Journal (user 25.11.2026)
                 {16729, "Lightforge Spaulders", "Shoulder, Plate", 3},
                 {12967, "Bloodmoon Cloak", "Back", 3},
                 {12968, "Frostweaver Cape", "Back", 3},
@@ -302,6 +309,23 @@ FLT.DUNGEON_REGISTRY["Upper Blackrock Spire"] = {
                 {16666, "Vest of Elements", "Chest, Mail", 3},
                 {16726, "Lightforge Breastplate", "Chest, Plate", 3},
                 {16730, "Breastplate of Valor", "Chest, Plate", 3},
+            },
+        },
+        {
+            name = "Lord Valthalak",
+            npcID = 16042,
+            optional = true,
+            displayID = 14308, -- CMaNGOS classic-db creature_template
+            description = "Summoned with the Brazier of Beckoning (Tier 0.5 set quests).",
+            loot = { -- loot: CMaNGOS classic-db (user 23.11.2026)
+                {22302, "Ironweave Cowl", "Head, Cloth", 3},
+                {22335, "Lord Valthalak's Staff of Command", "Two-Hand, Staff", 3},
+                {22336, "Draconian Aegis of the Legion", "Off Hand, Shield", 3},
+                {22337, "Shroud of Domination", "Back", 3},
+                {22339, "Rune Band of Wizardry", "Finger", 3},
+                {22340, "Pendant of Celerity", "Neck", 3},
+                {22342, "Leggings of Torment", "Legs, Cloth", 3},
+                {22343, "Handguards of Savagery", "Hands, Mail", 3},
             },
         },
     },

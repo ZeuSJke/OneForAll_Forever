@@ -123,41 +123,7 @@ FLT.DUNGEON_REGISTRY["Wailing Caverns"] = {
                 {270008, "Heat Resistant Mitts", 2},
                 {270009, "Safety Boots", 2},
             },
-            rewardSummary = "3,300 XP · 20s · +150 Undercity",
-        },
-        {
-            level = 25,
-            id = 3369,
-            liveXPFallback = 2000,
-            name = "In Nightmares",
-            requires = 15,
-            faction = "Horde",
-            pickup = "Falla Sagewind, The Barrens (48.2, 32.8)",
-            objective = "Bring the Nightmare Shard to Hamuul Runetotem on Elder Rise.",
-            turnin = "Arch Druid Hamuul Runetotem, Thunder Bluff (78.6, 28.6)",
-            rewardChoice = true,
-            rewardItems = {
-                {10657, "Talbar Mantle", 2},
-                {10658, "Quagmire Galoshes", 2},
-            },
-            note = "Comes after The Glowing Shard (Nightmare Shard from Mutanus the Devourer).",
-        },
-        {
-            level = 25,
-            id = 3370,
-            liveXPFallback = 2000,
-            name = "In Nightmares",
-            requires = 15,
-            faction = "Alliance",
-            pickup = "Falla Sagewind, The Barrens (48.2, 32.8)",
-            objective = "Bring the Nightmare Shard to Mathrengyl Bearwalker in Darnassus.",
-            turnin = "Mathrengyl Bearwalker, Darnassus (35.4, 8.4)",
-            rewardChoice = true,
-            rewardItems = {
-                {10657, "Talbar Mantle", 2},
-                {10658, "Quagmire Galoshes", 2},
-            },
-            note = "Comes after The Glowing Shard (Nightmare Shard from Mutanus the Devourer).",
+            rewardSummary = "3,300 XP · 10s · +150 Undercity",
         },
     },
     bosses = {
@@ -178,6 +144,7 @@ FLT.DUNGEON_REGISTRY["Wailing Caverns"] = {
             displayID = 4313,
             aliases = {"Lady Anacondra"},
             loot = {
+                {273098, "Blueprint: Field Guide", "Blueprint", 2}, -- Dungeon Journal (user 25.11.2026)
                 {5404, "Serpent's Shoulders", "Shoulder, Leather", 3},
                 {273088, "Snake Eye Kaleidoscope", "Neck", 3},
                 {10412, "Belt of the Fang", "Waist, Leather", 3},
@@ -223,6 +190,7 @@ FLT.DUNGEON_REGISTRY["Wailing Caverns"] = {
             displayID = 4215,
             aliases = {"Lord Serpentis"},
             loot = {
+                {273087, "Blueprint: Journeyman Campfire", "Blueprint", 2}, -- Dungeon Journal (user 25.11.2026)
                 {6469, "Venomstrike", "Ranged, Bow", 3},
                 {5970, "Serpent Gloves", "Hands, Cloth", 3},
                 {6459, "Savage Trodders", "Feet, Mail", 3},

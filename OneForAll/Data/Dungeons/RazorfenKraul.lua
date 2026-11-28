@@ -21,7 +21,7 @@ FLT.DUNGEON_REGISTRY["Razorfen Kraul"] = {
             rewardItems = {
                 {6755, "A Small Container of Gems", 1},
             },
-            rewardSummary = "5,000 XP · +100 Ratchet",
+            rewardSummary = "5,000 XP · +150 Ratchet",
         },
         {
             level = 30,
@@ -119,6 +119,7 @@ FLT.DUNGEON_REGISTRY["Razorfen Kraul"] = {
         {
             level = 36,
             id = 6522,
+            liveXPFallback = 5900,
             name = "An Unholy Alliance",
             requires = 28,
             faction = "Horde",
@@ -127,6 +128,7 @@ FLT.DUNGEON_REGISTRY["Razorfen Kraul"] = {
             turnin = "Varimathras, Undercity",
             rewardItems = {},
             note = "The follow-up with the same name (Ambassador Malcin) belongs to Razorfen Downs.",
+            rewardSummary = "5,900 XP",
         },
         {
             level = 33,
@@ -153,6 +155,36 @@ FLT.DUNGEON_REGISTRY["Razorfen Kraul"] = {
             turnin = "Veyric Thunderhame, Arathi Highlands",
             rewardItems = {
             },
+        },
+        {
+            level = 28,
+            id = 1782,
+            liveXPFallback = 3400,
+            name = "Furen's Armor",
+            requires = 20,
+            faction = "Alliance",
+            class = "WARRIOR",
+            pickup = "Furen Longbeard, Stormwind City (64.6, 37.2)",
+            turnin = "Furen Longbeard, Stormwind City",
+            rewardItems = {
+                {6972, "Fire Hardened Hauberk", 3},
+            },
+            rewardSummary = "3,400 XP",
+        },
+        {
+            level = 30,
+            id = 1848,
+            liveXPFallback = 3050,
+            name = "Brutal Hauberk",
+            requires = 20,
+            faction = "Horde",
+            class = "WARRIOR",
+            pickup = "Thun'grim Firegaze, The Barrens (57.2, 30.3)",
+            turnin = "Thun'grim Firegaze, The Barrens",
+            rewardItems = {
+                {7133, "Brutal Hauberk", 3},
+            },
+            rewardSummary = "3,050 XP",
         },
     },
     bosses = {
@@ -209,6 +241,7 @@ FLT.DUNGEON_REGISTRY["Razorfen Kraul"] = {
         {
             name = "Blind Hunter",
             npcID = 4425,
+            rare = true,
             displayID = 4735,
             loot = {
                 {6695, "Stygian Bone Amulet", "Neck", 3},
@@ -219,6 +252,7 @@ FLT.DUNGEON_REGISTRY["Razorfen Kraul"] = {
         {
             name = "Earthcaller Halmgar",
             npcID = 4842,
+            rare = true,
             displayID = 6102,
             loot = {
                 {6688, "Whisperwind Headdress", "Head, Leather", 3},
@@ -230,6 +264,7 @@ FLT.DUNGEON_REGISTRY["Razorfen Kraul"] = {
             npcID = 4421,
             displayID = 4642,
             loot = {
+                {273103, "Blueprint: Arcane Salvager", "Blueprint", 2}, -- Dungeon Journal (user 25.11.2026)
                 {6692, "Pronged Reaver", "One-Hand, Axe", 3},
                 {6693, "Agamaggan's Clutch", "Finger", 3},
                 {6694, "Heart of Agamaggan", "Off Hand, Shield", 3},

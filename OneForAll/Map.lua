@@ -586,6 +586,21 @@ local function positionMarker(book, mapID)
   end
 end
 
+-- with a controller the map opens only by the player: the place is shown then (FLT._mapPending, set by the callers)
+local function pendingHook()
+  if FLT._mapPendingHook or not (WorldMapFrame and WorldMapFrame.HookScript) then return end
+  FLT._mapPendingHook = true
+  WorldMapFrame:HookScript("OnShow", function(f)
+    local p = FLT._mapPending
+    if not p then return end
+    FLT._mapPending = nil
+    if f.SetMapID then pcall(f.SetMapID, f, p.mapID) end
+    if not p.book then return end -- a whole zone (FLT:ShowZoneMap): no marker
+    C_Timer.After(0.05, function() positionMarker(p.book, p.mapID) end)
+    C_Timer.After(0.25, function() positionMarker(p.book, p.mapID) end)
+  end)
+end
+
 function FLT:ShowOnMap(book)
   if not book.x or not book.y then
     self.Msg("No reliable map position is known for this book yet.")
@@ -609,17 +624,7 @@ function FLT:ShowOnMap(book)
   local opened = forceMap(mapID)
   if opened == "pending" then
     FLT._mapPending = { book = book, mapID = mapID }
-    if not FLT._mapPendingHook and WorldMapFrame and WorldMapFrame.HookScript then
-      FLT._mapPendingHook = true
-      WorldMapFrame:HookScript("OnShow", function(f)
-        local p = FLT._mapPending
-        if not p then return end
-        FLT._mapPending = nil
-        if f.SetMapID then pcall(f.SetMapID, f, p.mapID) end
-        C_Timer.After(0.05, function() positionMarker(p.book, p.mapID) end)
-        C_Timer.After(0.25, function() positionMarker(p.book, p.mapID) end)
-      end)
-    end
+    pendingHook()
     self.Msg(L["Open the world map (M) - the place is marked there."])
     return
   end
@@ -631,6 +636,25 @@ function FLT:ShowOnMap(book)
   -- Run twice: the first pass handles clients that initialize the map asynchronously.
   C_Timer.After(0.05, function() positionMarker(book, mapID) end)
   C_Timer.After(0.25, function() positionMarker(book, mapID) end)
+end
+
+-- the world map at a whole zone, without a marker (Professions > Skill-Up Helper of the gathering professions, 6.2.18-beta13)
+function FLT:ShowZoneMap(zone)
+  local mapID = self:FindMapID(zone)
+  if not mapID then return end
+  if InCombatLockdown and InCombatLockdown() then
+    self.Msg("The world map cannot be switched by the addon during combat.")
+    return
+  end
+  local m = ensureMarker()
+  if m then m:Hide() end
+  local opened = forceMap(mapID)
+  if opened == "pending" then
+    -- the controller: shown when the player opens the map (the hook of ShowOnMap does it; set it up the same way once)
+    FLT._mapPending = { mapID = mapID }
+    pendingHook()
+    self.Msg(L["Open the world map (M) - the place is marked there."])
+  end
 end
 
 -- where a quest (or a step of its chain) starts: our checked QUEST_START_MAPS first, else the coordinates in its pickup

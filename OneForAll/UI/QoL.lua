@@ -15,11 +15,7 @@ local openDropDown -- below
 -- Yellow "!" (tooltip "New") next to options added since the last live release.
 -- Kept for all versions of a minor line (5.7.0 ... 5.7.x); emptied when the next minor line
 -- (5.8.0) starts (TODO.md "Neu-Markierungen").
-local NEW_TAGS = { -- user 20.11.2026 23:02: all marks from before 6.2.13 removed, only this version's stay
-  gossipSkip = "6.2.13",
-  gvMode = "6.2.13",
-  ahScan = "6.2.13",
-  runTracker = "6.2.14",
+local NEW_TAGS = { -- option key = version; since 6.3.0 (user 27.11.2026) a mark lives for one version (and its hotfixes) only
 }
 -- placed left of the checkbox (or of the label when there is none), user 16.10.
 local function newTag(parent, anchor, key, dx)
@@ -476,7 +472,7 @@ local function createQoLPanel(parent)
   -- the dungeon tracker (6.2.14): here with the other windows of OneForAll, not under World Map (user 23.11.)
   g = group(c, N"Dungeons & Raids")
   do
-    local r = check(g, N"Dungeon tracker", N"A small window in dungeons and raids: time, bosses, XP, quests.", N"Shows the run: its time (with your best time for this dungeon), the mobs' XP, the gold you earned, the dungeon's quests in your log, the instances of this hour (the game allows 5 new ones per hour) and a portrait per boss - crossed off when dead, a green arrow when it drops an upgrade for you, a star for your wishlist, \"!\" when a quest in your log needs it. Left-click a boss: OneForAll on that boss, right-click: its loot. Drag to move, the corner to resize, /ofa tracker hides or shows it. Every run is kept in Dungeons & Raids > History, also with the tracker off.", "runTracker")
+    local r = check(g, N"Dungeon tracker", N"A small window in dungeons and raids: time, bosses, XP, quests.", N"Shows the run as a list of its bosses: the next boss on top with a gold bar, the bosses killed folded into one line (with their kill times when unfolded), the rest under \"N more\"; a green triangle when a boss drops an upgrade for you, a star for your wishlist, \"!\" when a quest in your log needs it. The first line counts the bosses killed (3 / 8 defeated), the head holds map, quests and settings; below the time (with your best time), the mobs' XP and the gold. Left-click a boss: target it (a rare also gets a skull) and pick a raid mark in the dropdown, Shift-click: OneForAll on that boss, right-click: its loot (both close by themselves after 5 s). Drag to move, the corner to resize, /ofa tracker hides or shows it. Every run is kept in Dungeons & Raids > History, also with the tracker off.", "runTracker")
     -- test button: the same as /ofa tracker test (user 23.11.)
     button(r, N"Test", 60, N"Shows a test tracker with made-up values; each click shows the next of five dungeons, after the fifth it closes.", function() if FLT.RunTracker then FLT.RunTracker.Test() end end)
   end
@@ -569,10 +565,28 @@ local function createQoLPanel(parent)
     b:SetScript("OnClick", function(self) showNeverList(self, show) end)
     refreshers[#refreshers + 1] = show
   end
+  do -- 6.2.17-beta2 (Discord .vgd 24.11., user 24.11.): loot that never opens the helper, filled by hand
+    local r = row(g, N"Never opens for", N"Loot on this list never opens the helper.", N"Pick up an item in your bags and drop it on \"Add item\" - for example a Soul Shard: then the shards from Drain Soul never open the helper either.", 24)
+    local b = dropButton(r, 110)
+    local function show() local n = #Q.GetIgnoreItems(); b:SetLabel(n == 1 and L["1 item"] or string.format(L["%d items"], n)) end
+    local IGN = { get = Q.GetIgnoreItems, remove = Q.RemoveIgnore, clear = Q.ClearIgnore, title = N"Never opens for",
+      empty = N"Nothing on the list. Pick up an item in your bags and drop it on \"Add item\".",
+      removeTip = N"This loot opens the bags full helper again.", confirm = N"Remove all items from the\n\"never opens for\" list?" }
+    b:SetScript("OnClick", function(self) showNeverList(self, show, IGN) end)
+    local function take()
+      local t, id = GetCursorInfo and GetCursorInfo()
+      if t == "item" and id then Q.AddIgnore(id); if ClearCursor then ClearCursor() end; show() end
+    end
+    local add = button(r, N"Add item", 90, N"Pick up an item in your bags and drop it here.", take)
+    add:SetScript("OnReceiveDrag", take)
+    refreshers[#refreshers + 1] = show
+  end
   g = group(c, N"Loot feed")
   check(g, N"Show loot feed", N"Looted items and money float up next to your character.", N"Like scrolling combat text.", "lootFeed")
   choice(g, N"Minimum quality", N"Items below this quality are not shown.", nil, "lootFeedQuality", Q.QUALITY_OPTIONS, nil, 24)
   check(g, N"Show money", N"Also shows looted money.", nil, "lootFeedMoney", 24)
+  check(g, N"Show weapon skill-ups", N"Weapon and Defense skill increases.", nil, "lootFeedSkillWeapon", 24)
+  check(g, N"Show profession skill-ups", N"Skill increases of your professions, also Cooking, First Aid and Fishing.", nil, "lootFeedSkillProf", 24)
   do
     local r = row(g, N"Position", N"Move the feed, show sample entries or put it back.", nil, 24)
     button(r, N"Reset", 70, N"Puts the loot feed back to its default place right of your character.", function() Q.ResetLootFeed() end)
@@ -697,7 +711,7 @@ local function createQoLPanel(parent)
   check(g, N"Quests on NPCs", N"Quests you can take (!) or turn in (?) at the NPC under your mouse.", N"The same quests as the quest icons on the world map: for your level, side, race and class, pre-quests done. Off while Questie is loaded (it shows its own).", "npcQuestTip")
 
   -- SOCIAL
-  c = category("social", N"Social", "Interface\\Icons\\INV_Letter_15", N"Group invites, duels and recipe sharing.")
+  c = category("social", N"Social", "Interface\\Icons\\INV_Letter_15", N"Group invites, thanks for buffs, duels and recipe sharing.")
   g = group(c, N"Groups")
   choice(g, N"Group invites from", N"Accepts group invites from the players you choose.", N"Off: OneForAll does nothing with invites.", "inviteMode", Q.WHO_OPTIONS, "inviteOn")
   choice(g, N"Keyword invites from", N"Invites players who whisper you the keyword.", N"Off: OneForAll does nothing with whispers.", "keywordMode", Q.WHO_OPTIONS, "keywordOn")
@@ -710,6 +724,25 @@ local function createQoLPanel(parent)
     eb:SetScript("OnEditFocusLost", function(self) Q.Set("keyword", self:GetText()) end)
     r:SetScript("OnClick", function() eb:SetFocus() end)
     refreshers[#refreshers + 1] = function() if not eb:HasFocus() then eb:SetText(Q.Get("keyword") or "") end end
+  end
+  -- moved here from Miscellaneous (6.2.17-beta30, user 25.11.: "das hier bitte nach social verschieben")
+  g = group(c, N"Thanks")
+  check(g, N"Thank players who buff you", N"Sends a /thank to players outside your group who buff you.", N"For buffs that last longer than 2 minutes. It comes 1 second later, not in combat, at most once every 5 minutes per player. Your target is not changed. /ofa thanks shows the last buffs.", "thanksBuff")
+  do -- the emote it sends (6.2.17-beta28, user 25.11.): /thank when empty, another emote or an own text
+    local r = row(g, N"Thank emote", N"Empty = /thank. Or another emote (/hello) or your own text (/emote says thank you, %n!).", N"An emote command like /hello, /bow or /cheer is done at the player. /emote, /e, /me or text without a slash becomes an emote line in the chat; %n is the player's name.", 24)
+    local eb = FLT.SkinBlizz(CreateFrame("EditBox", nil, r, "InputBoxTemplate"))
+    eb:SetSize(200, 20); eb:SetAutoFocus(false); eb:SetMaxLetters(120); place(r, eb)
+    eb:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+    eb:SetScript("OnEscapePressed", function(self) self:SetText(Q.Get("thanksText") or ""); self:ClearFocus() end)
+    eb:SetScript("OnEditFocusLost", function(self)
+      local t = self:GetText() or ""
+      if Q.ThankAction and not Q.ThankAction(t) then
+        if FLT.Msg then FLT.Msg(string.format(L["Unknown emote: %s - /thank is used instead."], t)) end
+      end
+      Q.Set("thanksText", t)
+    end)
+    r:SetScript("OnClick", function() eb:SetFocus() end)
+    refreshers[#refreshers + 1] = function() if not eb:HasFocus() then eb:SetText(Q.Get("thanksText") or "") end end
   end
   g = group(c, N"Duels")
   choice(g, N"Allow duels from", N"Duel requests from everyone else are declined.", N"Off: OneForAll does nothing with duels.", "duelMode", Q.DUEL_OPTIONS, "duelOn")
@@ -967,7 +1000,6 @@ local function createQoLPanel(parent)
   check(g, N"Farther camera zoom", N"Lets you zoom the camera out further.", nil, "cameraZoom")
   check(g, N"Hide error messages", N"Hides the red messages in the middle of the screen.", N"Messages like \"Out of range\" or \"Not enough rage\" are no longer shown. Still shown: inventory or bags full, quest log full, not enough money, carrying too many of an item.", "hideErrors")
   check(g, N"Flight times", N"A bar with the time left while you fly.", N"The time also shows in the tooltip of the destinations on the flight map. OneForAll measures your flights; routes you never flew are estimated (\"about\").", "flightTimes")
-  check(g, N"Thank players who buff you", N"Sends a /thank to players outside your group who buff you.", N"For buffs that last longer than 2 minutes. It comes 1 second later, not in combat, at most once every 5 minutes per player. Your target is not changed. /ofa thanks shows the last buffs.", "thanksBuff")
   g = group(c, N"Chat windows")
   do -- chat font size: -, value, +
     local r = row(g, N"Chat font size", N"The same font size for every chat window.", N"Go below 10 to switch it off (then the game's own setting is kept).")

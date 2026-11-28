@@ -58,6 +58,24 @@ local function spellIcon(id)
   return tex or "Interface\\Icons\\INV_Misc_QuestionMark"
 end
 
+-- the spell a bar slot really holds (6.2.18, Discord zaelrath 25.11.: since the client builds of 24./25.11. GetActionInfo gives
+-- the spell's first rank - Fireball rank 6 counted as rank 1, Ice Armor as Frost Armor rank 1). The slot's tooltip data names
+-- the rank the button casts (what its tooltip shows); without it the game's override of that spell. Old clients: unchanged.
+local SPELL_TIP = Enum and Enum.TooltipDataType and Enum.TooltipDataType.Spell
+local function slotSpell(slot, id)
+  if C_TooltipInfo and C_TooltipInfo.GetAction then
+    local ok, d = pcall(C_TooltipInfo.GetAction, slot)
+    local tid = ok and type(d) == "table" and d.id
+    if tid and not FLT.IsSecret(tid) and (SPELL_TIP == nil or d.type == SPELL_TIP) and tonumber(tid) then return tonumber(tid) end
+  end
+  local o
+  if C_Spell and C_Spell.GetOverrideSpell then local ok, v = pcall(C_Spell.GetOverrideSpell, id); if ok then o = v end end
+  if not o and FindSpellOverrideByID then local ok, v = pcall(FindSpellOverrideByID, id); if ok then o = v end end
+  if tonumber(o) and o ~= 0 and not FLT.IsSecret(o) then return o end
+  return id
+end
+LR._slotSpell = slotSpell -- tests
+
 -- highest known rank per spell name from the spellbook: name -> { rank =, id = }
 local function bestRanks()
   local best = {}
@@ -124,7 +142,7 @@ function LR.Scan()
   for r = 1, #rg, 2 do for slot = rg[r], rg[r + 1] do
     local kind, id
     if slot <= 180 then kind, id = GetActionInfo(slot) else local ok, k, i = pcall(GetActionInfo, slot); if ok then kind, id = k, i end end
-    local e = kind == "spell" and not FLT.IsSecret(kind) and low(id)
+    local e = kind == "spell" and not FLT.IsSecret(kind, id) and low(slotSpell(slot, id))
     if e then e.slots[#e.slots + 1] = slot end
   end end
   local binds, SPELL = clickBindings()
@@ -151,7 +169,7 @@ local function update(e)
       pcall(PlaceAction, slot)
       if ClearCursor then ClearCursor() end -- the old rank lands on the cursor: drop it
       local _, now = GetActionInfo(slot)
-      if now == e.newID then n = n + 1 end
+      if now and not FLT.IsSecret(now) and slotSpell(slot, now) == e.newID then n = n + 1 end
     end
   end
   if ClearCursor then ClearCursor() end

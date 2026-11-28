@@ -985,6 +985,50 @@ FLT.QUEST_PREREQ_CHAINS = {
   [80411] = { -- The Talisman of Kazdor (Zul'Farrak)
     { id = 80526, name = "Fool Me Twice" },
   },
+  -- 6.2.17-beta16 (user 25.11.: dungeon quests compared with Dungeon Journal): chains of the added quests (tools/dungeon-gen/add_chains.lua)
+  [96246] = { -- Blackmaw Pouches (Blackmaw Hold)
+    { id = 97327, name = "Blackmaw Pouches" },
+  },
+  [7643] = { -- Ancient Equine Spirit (Dire Maul: West)
+    { id = 7638, name = "Lord Grayson Shadowbreaker" },
+    { id = 7637, name = "Emphasis on Sacrifice" },
+    { id = 7639, name = "To Show Due Judgment" },
+    { id = 7640, name = "Exorcising Terrordale" },
+    { id = 7641, name = "The Work of Grimand Elmore" },
+    { id = 7642, name = "Collection of Goods" },
+  },
+  [1113] = { -- Hearts of Zeal (Scarlet Monastery: Library)
+    { id = 1109, name = "Going, Going, Guano!" },
+  },
+  [1951] = { -- Rituals of Power (Scarlet Monastery: Library)
+    { id = 1947, name = "Journey to the Marsh" },
+    { id = 1949, name = "Hidden Secrets" },
+    { id = 1950, name = "Get the Scoop" },
+  },
+  [1654] = { -- The Test of Righteousness (Blackfathom Deeps)
+    { id = 1649, name = "The Tome of Valor" },
+    { id = 1650, name = "The Tome of Valor" },
+    { id = 1651, name = "The Tome of Valor" },
+    { id = 1652, name = "The Tome of Valor" },
+    { id = 1653, name = "The Test of Righteousness" },
+  },
+  [2341] = { -- Necklace Recovery, Take 3 (Uldaman)
+    { id = 2283, name = "Necklace Recovery" },
+    { id = 2284, name = "Necklace Recovery, Take 2" },
+    { id = 2318, name = "Translating the Journal" },
+    { id = 2338, name = "Translating the Journal" },
+    { id = 2339, name = "Find the Gems and Power Source" },
+    { id = 2340, name = "Deliver the Gems" },
+  },
+  [1782] = { -- Furen's Armor (Razorfen Kraul)
+    { id = 1699, name = "The Rethban Gauntlet" },
+    { id = 1702, name = "The Shieldsmith" },
+    { id = 1701, name = "Fire Hardened Mail" },
+  },
+  [1848] = { -- Brutal Hauberk (Razorfen Kraul)
+    { id = 1824, name = "Trial at the Field of Giants" },
+    { id = 1838, name = "Brutal Armor" },
+  },
 }
 
 FLT.QUEST_PREREQ_DETAILS = {
@@ -1363,4 +1407,18 @@ FLT.QUEST_PREREQ_DETAILS = {
   [97289] = { level = 21, requires = 15, objective = "Bring the Head of the Baron to the body of Othmar in the Undercity.", pickup = "Master Apothecary Faranell, Undercity (48.8, 69.3)", turnin = "Unfinished Abomination, Undercity" },
   [97290] = { level = 21, requires = 15, objective = "Report your findings to Master Apothecary Faranell in Undercity.", pickup = "Unfinished Abomination, Undercity (45.9, 61.7)", turnin = "Master Apothecary Faranell, Undercity" },
   [97291] = { level = 21, requires = 15, objective = "Collect a Toxic Skullcap from Tawny Grisette in the Trade Quarter, Blisterweed near the Herbalism Trainer, and Essence of Agony from the poison vendor in the Rogues' Quarter for Master Apothecary Faranell in Undercity.", pickup = "Master Apothecary Faranell, Undercity (48.8, 69.3)", turnin = "Master Apothecary Faranell, Undercity" },
+  -- 6.2.17-beta16: steps of the added chains (tools/dungeon-gen/add_quests.lua --details)
+  [1699] = { level = 22, requires = 20, objective = "Enter the Rethban Caverns, reach the first fork, and return to Yorus Barleybrew within the time allowed.  You must not die and release your spirit.", pickup = "Yorus Barleybrew, Redridge Mountains (21.5, 44.7)", turnin = "Yorus Barleybrew, Redridge Mountains" },
+  [1701] = { level = 28, requires = 20, objective = "Gather the materials Furen Longbeard requires, and bring them to him in Stormwind.", pickup = "Furen Longbeard, Stormwind City (64.6, 37.2)", turnin = "Furen Longbeard, Stormwind City" },
+  [1702] = { level = 22, requires = 20, objective = "Bring the Cask of Scalder to Furen Longbeard.", pickup = "Yorus Barleybrew, Redridge Mountains (21.5, 44.7)", turnin = "Furen Longbeard, Stormwind City" },
+  [1824] = { level = 20, requires = 20, objective = "Bring 5 twitching antennae to Ruga Ragetotem at Camp Taurajo", pickup = "Ruga Ragetotem, The Barrens (44.7, 59.4)", turnin = "Ruga Ragetotem, The Barrens" },
+  [1838] = { level = 30, requires = 20, objective = "Bring to Thun'grim Firegaze 15 Smoky Iron Ingots, 10 Powdered Azurite, 10 Iron Bars and a Vial of Phlogiston.", pickup = "Thun'grim Firegaze, The Barrens (57.2, 30.3)", turnin = "Thun'grim Firegaze, The Barrens" },
+  [1947] = { level = 38, requires = 30, objective = "Speak with Tabetha.", pickup = "Ursyn Ghull, Thunder Bluff (25.7, 14.2)", turnin = "Tabetha, Dustwallow Marsh" },
+  [1949] = { level = 38, requires = 30, objective = "Speak with Magus Tirth in the Shimmering Flats.", pickup = "Tabetha, Dustwallow Marsh (46.1, 57.1)", turnin = "Magus Tirth, Thousand Needles" },
+  [1950] = { level = 30, requires = 30, objective = "Find the phrase to Tirth's strongbox, then return to Tirth.", pickup = "Magus Tirth, Thousand Needles (78.3, 75.7)", turnin = "Magus Tirth, Thousand Needles" },
+  [2283] = { level = 41, requires = 37, objective = "Look for a valuable necklace within the Uldaman dig site and bring it back to Dran Droffers in Orgrimmar. The necklace may be damaged.", pickup = "Dran Droffers, Orgrimmar (59.5, 36.6)", turnin = "Dran Droffers, Orgrimmar" },
+  [2284] = { level = 41, requires = 37, objective = "Find a clue as to the gems' whereabouts in the depths of Uldaman.", pickup = "Dran Droffers, Orgrimmar (59.5, 36.6)", turnin = "Remains of a Paladin, inside x" },
+  [2339] = { level = 44, requires = 37, objective = "Recover all three gems and a power source for the necklace from Uldaman, and then bring them to Jarkal Mossmeld in Kargath. Jarkal believes a power source might be found on the strongest construct present in Uldaman.  From the journal, you know... * The ruby has been stashed in a barricaded Shadowforge area. * The topaz has been hidden in an urn in one of the Trogg areas, near some Alliance dwarves. * The sapphire has been claimed by Grimlok, the trogg leader.", pickup = "Jarkal Mossmeld, Badlands (2.4, 46.1)", turnin = "Jarkal Mossmeld, Badlands" },
+  [2340] = { level = 44, requires = 37, objective = "Deliver the Necklace and Gem Salvage to Dran Droffers in Orgrimmar.", pickup = "Jarkal Mossmeld, Badlands (2.4, 46.1)", turnin = "Dran Droffers, Orgrimmar" },
+  [97327] = { level = 60, requires = 55, objective = "Enter Blackmaw Hold and recover 5 Blackmaw Pouches for Ekkal at the Ruins of Eldarath in Azshara.", pickup = "Ekkal, Azshara (42.0, 38.9)", turnin = "Ekkal, Azshara" },
 }

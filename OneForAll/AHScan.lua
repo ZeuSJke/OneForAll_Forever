@@ -7,7 +7,9 @@ local _, FLT = ...
 -- Planner > Cheap Upgrades. A full scan another addon started (Auctionator's "Full Scan") is read along.
 -- QoL "ahScan" (on, user 21.11.): off = no button and nothing read. Lean: nothing runs outside the auction house; the
 -- scan is read in parts of 1000 auctions per frame. Saved per auction house: OneForAllDB.ahScan[realm-faction] =
--- { t = time, fixed = { [item ID] = copper }, var = { ["item:ID:...bonus"] = copper } }
+-- { t = time, fixed = { [item ID] = copper }, var = { ["item:ID:...bonus"] = copper }, fav = { [item ID] = { unit price,
+-- count, unit price, count, ... } } } - fav (6.2.18-beta16): the Waylaid Crates and their bundle materials (Data/FavorCrates.lua),
+-- the cheapest listings with their stack size, for Professions > Merchant's Favor > Calculator (FavorCalc.lua)
 
 local AS = {}
 FLT.AHScan = AS
@@ -28,10 +30,15 @@ end
 function AS.Data() return store() end
 
 -- the BoE item IDs (fixed stats / random bonus), built once when first needed
-local fixedSet, randSet
+local fixedSet, randSet, favSet
+local FAV_KEEP = 40 -- listings kept per crate / material (the cheapest)
 local function sets()
   if fixedSet then return end
-  fixedSet, randSet = {}, {}
+  fixedSet, randSet, favSet = {}, {}, {}
+  for _, c in ipairs(FLT.FAVOR_CRATES or {}) do
+    favSet[c.id] = true
+    for _, b in ipairs(c.bundles or {}) do favSet[b[1]] = true end
+  end
   local t = FLT.BOE_ITEMS or {}
   for i = 1, #t - 1, 2 do fixedSet[t[i]] = true end
   t = FLT.BOE_RANDOM or {}
@@ -69,6 +76,8 @@ function AS.Variants(id)
   return AS.byId[id]
 end
 function AS.Age() local d = store(); return d and d.t and (time() - d.t) or nil end
+-- the cheapest listings of a crate / bundle material: { unit price, count, unit price, count, ... } or nil
+function AS.Listings(id) local d = store(); return d and d.fav and d.fav[id] or nil end
 function AS.CooldownLeft()
   local last = type(OneForAllDB) == "table" and OneForAllDB.ahScanLast or 0
   return math.max(0, COOLDOWN - (time() - last))
@@ -88,7 +97,7 @@ local function readScan()
   if not (A and A.GetNumReplicateItems and A.GetReplicateItemInfo) then return end
   sets()
   token = token + 1
-  local my, total, fixed, var, pending = token, A.GetNumReplicateItems() or 0, {}, {}, {}
+  local my, total, fixed, var, pending, fav = token, A.GetNumReplicateItems() or 0, {}, {}, {}, {}
   local me = UnitName and UnitName("player")
   state, progress = "reading", 0; updateButton()
   local function add(t, key, p) if not t[key] or p < t[key] then t[key] = p end end
@@ -96,8 +105,16 @@ local function readScan()
     if my ~= token then return end
     -- an empty list (the auction house closed, or nothing came) keeps the old prices
     if total > 0 and type(OneForAllDB) == "table" then
+      -- the crates / materials: cheapest listings first, flat { price, count, ... }
+      local favOut = {}
+      for id, list in pairs(fav) do
+        table.sort(list, function(a, b) return a[1] < b[1] end)
+        local t = {}
+        for k = 1, math.min(#list, FAV_KEEP) do t[#t + 1] = list[k][1]; t[#t + 1] = list[k][2] end
+        favOut[id] = t
+      end
       OneForAllDB.ahScan = OneForAllDB.ahScan or {}
-      OneForAllDB.ahScan[realmKey()] = { t = time(), fixed = fixed, var = var }
+      OneForAllDB.ahScan[realmKey()] = { t = time(), fixed = fixed, var = var, fav = favOut }
       AS.gen = AS.gen + 1
       -- a short line in the chat when it is done (user 21.11.)
       if FLT.Msg then FLT.Msg(string.format(L["Cheap Upgrade Scan complete: %d items scanned."], total)) end
@@ -138,6 +155,11 @@ local function readScan()
       -- name, texture, count, quality, usable, level, levelType, minBid, minIncrement, buyout, bid, highBidder,
       -- bidder, owner, ownerFull, saleStatus, itemID, hasAllInfo
       local _, _, count, _, _, _, _, _, _, buyout, _, _, _, owner, _, _, id, hasAll = A.GetReplicateItemInfo(i)
+      if id and favSet[id] and buyout and buyout > 0 and owner ~= me then
+        local n = math.max(1, count or 1)
+        local list = fav[id]; if not list then list = {}; fav[id] = list end
+        list[#list + 1] = { math.ceil(buyout / n), n }
+      end
       if id and buyout and buyout > 0 and (count or 1) <= 1 and owner ~= me then
         if fixedSet[id] then add(fixed, id, buyout)
         elseif randSet[id] then
@@ -201,7 +223,7 @@ local function tooltip(self)
   GameTooltip:SetOwner(self, "ANCHOR_BOTTOMRIGHT")
   GameTooltip:AddLine(L["Cheap Upgrade Scan"])
   GameTooltip:AddLine(L["Reads the whole auction house and keeps the cheapest price of every Bind on Equip piece of gear - items with a random bonus (\"of the Eagle\", \"of the Bear\" ...) each with their own price. Auctionator keeps only one price per item, whatever its bonus."], 1, 1, 1, true)
-  GameTooltip:AddLine(L["The prices are used by Armory > Gear Planner > Cheap Upgrades."], 1, 1, 1, true)
+  GameTooltip:AddLine(L["The prices are used by Armory > Gear Planner > Cheap Upgrades and Professions > Merchant's Favor > Calculator."], 1, 1, 1, true)
   GameTooltip:AddLine(L["Blizzard allows a full scan only once every 15 minutes, for all addons together. A full scan of another addon is read along."], 0.7, 0.7, 0.7, true)
   local age = AS.Age()
   GameTooltip:AddLine(age and string.format(L["Last scan here: %s ago"], fmtAge(age)) or L["No scan here yet."], 1, 0.82, 0)

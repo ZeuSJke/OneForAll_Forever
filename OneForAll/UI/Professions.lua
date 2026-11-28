@@ -26,6 +26,11 @@ local PROFESSION_ICONS = {
   ["First Aid"]="Interface\\Icons\\Spell_Holy_SealOfSacrifice",
 }
 FLT.PROFESSION_ICONS = PROFESSION_ICONS
+-- 6.2.18-beta13 (user 27.11.2026): the gathering professions, Fishing and Lockpicking (rogues only) have pages too
+local GATHER = {}
+if UI.CreateGatherPage then for _, p in ipairs(FLT.GATHER_PROFS or {}) do GATHER[p] = true end end
+local function picon(p) return PROFESSION_ICONS[p] or (p == "Lockpicking" and (FLT.LOCKPICK_ICON or "Interface\\Icons\\Spell_Nature_MoonKey")) or "Interface\\Icons\\INV_Misc_QuestionMark" end
+local function isRogue() return UnitClass and select(2, UnitClass("player")) == "ROGUE" end
 local function _texts() return -- data texts shown with L[...] / FLT.LNum (ExtraData.lua: crates, camping objects; 6.2.0)
   N"First delivery quest", N"Apprentice (white)", N"Apprentice (green)", N"Journeyman (white)", N"Journeyman (green)", N"Expert", N"Artisan", N"One-time introductory reward reported by testers.", N"Sealed Apprentice Crate.", N"Higher-quality Apprentice crate.", N"Sealed Journeyman Crate.", N"Higher-quality Journeyman crate.", N"Reward values are still being verified in beta.", N"Mana regeneration for resting players; exclusive with Blessing of Wisdom.", N"Creates certain reagents and includes the Mana Well benefit.", N"Enables recipes requiring an Alchemy Laboratory and includes the Mana Well benefit.", N"Strength buff for resting players; exclusive with Strength of Earth Totem.", N"Usable campsite anvil plus the Sharpening Wheel benefit.", N"Enables recipes requiring a Forge and includes the Sharpening Wheel benefit.", N"Armor, all-stats and resistance style camping buff; exclusive with Mark of the Wild.", N"More efficient disenchanting utility plus the Enchanted Lute benefit.", N"Enables recipes requiring an Arcane Forge plus the Enchanted Lute benefit.", N"Lets nearby players purchase common reagents.", N"Reagent vendor and gear repairs; upgrades the Reagent Bot.", N"Enables recipes requiring an Anarchist's Workbench.", N"Intellect buff for resting players.", N"Grows herbs from planted seeds and includes the Incense Candle benefit.", N"Multiplies/combines seeds into rarer tiers and includes the Intellect benefit.", N"Increases rested experience up to 5% of a level for resting players.", N"Creates certain reagents and includes the Camp Tent benefit.", N"Enables recipes requiring a Sewing Machine and includes the Camp Tent benefit.", N"Melee Attack Power buff for resting players; exclusive with Blessing of Might.", N"Spawns a common mining node over time and includes the Lodestone benefit.", N"Enables recipes requiring a Foundry and includes the Lodestone benefit.", N"2% increased critical strike chance with attacks and spells; exclusive with Moonkin Aura.", N"Lets players gain Track Beasts and includes the Camp Chair crit benefit.", N"Contains a trap and includes the Camp Chair crit benefit.", N"Spirit buff for same-faction resting players; exclusive with Divine Spirit. The exact amount scales by level in current beta tooltips.", N"Creates certain reagents and includes the Faction Banner benefit.", N"Enables recipes requiring a Loom and includes the Faction Banner benefit.", N"Allows cooking and up to 3 additional camp features; nearby players gain camp benefits after resting/crafting for 1 minute.", N"Allows cooking and up to 5 additional camp features.", N"Provides Stamina-boosting food at the campsite.", N"Allows cooking and up to 10 additional camp features.", N"Required for the most advanced Cooking recipes.", N"Provides a Stamina-style camp buff.", N"Camping utility for healing potions and antivenom; exact beta behavior is still being documented.", N"Advanced campsite healing/poultice utility; exact beta behavior is still being documented.", N"8% increased stats for resting players; exclusive with Blessing of Kings.", N"Catch uncommon fish for 1 hour, provides Fishing Skill lures, and includes the Fish Bowl benefit.", N"Catch rare fish for 1 hour, provides Fishing Skill lures, and includes the Fish Bowl benefit.", N"Basic Campfire", N"Journeyman Campfire", N"Expert Campfire", N"Loot a Waylaid Crate while questing (system starts around level 10).", N"Right-click it to reveal the shipment type and its acceptable material bundles.", N"Fill ONE complete bundle from the list; you do not need every listed option.", N"Turn the sealed crate in at your faction's supply representative.", N"Spend Merchant's Favor at the profession quartermasters on new recipes.", N"West of the Crossroads", N"%s Favor", N"%s Favor + %s SP", N"Varies"
 end
@@ -117,6 +122,7 @@ local function createProfessionPanel(parent)
   local recipeView=CreateFrame("Frame",nil,content); recipeView:SetAllPoints(); recipeView:Hide()
   local allView=UI.CreateRecipeBrowser and UI.CreateRecipeBrowser(content)
   local navButtons={}
+  local navMinH=481 -- the navigation column's height (set when the entries are made)
 
   local function paintActive(b, active) if b.SetActive then b:SetActive(active) end end
   local function setNavButtonState(key)
@@ -286,11 +292,23 @@ local function createProfessionPanel(parent)
   local earnFavor=UI.GoldButton(recipeView,L["How to earn Favor"],150,24,"Interface\\Icons\\INV_Misc_Coin_02",12); earnFavor:SetPoint("RIGHT",vendorMap,"LEFT",-8,0)
   earnFavor:SetScript("OnClick",function() if showFavorPage then showFavorPage() end end)
 
-  local rhead=UI.ColumnHeader(recipeView,{{x=6,w=500,text=L["Recipe"]},{x=532,w=80,text=L["Skill"]},{x=622,w=140,text=L["Cost"]}},780,-66)
-  rhead:ClearAllPoints(); rhead:SetPoint("TOPLEFT",0,-66)
+  -- 6.2.18-beta17 (user 27.11.: "ganz schwer raus finden was sinnvoll ist ... filtern geht gar nicht oder suchen ... sortieren nach z.B.
+  -- Kopfverzauberung, Brustverzauberungen"): search, slot filter and "Hide known" above the list, the list grouped by slot
+  local favFilter={ text="", slot=nil, hideKnown=false }
+  local favSearch=FLT.SkinBlizz(CreateFrame("EditBox",nil,recipeView,"InputBoxTemplate"))
+  favSearch:SetSize(200,20); favSearch:SetPoint("TOPLEFT",14,-68); favSearch:SetAutoFocus(false)
+  local favPh=FLT.NewFS(favSearch,nil,"OVERLAY","GameFontDisableSmall"); favPh:SetPoint("LEFT",4,0); favPh:SetText(L["Search recipes..."])
+  local favSlot=UI.GoldButton(recipeView,L["All slots"],170,22,nil,11); favSlot:SetPoint("LEFT",favSearch,"RIGHT",16,0)
+  local favKnown=FLT.SkinBlizz(CreateFrame("CheckButton",nil,recipeView,"UICheckButtonTemplate")); favKnown:SetSize(22,22)
+  favKnown:SetPoint("LEFT",favSlot,"RIGHT",14,0)
+  local favKnownText=FLT.NewFS(recipeView,nil,"OVERLAY","GameFontHighlightSmall"); favKnownText:SetPoint("LEFT",favKnown,"RIGHT",2,0)
+  favKnownText:SetText(L["Hide known"])
+  if UI.NewMark then local m=UI.NewMark(recipeView,string.format(L["New in OneForAll %s."],"6.3.0")); m:SetPoint("LEFT",favSearch,"LEFT",-14,0) end -- TODO.md "Neu-Markierungen"
+  local rhead=UI.ColumnHeader(recipeView,{{x=6,w=500,text=L["Recipe"]},{x=532,w=80,text=L["Skill"]},{x=622,w=140,text=L["Cost"]}},780,-94)
+  rhead:ClearAllPoints(); rhead:SetPoint("TOPLEFT",0,-94)
 
   local rsf=FLT.SkinBlizz(CreateFrame("ScrollFrame",nil,recipeView,"UIPanelScrollFrameTemplate"))
-  rsf:SetPoint("TOPLEFT",0,-96); rsf:SetPoint("BOTTOMRIGHT",-22,0)
+  rsf:SetPoint("TOPLEFT",0,-124); rsf:SetPoint("BOTTOMRIGHT",-22,0)
   local rchild=CreateFrame("Frame",nil,rsf); rchild:SetSize(780,1); rsf:SetScrollChild(rchild)
   local recipeRowsByProfession={}
 
@@ -526,26 +544,143 @@ local function createProfessionPanel(parent)
 
   -- WoW never frees frames, so recipe rows are created once per profession and
   -- afterwards only shown/hidden. (Previously every click created a new set.)
+  -- 6.2.18-beta17: each row knows its slot group (the crafted item's equip slot from GetItemInfoInstant - no item cache needed;
+  -- enchants by their name "Enchant Chest - ..."; Alchemy elixirs / potions), its icon and whether you know the recipe.
+  local GetItemInfoInstant=(C_Item and C_Item.GetItemInfoInstant) or GetItemInfoInstant
+  local ENCHANT_SLOT={Bracer="INVTYPE_WRIST",Chest="INVTYPE_CHEST",Cloak="INVTYPE_CLOAK",Gloves="INVTYPE_HAND",Boots="INVTYPE_FEET",
+    Necklace="INVTYPE_NECK",Weapon="INVTYPE_WEAPON",["2H Weapon"]="INVTYPE_2HWEAPON",["Off-Hand"]="INVTYPE_HOLDABLE",Shield="INVTYPE_SHIELD"}
+  local SLOT_ORDER={"INVTYPE_HEAD","INVTYPE_NECK","INVTYPE_SHOULDER","INVTYPE_CLOAK","INVTYPE_CHEST","INVTYPE_ROBE","INVTYPE_WRIST",
+    "INVTYPE_HAND","INVTYPE_WAIST","INVTYPE_LEGS","INVTYPE_FEET","INVTYPE_FINGER","INVTYPE_TRINKET","INVTYPE_WEAPON","INVTYPE_2HWEAPON",
+    "INVTYPE_WEAPONMAINHAND","INVTYPE_WEAPONOFFHAND","INVTYPE_SHIELD","INVTYPE_HOLDABLE","INVTYPE_RANGED","INVTYPE_RANGEDRIGHT",
+    "INVTYPE_RELIC","INVTYPE_BAG"}
+  local SLOT_RANK={}; for i,k in ipairs(SLOT_ORDER) do SLOT_RANK[k]=i end
+  local SLOT_SAME={INVTYPE_ROBE="INVTYPE_CHEST",INVTYPE_RANGEDRIGHT="INVTYPE_RANGED",INVTYPE_WEAPONMAINHAND="INVTYPE_WEAPON"}
+  -- things you do not wear are grouped by the client's own recipe category (cat= in Data/Professions); built on first use (L)
+  local CAT_LABEL
+  local function slotLabel(k)
+    if k=="OTHER" then return L["Other"] end
+    local cat=k:match("^CAT:(.+)")
+    if cat then
+      CAT_LABEL=CAT_LABEL or {Elixirs=L["Elixirs"],Potions=L["Potions"],["Delightful Drinks"]=L["Drinks"],Devices=L["Devices"],
+        ["Consumable Devices"]=L["Devices"],Explosives=L["Explosives"],Gadgets=L["Gadgets"],Parts=L["Parts"],["Armor Kits"]=L["Armor Kits"]}
+      return CAT_LABEL[cat] or cat
+    end
+    return (type(_G[k])=="string" and _G[k]) or k
+  end
+  local CAT_SAME={["Consumable Devices"]="Devices"}
+  local catByName={}
+  local function recipeCat(profession, name)
+    local t=catByName[profession]
+    if not t then
+      t={}
+      for _,r in ipairs(FLT.PROFESSION_RECIPES and FLT.PROFESSION_RECIPES[profession] or {}) do if r.n and r.cat then t[r.n]=r.cat end end
+      catByName[profession]=t
+    end
+    return t[name]
+  end
+  local function recipeSlot(recipe, data)
+    local x=recipe.name:match("^Enchant ([^%-]-) %- ")
+    if x and ENCHANT_SLOT[x] then return ENCHANT_SLOT[x] end
+    local item=data and tonumber(data.craftedItemID)
+    local loc=item and GetItemInfoInstant and select(4,GetItemInfoInstant(item))
+    if type(loc)=="string" and loc~="" and loc~="INVTYPE_NON_EQUIP" and loc~="INVTYPE_NON_EQUIP_IGNORE" then return SLOT_SAME[loc] or loc end
+    local cat=recipeCat(recipe.profession, recipe.name)
+    if cat then return "CAT:"..(CAT_SAME[cat] or cat) end
+    return "OTHER"
+  end
+  local function knowsRecipe(profession, data)
+    local st=FLT.GetProfessionState and FLT.GetProfessionState(profession)
+    return st and st.known and data and data.spellID and st.known[data.spellID] and true or false
+  end
+  local favHeads={}
   local function buildRecipeRows(profession, vendor)
     local list={}
-    local yoff=-2; local idx=0
     for _,recipe in ipairs(FLT.MERCHANT_RECIPES or {}) do
       if recipe.profession==profession then
-        idx=idx+1
-        local row=CreateFrame("Button",nil,rchild); row:SetSize(778,31); row:SetPoint("TOPLEFT",1,yoff); yoff=yoff-34
+        local data=FLT.PROFESSION_DATA and FLT.PROFESSION_DATA[profession] and FLT.PROFESSION_DATA[profession][recipe.name]
+        local row=CreateFrame("Button",nil,rchild); row:SetSize(778,31)
         UI.CardRow(row)
-        local icon=row:CreateTexture(nil,"ARTWORK"); icon:SetSize(20,20); icon:SetPoint("LEFT",10,0); FLT.SetTex(icon, "Interface\\Icons\\INV_Misc_Note_01")
+        local icon=row:CreateTexture(nil,"ARTWORK"); icon:SetSize(20,20); icon:SetPoint("LEFT",10,0)
+        local item=data and tonumber(data.craftedItemID)
+        local tex=item and GetItemInfoInstant and select(5,GetItemInfoInstant(item))
+        FLT.SetTex(icon, tex or "Interface\\Icons\\INV_Misc_Note_01")
         local nm=FLT.NewFS(row, nil,"OVERLAY","GameFontHighlight"); nm:SetPoint("LEFT",40,0); nm:SetWidth(480); nm:SetJustifyH("LEFT"); nm:SetText(recipe.name)
+        local sub=item and GetItemInfoInstant and select(3,GetItemInfoInstant(item))
+        if type(sub)=="string" and (select(6,GetItemInfoInstant(item)))==4 then -- armor: its type ("Mail") after the name
+          nm:SetText(recipe.name.."  |cff9d9d9d"..sub.."|r")
+        end
         local sk=FLT.NewFS(row, nil,"OVERLAY","GameFontHighlightSmall"); sk:SetPoint("LEFT",540,0); sk:SetWidth(70); sk:SetJustifyH("LEFT"); sk:SetText(recipe.skill)
-        local co=FLT.NewFS(row, nil,"OVERLAY","GameFontNormalSmall"); co:SetPoint("LEFT",630,0); co:SetWidth(125); co:SetJustifyH("LEFT"); co:SetText(recipe.cost.." Favor"); co:SetTextColor(FLT.TextC(1,0.82,0.20))
+        local co=FLT.NewFS(row, nil,"OVERLAY","GameFontNormalSmall"); co:SetPoint("LEFT",630,0); co:SetWidth(125); co:SetJustifyH("LEFT"); co:SetText(string.format(L["%s Favor"],recipe.cost)); co:SetTextColor(FLT.TextC(1,0.82,0.20))
         row:SetScript("OnEnter",function(self) showRecipeTooltip(self,recipe,vendor) end)
         row:SetScript("OnLeave",function() GameTooltip:Hide() end)
+        row.recipe, row.data, row.slot, row.nameFS, row.costFS = recipe, data, recipeSlot(recipe,data), nm, co
+        row.search=recipe.name:lower()
         list[#list+1]=row
       end
     end
-    list.height=math.max(1,-yoff+8)
+    table.sort(list,function(a,b)
+      local ra,rb=SLOT_RANK[a.slot] or (a.slot:find("^CAT:") and 90) or 99, SLOT_RANK[b.slot] or (b.slot:find("^CAT:") and 90) or 99
+      if ra~=rb then return ra<rb end
+      if a.slot~=b.slot then return a.slot<b.slot end
+      if a.recipe.skill~=b.recipe.skill then return a.recipe.skill<b.recipe.skill end
+      return a.recipe.name<b.recipe.name
+    end)
     return list
   end
+  local favList, favProfession
+  local function layoutFavorRecipes()
+    local list=favList
+    if not list then return end
+    for _,h in ipairs(favHeads) do h:Hide() end
+    local text=favFilter.text
+    local yoff, nh, lastSlot, shown = -2, 0, nil, 0
+    for _,row in ipairs(list) do
+      local known=knowsRecipe(favProfession,row.data)
+      local name=row.search
+      if text~="" and not name:find(text,1,true) then
+        local loc=row.data and row.data.craftedItemID and GetItemInfo and GetItemInfo(row.data.craftedItemID)
+        name=loc and loc:lower() or ""
+      end
+      local ok=(text=="" or name:find(text,1,true)) and (not favFilter.slot or favFilter.slot==row.slot) and not (favFilter.hideKnown and known)
+      row:SetShown(ok and true or false)
+      if ok then
+        if row.slot~=lastSlot then
+          nh=nh+1
+          local h=favHeads[nh]
+          if not h then
+            h=CreateFrame("Frame",nil,rchild); h:SetSize(778,24)
+            h.text=FLT.NewFS(h,nil,"OVERLAY","GameFontNormal"); h.text:SetPoint("LEFT",6,-2); h.text:SetTextColor(FLT.TextC(1,0.82,0.20))
+            local line=makeTexture(h,"ARTWORK",0.72,0.50,0.12,0.45); line:SetPoint("BOTTOMLEFT",2,0); line:SetPoint("BOTTOMRIGHT",-2,0); line:SetHeight(1)
+            favHeads[nh]=h
+          end
+          h:ClearAllPoints(); h:SetPoint("TOPLEFT",1,yoff); h.text:SetText(slotLabel(row.slot)); h:Show(); yoff=yoff-28
+          lastSlot=row.slot
+        end
+        row:ClearAllPoints(); row:SetPoint("TOPLEFT",1,yoff); yoff=yoff-34; shown=shown+1
+        row.costFS:SetText(known and ("|cff40d040"..L["Known"].."|r") or string.format(L["%s Favor"],row.recipe.cost))
+      end
+    end
+    rchild:SetHeight(math.max(1,-yoff+8))
+  end
+  favSearch:SetScript("OnTextChanged",function(self)
+    favPh:SetShown(self:GetText()=="")
+    favFilter.text=(self:GetText() or ""):lower()
+    layoutFavorRecipes()
+  end)
+  favSearch:SetScript("OnEscapePressed",function(self) self:SetText(""); self:ClearFocus() end)
+  favSearch:SetScript("OnEnterPressed",function(self) self:ClearFocus() end)
+  favKnown:SetScript("OnClick",function(self) favFilter.hideKnown=self:GetChecked() and true or false; layoutFavorRecipes() end)
+  favSlot:SetScript("OnClick",function(self)
+    local opts, seen={{key="all",label=L["All slots"]}}, {}
+    for _,row in ipairs(favList or {}) do
+      if not seen[row.slot] then seen[row.slot]=true; opts[#opts+1]={key=row.slot,label=slotLabel(row.slot)} end
+    end
+    UI.OpenDropDown(self,opts,favFilter.slot or "all",function(k)
+      favFilter.slot=(k~="all") and k or nil
+      favSlot:SetLabel(favFilter.slot and slotLabel(favFilter.slot) or L["All slots"])
+      layoutFavorRecipes()
+    end)
+  end)
 
   local function showFavorRecipes(profession)
     recipeView:Show()
@@ -561,8 +696,13 @@ local function createProfessionPanel(parent)
     end
     local list=recipeRowsByProfession[profession]
     if not list then list=buildRecipeRows(profession,vendor); recipeRowsByProfession[profession]=list end
-    for _,row in ipairs(list) do row:Show() end
-    rchild:SetHeight(list.height); rsf:SetVerticalScroll(0)
+    -- a new profession starts with no filter (its slots differ)
+    if favProfession~=profession then
+      favFilter.slot=nil; favSlot:SetLabel(L["All slots"])
+    end
+    favList, favProfession = list, profession
+    layoutFavorRecipes()
+    rsf:SetVerticalScroll(0)
   end
 
   -- Overview (landing page) ------------------------------------------------
@@ -570,8 +710,8 @@ local function createProfessionPanel(parent)
   local function playerProfessions()
     local out, seen = {}, {}
     local function add(name, rank, maxRank)
-      name = FLT.ProfKey and FLT.ProfKey(name) or name -- the client names it in its language: our key (6.2.0)
-      if name and PROFESSION_ICONS[name] and not seen[name] then seen[name]=true; out[#out+1]={name=name, rank=rank, max=maxRank} end
+      name = (FLT.SkillKey and FLT.SkillKey(name)) or (FLT.ProfKey and FLT.ProfKey(name)) or name -- our key (6.2.0; Lockpicking 6.2.18)
+      if name and (PROFESSION_ICONS[name] or name == "Lockpicking") and not seen[name] then seen[name]=true; out[#out+1]={name=name, rank=rank, max=maxRank} end
     end
     if GetProfessions and GetProfessionInfo then
       local list={GetProfessions()}
@@ -612,13 +752,16 @@ local function createProfessionPanel(parent)
   ownNone:SetText(L["No professions found yet - learn one at a trainer or open your profession window once."])
   local allTitle=sectionTitle(L["All professions"],-172)
   local allTiles, allOrder={}, {}
-  for i,profession in ipairs(FLT.PROFESSION_ORDER or {}) do
+  local ALL_LIST={}
+  for _,p in ipairs(FLT.PROFESSION_ORDER or {}) do ALL_LIST[#ALL_LIST+1]=p end
+  for _,p in ipairs(FLT.GATHER_PROFS or {}) do if GATHER[p] and p~="Lockpicking" then ALL_LIST[#ALL_LIST+1]=p end end
+  for i,profession in ipairs(ALL_LIST) do
     local t=makeTile(190); allOrder[i]=t
-    FLT.SetTex(t.icon, PROFESSION_ICONS[profession]); t.name:SetText(L[profession])
+    FLT.SetTex(t.icon, picon(profession)); t.name:SetText(L[profession])
     t:SetScript("OnClick",function() showProfession(profession) end)
     allTiles[profession]=t
   end
-  local nRows=math.ceil(#(FLT.PROFESSION_ORDER or {})/4)
+  local nRows=math.ceil(#ALL_LIST/4)
   local campTile=makeTile(250)
   local otherTitle=sectionTitle(L["Others"],-400)
   -- position the "All professions" block below the own professions
@@ -667,7 +810,7 @@ local function createProfessionPanel(parent)
     trainerTitle:ClearAllPoints(); trainerTitle:SetPoint("TOPLEFT",8,top)
     trainerBox:ClearAllPoints(); trainerBox:SetPoint("TOPLEFT",8,top-26)
     -- the navigation ends level with the trainer box on the overview (user 22.10.)
-    nav:SetHeight(math.max(300, 26-top+trainerBox:GetHeight()))
+    nav:SetHeight(math.max(navMinH or 300, 26-top+trainerBox:GetHeight()))
     for i,r in ipairs(trainerRows) do r:ClearAllPoints(); r:SetPoint("TOPLEFT",8+((i-1)%3)*258,-6-math.floor((i-1)/3)*24) end
   end
   local worldCache={}
@@ -726,6 +869,12 @@ local function createProfessionPanel(parent)
   local favorTile=makeTile(250); favorTile:SetPoint("LEFT",campTile,"RIGHT",12,0)
   FLT.SetTex(favorTile.icon, "Interface\\Icons\\INV_Misc_Coin_02"); favorTile.name:SetText(L["Merchant's Favor"])
   favorTile:SetScript("OnClick",function() showFavorPage() end)
+  local lockTile -- rogues: Lockpicking next to the others (no room in the grid above)
+  if isRogue() and GATHER.Lockpicking then
+    lockTile=makeTile(250); lockTile:SetPoint("LEFT",favorTile,"RIGHT",12,0)
+    FLT.SetTex(lockTile.icon, picon("Lockpicking")); lockTile.name:SetText(L["Lockpicking"])
+    lockTile:SetScript("OnClick",function() showProfession("Lockpicking") end)
+  end
 
   local function recipeSummary(profession)
     local list=FLT.PROFESSION_RECIPES and FLT.PROFESSION_RECIPES[profession]
@@ -745,7 +894,7 @@ local function createProfessionPanel(parent)
       local t=ownTiles[i]
       if not t then t=makeTile(190); ownTiles[i]=t end
       t:ClearAllPoints(); t:SetPoint("TOPLEFT",8+((i-1)%4)*198,-74-math.floor((i-1)/4)*48)
-      FLT.SetTex(t.icon, PROFESSION_ICONS[pr.name]); t.name:SetText(L[pr.name])
+      FLT.SetTex(t.icon, picon(pr.name)); t.name:SetText(L[pr.name])
       local sk=pr.rank and (pr.rank..(pr.max and ("/"..pr.max) or ""))
       local known,total=recipeSummary(pr.name)
       -- one sentence for the tile (beta6: German "Fertigkeit 32/75 | 5 bekannt" was cut off - the translation may drop words)
@@ -755,6 +904,7 @@ local function createProfessionPanel(parent)
       local name=pr.name
       local hasPage=false
       for _,o in ipairs(FLT.PROFESSION_ORDER or {}) do if o==name then hasPage=true end end
+      if GATHER[name] then hasPage=true end
       t:SetScript("OnClick",function() if hasPage then showProfession(name) else showCamping() end end)
       t:Show()
     end
@@ -766,11 +916,19 @@ local function createProfessionPanel(parent)
     for profession,t in pairs(allTiles) do
       local known,total=recipeSummary(profession)
       local nFav=countRecipes(profession)
-      if known then
+      if GATHER[profession] then
+        local sk,mx=FLT.ProfSkill and FLT.ProfSkill(profession)
+        local g=FLT.GATHER_GUIDE and FLT.GATHER_GUIDE[profession]
+        t.sub:SetText(sk and string.format(L["Skill %s"], sk..(mx and ("/"..mx) or "")) or string.format(L["%d leveling steps"], g and #g.steps or 0))
+      elseif known then
         t.sub:SetText(string.format(L["%d recipes"], total).."  |cff9d9d9d|  "..string.format(L["%d known"], known).."|r")
       else
         t.sub:SetText(string.format(L["%d Merchant's Favor recipes"], nFav).."  |cff9d9d9d|  "..L["more soon"].."|r")
       end
+    end
+    if lockTile then
+      local sk,mx=FLT.ProfSkill and FLT.ProfSkill("Lockpicking")
+      lockTile.sub:SetText(sk and string.format(L["Skill %s"], sk..(mx and ("/"..mx) or "")) or L["Where to level it"])
     end
     local amount=getFavorAmount()
     favorTile.sub:SetText(amount and (string.format(L["You have %s Favor"], amount).."  |cff9d9d9d|  "..L["how to earn it"].."|r") or L["How to earn Favor"])
@@ -779,25 +937,29 @@ local function createProfessionPanel(parent)
   -- Sub-navigation inside a profession: "All recipes" | "Merchant's Favor".
   local currentProfession, currentSub = nil, nil
   local subButtons, subRow, subW = {}, {}, {}
-  for _,spec in ipairs({{"all",N"All recipes"},{"fav",N"Favorites"},{"skillup",N"Skill-Up Helper"},{"profit",N"Profit"},{"favor",N"Merchant's Favor"}}) do
-    local w=(spec[1]=="favor" or spec[1]=="skillup") and 150 or 120
+  for _,spec in ipairs({{"all",N"All recipes"},{"fav",N"Favorites"},{"skillup",N"Skill-Up Helper"},{"profit",N"Profit"},{"favor",N"Merchant's Favor"},{"trainers",N"Trainers"}}) do
+    local w=(spec[1]=="favor" or spec[1]=="skillup") and 150 or (spec[1]=="trainers" and 110) or 120
     local b=UI.GoldButton(subnav,L[spec[2]],w,26,nil,13); subRow[#subRow+1]=b; subW[#subW+1]=w
     b:SetScript("OnClick",function()
       if currentProfession then showProfession(currentProfession, spec[1]) end
     end)
     subButtons[spec[1]]=b
   end
+  if UI.NewMark then local m=UI.NewMark(subButtons.trainers,string.format(L["New in OneForAll %s."],"6.3.0")); m:SetPoint("CENTER",subButtons.trainers,"TOPRIGHT",-2,-2) end -- TODO.md "Neu-Markierungen"
   -- 6.2.14 (Discord miti86 21.11., French): one after the other, a smaller text when the row is wider than the window
   UI.ButtonRow(subnav, subRow, subW, 6, 0, -2, { 13, 12, 11 })
   -- 6.2.6: the Skill-Up Helper (UI/SkillUpUI.lua, logic SkillUp.lua) - new in this version (TODO.md "Neu-Markierungen")
   -- 6.2.6-beta28: the Profit page (UI/ProfitUI.lua) - new in this version; the Crafting List button moved into
   -- All recipes / Favorites (UI/ProfessionRecipes.lua, user 12.11.: "dort besser aufgehoben")
   local profitView -- made on first use
+  local gatherView, trainerView -- 6.2.18-beta13: Skill-Up Helper of the gathering professions, Trainers of every profession
 
   -- Merchant's Favor page (own entry in the left menu) -----------------------
   local favorPage=CreateFrame("Frame",nil,body); favorPage:SetAllPoints(); favorPage:Hide()
+  -- 6.2.18-beta16 (user 27.11.: "oben verschiedene button ... Overview ... als zweiten Calculator"): Overview / Calculator
+  local favorSub, favorCalc = {}, nil
   local fsf=FLT.SkinBlizz(CreateFrame("ScrollFrame",nil,favorPage,"UIPanelScrollFrameTemplate"))
-  fsf:SetPoint("TOPLEFT",0,0); fsf:SetPoint("BOTTOMRIGHT",-4,0)
+  fsf:SetPoint("TOPLEFT",0,-36); fsf:SetPoint("BOTTOMRIGHT",-4,0)
   local fchild=CreateFrame("Frame",nil,fsf); fchild:SetSize(790,1); fsf:SetScrollChild(fchild)
   local fpSub=UI.SectionTitle(fchild,L["Favor recipes by profession"],8,-6,-30)
   local favorTiles, nTiles = {}, 0
@@ -827,27 +989,58 @@ local function createProfessionPanel(parent)
     recipeView:Hide(); campingView:Hide(); homeView:Hide(); favorPage:Hide()
     if skillUpView then skillUpView:Hide() end
     if profitView then profitView:Hide() end
-    nav:SetHeight(481)
+    if gatherView then gatherView:Hide() end
+    if trainerView then trainerView:Hide() end
+    nav:SetHeight(navMinH)
+  end
+  local function packSubs(order, sub)
+    local x=0
+    for _,k in ipairs(order) do
+      local b=subButtons[k]
+      if b:IsShown() then b:ClearAllPoints(); b:SetPoint("TOPLEFT",x,-2); x=x+b:GetWidth()+6 end
+      paintActive(b, k==sub)
+    end
+  end
+  local function showTrainers(profession)
+    if allView then allView:Hide() end
+    trainerView=trainerView or UI.CreateTrainerPage(content)
+    trainerView:ShowProfession(profession)
   end
   showProfession=function(profession,sub)
+    -- the gathering professions, Fishing, Lockpicking: Skill-Up Helper (where to level) and Trainers
+    if GATHER[profession] then
+      if sub~="trainers" or profession=="Lockpicking" then sub="skillup" end
+      currentProfession, currentSub = profession, sub
+      hideViews(); subnav:Show(); setNavButtonState(profession)
+      for k,b in pairs(subButtons) do b:SetShown(k=="skillup" or (k=="trainers" and profession~="Lockpicking")) end
+      subButtons.skillup:SetLabel(L["Overview"]) -- beta14 (user 27.11.): the page itself is titled Skill-Up Helper
+      packSubs({"skillup","trainers"}, sub)
+      setContentTop(-36)
+      if sub=="trainers" then showTrainers(profession)
+      else
+        if allView then allView:Hide() end
+        gatherView=gatherView or UI.CreateGatherPage(content)
+        gatherView:ShowProfession(profession)
+      end
+      return
+    end
     local hasAll=allView and FLT.PROFESSION_RECIPES and FLT.PROFESSION_RECIPES[profession]
     if sub=="guide" then sub="favor" end
     sub=sub or (currentProfession==profession and currentSub) or (hasAll and "all" or "favor")
     if (sub=="all" or sub=="fav") and not hasAll then sub="favor" end
     local hasSkillUp=FLT.SkillUp and FLT.SkillUp.PROFS[profession] and UI.CreateSkillUpPage and hasAll
     if (sub=="skillup" or sub=="profit") and not hasSkillUp then sub=hasAll and "all" or "favor" end
+    if sub=="trainers" and not (UI.CreateTrainerPage and FLT.PROFESSION_TRAINERS and FLT.PROFESSION_TRAINERS[profession]) then sub=hasAll and "all" or "favor" end
     currentProfession, currentSub = profession, sub
     hideViews(); subnav:Show(); setNavButtonState(profession)
     if hasAll then subButtons.all:Show(); subButtons.fav:Show() else subButtons.all:Hide(); subButtons.fav:Hide() end
     -- keep the visible sub buttons packed from the left
-    local x=0
+    subButtons.skillup:SetLabel(L["Skill-Up Helper"])
     subButtons.skillup:SetShown(hasSkillUp and true or false)
     subButtons.profit:SetShown(hasSkillUp and UI.CreateProfitPage and true or false)
-    for _,k in ipairs({"all","fav","skillup","profit","favor"}) do
-      local b=subButtons[k]
-      if b:IsShown() then b:ClearAllPoints(); b:SetPoint("TOPLEFT",x,-2); x=x+b:GetWidth()+6 end
-      paintActive(b, k==sub)
-    end
+    subButtons.favor:Show()
+    subButtons.trainers:SetShown(FLT.PROFESSION_TRAINERS and FLT.PROFESSION_TRAINERS[profession] and UI.CreateTrainerPage and true or false)
+    packSubs({"all","fav","skillup","profit","favor","trainers"}, sub)
     setContentTop(-36)
     if sub=="all" or sub=="fav" then allView:ShowProfession(profession, sub)
     elseif sub=="skillup" then
@@ -858,6 +1051,7 @@ local function createProfessionPanel(parent)
       if allView then allView:Hide() end
       profitView=profitView or UI.CreateProfitPage(content)
       profitView:ShowProfession(profession)
+    elseif sub=="trainers" then showTrainers(profession)
     else showFavorRecipes(profession) end
   end
 
@@ -891,9 +1085,27 @@ local function createProfessionPanel(parent)
     if allView.SelectRecipe then allView:SelectRecipe(profession, spell) end
   end
 
-  showFavorPage=function()
+  showFavorPage=function(sub)
     hideViews(); subnav:Hide(); favorPage:Show(); setNavButtonState("favor"); updateFavor()
+    local calcOn = sub=="calc" and UI.CreateFavorCalc and FLT.FavorCalc
+    if calcOn and not favorCalc then
+      favorCalc=UI.CreateFavorCalc(favorPage, getFavorAmount)
+      favorCalc:SetPoint("TOPLEFT",0,-36); favorCalc:SetPoint("BOTTOMRIGHT",0,0)
+    end
+    fsf:SetShown(not calcOn)
+    if favorCalc then favorCalc:SetShown(calcOn and true or false) end
+    paintActive(favorSub.overview, not calcOn); paintActive(favorSub.calc, calcOn and true or false)
     fsf:SetVerticalScroll(0)
+  end
+  do
+    local x=0
+    for _,spec in ipairs({{"overview",N"Overview"},{"calc",N"Calculator"}}) do
+      local b=UI.GoldButton(favorPage,L[spec[2]],120,26,nil,13); b:SetPoint("TOPLEFT",x,-2); x=x+126
+      b:SetScript("OnClick",function() showFavorPage(spec[1]) end)
+      favorSub[spec[1]]=b
+    end
+    favorSub.calc:SetShown(UI.CreateFavorCalc and FLT.FavorCalc and true or false)
+    if UI.NewMark then local m=UI.NewMark(favorSub.calc,string.format(L["New in OneForAll %s."],"6.3.0")); m:SetPoint("CENTER",favorSub.calc,"TOPRIGHT",-2,-2) end -- TODO.md "Neu-Markierungen"
   end
 
   showCamping=function()
@@ -913,20 +1125,65 @@ local function createProfessionPanel(parent)
 
   -- Left navigation: Overview, the professions, Camping Buffs (last).
   -- (5.7.0: the separate Merchant's Favor box at the bottom is gone, its button shows the amount, user 22.10.)
-  local navY=navTop
-  local homeButton; homeButton,navY=UI.NavEntry(nav,navY,L["Overview"],"Interface\\Icons\\INV_Misc_Book_09")
+  -- 6.2.18-beta13 (user 27.11.: the gathering professions under First Aid, the line to Camping Buffs under them): the list got
+  -- longer, so the entries get only as close together as the window's height needs (beta14, user 27.11.: "etwas groesser
+  -- ... ein bisschen platz nach unten haben wir ja noch"; laid out again when the window is resized)
+  local navList={}
+  for _,p in ipairs(FLT.PROFESSION_ORDER or {}) do navList[#navList+1]=p end
+  for _,p in ipairs(FLT.GATHER_PROFS or {}) do if GATHER[p] and (p~="Lockpicking" or isRogue()) then navList[#navList+1]=p end end
+  local navItems={} -- buttons and separators in order
+  local function entry(label, icon)
+    local b=UI.NavEntry(nav,navTop,label,icon)
+    navItems[#navItems+1]=b
+    return b
+  end
+  local function separator()
+    local sep=nav:CreateTexture(nil,"ARTWORK"); FLT.SetTex(sep, UI.ASSET_ROOT.."divider_ornate"); sep:SetHeight(12)
+    navItems[#navItems+1]={sep=sep}
+  end
+  local homeButton=entry(L["Overview"],"Interface\\Icons\\INV_Misc_Book_09")
   homeButton:SetScript("OnClick",function() showHome() end); navButtons.home=homeButton
-  navY=UI.NavSeparator(nav,navY)
-  for _,profession in ipairs(FLT.PROFESSION_ORDER or {}) do
-    local b; b,navY=UI.NavEntry(nav,navY,L[profession],PROFESSION_ICONS[profession] or "Interface\\Icons\\INV_Misc_QuestionMark")
+  separator()
+  for _,profession in ipairs(navList) do
+    local b=entry(L[profession],picon(profession))
     b:SetScript("OnClick",function() showProfession(profession) end)
     navButtons[profession]=b
+    -- new in 6.2.18 (TODO.md "Neu-Markierungen")
+    if GATHER[profession] and UI.NewMark then local m=UI.NewMark(b,string.format(L["New in OneForAll %s."],"6.3.0")); m:SetPoint("RIGHT",b,"LEFT",-1,0) end
   end
-  navY=UI.NavSeparator(nav,navY)
-  local campingButton; campingButton,navY=UI.NavEntry(nav,navY,L["Camping Buffs"],"Interface\\Icons\\Spell_Fire_Fire")
+  separator()
+  local campingButton=entry(L["Camping Buffs"],"Interface\\Icons\\Spell_Fire_Fire")
   campingButton:SetScript("OnClick",showCamping); navButtons.camping=campingButton
   -- ht8: one line like the other entries, your Merchant's Favor as the count on the right (like the QoL counts)
-  local favorButton; favorButton,navY=UI.NavEntry(nav,navY,L["Merchant's Favor"],"Interface\\Icons\\INV_Misc_Coin_02")
+  local favorButton=entry(L["Merchant's Favor"],"Interface\\Icons\\INV_Misc_Coin_02")
+  -- 6.3.0: the Calculator and the new recipe lists are behind this entry (user 27.11.: "vor merchants favor fehlt ein Ausrufezeichen")
+  if UI.NewMark then local m=UI.NewMark(favorButton,string.format(L["New in OneForAll %s."],"6.3.0")); m:SetPoint("RIGHT",favorButton,"LEFT",-1,0) end -- TODO.md "Neu-Markierungen"
+  local nEntries=#navList+3 -- + Overview, Camping Buffs, Merchant's Favor
+  local lastStep
+  local function layoutNav()
+    local ph=panel:GetHeight()
+    if type(ph)~="number" or ph<=0 then ph=551 end
+    local step=math.max(20, math.min(UI.NAV.step, math.floor((ph-74-8+navTop-22)/nEntries)))
+    if step==lastStep then return end
+    lastStep=step
+    local h=math.min(UI.NAV.entryH, step-3)
+    local y=navTop
+    for _,it in ipairs(navItems) do
+      if it.sep then
+        it.sep:ClearAllPoints()
+        it.sep:SetPoint("LEFT",nav,"TOPLEFT",6,y-3); it.sep:SetPoint("RIGHT",nav,"TOPLEFT",UI.NAV.entryX+UI.NAV.entryW-2,y-3)
+        y=y-11
+      else
+        it:SetHeight(h); it:ClearAllPoints(); it:SetPoint("TOPLEFT",UI.NAV.entryX,y)
+        if it.icon then it.icon:SetSize(h-9,h-9) end
+        if it._label then it._label:SetPoint("LEFT",it.icon and (h+2) or 10,0) end
+        y=y-step
+      end
+    end
+    navMinH=math.max(481,-y+6)
+  end
+  layoutNav()
+  panel:HookScript("OnSizeChanged",layoutNav)
   favorText=FLT.NewFS(favorButton, nil,"OVERLAY","GameFontDisableSmall"); favorText:SetPoint("RIGHT",-5,0)
   do local font,_,flags=favorText:GetFont(); if font then favorText:SetFont(font,10,flags) end end
   favorButton:SetScript("OnClick",function() showFavorPage() end); navButtons.favor=favorButton

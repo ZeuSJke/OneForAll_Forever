@@ -9,7 +9,7 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
     quests = {
         {
             id = 1360,
-            liveXPFallback = 3600,
+            liveXPFallback = 6300,
             name = "Reclaimed Treasures",
             level = 43,
             requires = 33,
@@ -17,10 +17,11 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
             pickup = "Krom Stoutarm, Ironforge (74.2, 9.4)",
             objective = "Get Krom Stoutarm's treasured possession from his chest in the North Common Hall of Uldaman, and bring it to him in Ironforge.",
             turnin = "Krom Stoutarm, Ironforge",
+            rewardSummary = "6,300 XP · 60s",
         },
         {
             id = 2342,
-            liveXPFallback = 3600,
+            liveXPFallback = 7000,
             name = "Reclaimed Treasures",
             level = 43,
             requires = 33,
@@ -28,10 +29,11 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
             pickup = "Patrick Garrett, Undercity (62.3, 48.6)",
             objective = "Get Patrick Garrett's family treasure from their family chest in the South Common Hall of Uldaman, and bring it to him in the Undercity.",
             turnin = "Patrick Garrett, Undercity",
+            rewardSummary = "7,000 XP · 60s",
         },
         {
             id = 2398,
-            liveXPFallback = 315,
+            liveXPFallback = 550,
             name = "The Lost Dwarves",
             level = 40,
             requires = 35,
@@ -39,10 +41,11 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
             pickup = "Prospector Stormpike, Ironforge (74.6, 11.7)",
             objective = "Find Baelog in Uldaman.",
             turnin = "Baelog, inside Uldaman",
+            rewardSummary = "550 XP · 5s",
         },
         {
             id = 2240,
-            liveXPFallback = 3900,
+            liveXPFallback = 6850,
             name = "The Hidden Chamber",
             level = 40,
             requires = 35,
@@ -56,10 +59,11 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
                 {9627, "Explorer's League Lodestar", 2},
                 {270078, "Guardian Staff", 2},
             },
+            rewardSummary = "6,850 XP",
         },
         {
             id = 17,
-            liveXPFallback = 3450,
+            liveXPFallback = 6050,
             name = "Uldaman Reagent Run",
             level = 42,
             requires = 38,
@@ -70,10 +74,11 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
             rewardItems = {
                 {250947, "Greater Mender's Potion", 1},
             },
+            rewardSummary = "6,050 XP · 55s",
         },
         {
             id = 2202,
-            liveXPFallback = 3450,
+            liveXPFallback = 6750,
             name = "Uldaman Reagent Run",
             level = 42,
             requires = 36,
@@ -84,10 +89,11 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
             rewardItems = {
                 {250947, "Greater Mender's Potion", 1},
             },
+            rewardSummary = "6,750 XP · 55s",
         },
         {
             id = 704,
-            liveXPFallback = 2850,
+            liveXPFallback = 5000,
             name = "Agmond's Fate",
             level = 38,
             requires = 30,
@@ -101,10 +107,11 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
                 {270059, "Restorer's Fine Gloves", 2},
                 {270060, "Excavator Gauntlets", 2},
             },
+            rewardSummary = "5,000 XP",
         },
         {
             id = 1139,
-            liveXPFallback = 5850,
+            liveXPFallback = 10250,
             name = "The Lost Tablets of Will",
             level = 45,
             requires = 35,
@@ -117,22 +124,11 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
                 {6723, "Medal of Courage", 2},
                 {270095, "Medal of Valor", 2},
             },
-        },
-        {
-            id = 2198,
-            liveXPFallback = 3300,
-            name = "The Shattered Necklace",
-            level = 41,
-            requires = 37,
-            faction = "Alliance",
-            pickup = "Shattered Necklace, a drop inside Uldaman",
-            objective = "Search for the original creator of the shattered necklace to learn of its potential value.",
-            turnin = "Talvash del Kissel, Ironforge (36.4, 3.6)",
-            note = "The Shattered Necklace drops from the Shadowforge and Stonevault dwarves in and around Uldaman.",
+            rewardSummary = "10,250 XP · 1g 30s",
         },
         {
             id = 2200,
-            liveXPFallback = 2550,
+            liveXPFallback = 4450,
             name = "Back to Uldaman",
             level = 42,
             requires = 37,
@@ -140,10 +136,11 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
             pickup = "Talvash del Kissel, Ironforge (36.4, 3.6)",
             objective = "Search for clues as to the current disposition of Talvash's necklace within Uldaman. The slain paladin he mentioned was the person who had it last.",
             turnin = "Remains of a Paladin, inside Uldaman",
+            rewardSummary = "4,450 XP",
         },
         {
             id = 2201,
-            liveXPFallback = 3600,
+            liveXPFallback = 6300,
             name = "Find the Gems",
             level = 43,
             requires = 37,
@@ -152,10 +149,11 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
             objective = "Find the ruby, sapphire, and topaz that are scattered throughout Uldaman. Once acquired, contact Talvash del Kissel remotely by using the Phial of Scrying he previously gave you.  From the journal, you know... * The ruby has been stashed in a barricaded Shadowforge area. * The topaz has been hidden in an urn in one of the Trogg areas, near some Alliance dwarves.  * The sapphire has been claimed by Grimlok, the trogg leader.",
             turnin = "Talvash's Scrying Bowl, inside Uldaman",
             note = "The ruby, sapphire and topaz are in chests across Uldaman; one of them is in Ironaya's chamber.",
+            rewardSummary = "6,300 XP",
         },
         {
             id = 2204,
-            liveXPFallback = 930,
+            liveXPFallback = 1650,
             name = "Restoring the Necklace",
             level = 44,
             requires = 37,
@@ -164,6 +162,7 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
             objective = "Obtain a power source from the most powerful construct you can find in Uldaman, and deliver it to Talvash del Kissel in Ironforge.",
             turnin = "Talvash del Kissel, Ironforge (36.4, 3.6)",
             note = "The power source is the Shattered Necklace Power Source from Archaedas.",
+            rewardSummary = "1,650 XP",
         },
         {
             id = 2361,
@@ -175,10 +174,11 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
             pickup = "Talvash del Kissel, Ironforge (36.4, 3.6)",
             turnin = "Talvash del Kissel, Ironforge",
             rewardItems = {{7673, "Talvash's Enhancing Necklace", 3}},
+            rewardSummary = "5,600 XP · +200 Gnomeregan Exiles",
         },
         {
             id = 2283,
-            liveXPFallback = 2450,
+            liveXPFallback = 4800,
             name = "Necklace Recovery",
             level = 41,
             requires = 37,
@@ -186,10 +186,11 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
             pickup = "Dran Droffers, Orgrimmar (59.5, 36.6)",
             objective = "Look for a valuable necklace within the Uldaman dig site and bring it back to Dran Droffers in Orgrimmar. The necklace may be damaged.",
             turnin = "Dran Droffers, Orgrimmar",
+            rewardSummary = "4,800 XP",
         },
         {
             id = 2284,
-            liveXPFallback = 2450,
+            liveXPFallback = 4800,
             name = "Necklace Recovery, Take 2",
             level = 41,
             requires = 37,
@@ -197,10 +198,11 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
             pickup = "Dran Droffers, Orgrimmar (59.5, 36.6)",
             objective = "Find a clue as to the gems' whereabouts in the depths of Uldaman.",
             turnin = "Remains of a Paladin, inside Uldaman",
+            rewardSummary = "4,800 XP",
         },
         {
             id = 2339,
-            liveXPFallback = 3750,
+            liveXPFallback = 7300,
             name = "Find the Gems and Power Source",
             level = 44,
             requires = 37,
@@ -208,6 +210,7 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
             pickup = "Jarkal Mossmeld, Badlands (2.4, 46.1)",
             objective = "Recover all three gems and a power source for the necklace from Uldaman, and then bring them to Jarkal Mossmeld in Kargath. Jarkal believes a power source might be found on the strongest construct present in Uldaman.  From the journal, you know... * The ruby has been stashed in a barricaded Shadowforge area. * The topaz has been hidden in an urn in one of the Trogg areas, near some Alliance dwarves. * The sapphire has been claimed by Grimlok, the trogg leader.",
             turnin = "Jarkal Mossmeld, Badlands",
+            rewardSummary = "7,300 XP",
         },
         {
             id = 2418,
@@ -220,10 +223,11 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
             turnin = "Rigglefuzz, Badlands",
             rewardItems = {{9522, "Energized Stone Circle", 2}, {10358, "Duracin Bracers", 2}, {10359, "Everlast Boots", 2}, {270055, "Charged Leather Bracers", 2}},
             rewardChoice = true,
+            rewardSummary = "3,500 XP · +150 Booty Bay",
         },
         {
             id = 709,
-            liveXPFallback = 3150,
+            liveXPFallback = 6150,
             name = "Solution to Doom",
             level = 40,
             requires = 30,
@@ -232,10 +236,11 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
             turnin = "Theldurin the Lost, Badlands",
             rewardItems = {{4746, "Doomsayer's Robe", 2}, {270074, "Doomcaller's Pants", 2}, {270075, "Fists of Impending Doom", 2}},
             rewardChoice = true,
+            rewardSummary = "6,150 XP",
         },
         {
             id = 2278,
-            liveXPFallback = 4200,
+            liveXPFallback = 8200,
             name = "The Platinum Discs",
             level = 47,
             requires = 40,
@@ -243,6 +248,7 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
             objective = "Speak with stone watcher and learn what ancient lore it keeps. Once you have learned what lore it has to offer, activate the Discs of Norgannon.",
             turnin = "The Discs of Norgannon, inside Uldaman",
             note = "After Archaedas, speak with the stone watcher and activate the Discs of Norgannon. The follow-up depends on your faction.",
+            rewardSummary = "8,200 XP",
         },
         {
             id = 2279,
@@ -254,6 +260,7 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
             pickup = "The Discs of Norgannon, inside Uldaman",
             objective = "Take the miniature version of the Discs of Norgannon to the Explorers' League in Ironforge.",
             turnin = "High Explorer Magellas, Ironforge (69.9, 18.6)",
+            rewardSummary = "5,250 XP · +150 Ironforge",
         },
         {
             id = 2280,
@@ -265,10 +272,11 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
             pickup = "The Discs of Norgannon, inside Uldaman",
             objective = "Take the miniature version of the Discs of Norgannon to the one of the sages in Thunder Bluff.",
             turnin = "Sage Truthseeker, Thunder Bluff (34.4, 46.9)",
+            rewardSummary = "5,250 XP · +150 Thunder Bluff",
         },
         {
             id = 1956,
-            liveXPFallback = 3900,
+            liveXPFallback = 7800,
             name = "Power in Uldaman",
             level = 40,
             requires = 35,
@@ -276,10 +284,12 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
             pickup = "Tabetha, Dustwallow Marsh (46.1, 57.1)",
             objective = "Retrieve an Obsidian Power Source and bring it to Tabetha in Dustwallow Marsh.",
             turnin = "Tabetha, Dustwallow Marsh",
+            rewardSummary = "7,800 XP",
         },
         {
             level = 35,
             id = 721,
+            liveXPFallback = 4800,
             name = "A Sign of Hope",
             requires = 35,
             faction = "Alliance",
@@ -288,10 +298,12 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
             turnin = "Hammertoe Grez, Badlands",
             rewardItems = {
             },
+            rewardSummary = "4,800 XP",
         },
         {
             level = 40,
             id = 722,
+            liveXPFallback = 5500,
             name = "Amulet of Secrets",
             requires = 35,
             faction = "Alliance",
@@ -300,6 +312,22 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
             turnin = "Hammertoe Grez, Badlands",
             rewardItems = {
             },
+            rewardSummary = "5,500 XP",
+        },
+        {
+            level = 44,
+            id = 2341,
+            liveXPFallback = 5600,
+            name = "Necklace Recovery, Take 3",
+            requires = 40,
+            faction = "Horde",
+            pickup = "Dran Droffers, Orgrimmar (59.5, 36.6)",
+            objective = "Visit Jarkal Mossmeld in Kargath to see if he was successful.",
+            turnin = "Jarkal Mossmeld, Badlands",
+            rewardItems = {
+                {7888, "Jarkal's Enhancing Necklace", 3},
+            },
+            rewardSummary = "5,600 XP · +100 Darkspear Trolls",
         },
     },
     bosses = {
@@ -317,9 +345,15 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
         {
             name = "Baelog",
             npcID = 6906,
+            factionOnly = "Horde", -- the Lost Dwarves are friendly to the Alliance (6.2.17, Discord djmarscomet 24.11.)
             displayID = 5710,
             description = "One of the Lost Dwarves, together with Eric \"The Swift\" and Olaf.",
             loot = {
+                {9398, "Worn Running Boots", "Feet, Leather", 3}, -- Dungeon Journal (user 25.11.2026)
+                {9394, "Horned Viking Helmet", "Head, Plate", 3}, -- Dungeon Journal (user 25.11.2026)
+                {9403, "Battered Viking Shield", "Off Hand, Shield", 3}, -- Dungeon Journal (user 25.11.2026)
+                {9404, "Olaf's All Purpose Shield", "Off Hand, Shield", 3}, -- Dungeon Journal (user 25.11.2026)
+                {9399, "Precision Arrow", "Projectile, Arrow", 2}, -- Dungeon Journal (user 25.11.2026)
                 {9401, "Nordic Longshank", "One-Hand, Sword", 3},
                 {9400, "Baelog's Shortbow", "Ranged, Bow", 3},
             },
@@ -327,6 +361,7 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
         {
             name = "Eric \"The Swift\"",
             npcID = 6907,
+            factionOnly = "Horde",
             displayID = 5708,
             loot = {
                 {9394, "Horned Viking Helmet", "Head, Plate", 3},
@@ -336,6 +371,7 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
         {
             name = "Olaf",
             npcID = 6908,
+            factionOnly = "Horde",
             displayID = 5709,
             loot = {
                 {9404, "Olaf's All Purpose Shield", "Off Hand, Shield", 3},
@@ -357,7 +393,12 @@ FLT.DUNGEON_REGISTRY["Uldaman"] = {
             name = "Obsidian Sentinel",
             npcID = 7023,
             displayID = 5285,
-            loot = {},
+            loot = {
+                {274430, "Rock Sentinel Slicer", "Two-Hand, Axe", 3}, -- Dungeon Journal (user 25.11.2026)
+                {274428, "Dark Golem Breastplate", "Chest, Plate", 3}, -- Dungeon Journal (user 25.11.2026)
+                {274425, "White Obsidian Wand", "Ranged, Wand", 3}, -- Dungeon Journal (user 25.11.2026)
+                {274485, "Axe of Lingering Dread", "Two-Hand, Axe", 3}, -- Dungeon Journal (user 25.11.2026)
+            },
         },
         {
             name = "Ancient Stone Keeper",

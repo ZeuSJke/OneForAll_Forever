@@ -1,4 +1,6 @@
 local _, FLT = ...
+-- a readable text from the game or nil (FLT.Str in Core.lua; the same here for the mock tests, no extra local)
+FLT.Str = FLT.Str or function(v) if type(v) ~= "string" or (issecretvalue and issecretvalue(v)) then return nil end return v end
 local L = FLT.L or setmetatable({}, { __index = function(_, k) return k end }) -- (tests without Locales)
 
 -- Gear marks (5.6.5, user 18.10.): small signs from the Gear Planner on the game's own frames.
@@ -114,7 +116,7 @@ end
 local function decorateRoll(frame)
   local icon = frame and iconOf(frame)
   if not icon then return end
-  local link = frame.rollID and GetLootRollItemLink and GetLootRollItemLink(frame.rollID)
+  local link = frame.rollID and GetLootRollItemLink and FLT.Str((GetLootRollItemLink(frame.rollID)))
   local id = itemID(link)
   local wish = on() and id and FLT.IsOnWishlist and FLT.IsOnWishlist(id)
   local up, lighter = isUpgrade(id, nil, link) -- with the link: random suffix stats

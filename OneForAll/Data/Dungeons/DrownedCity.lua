@@ -14,6 +14,7 @@ FLT.DUNGEON_REGISTRY["The Drowned City"] = {
         {
             level = 40,
             id = 96078,
+            liveXPFallback = 2350,
             name = "A Tale Spun Around the Fire",
             inside = 95775, -- the quest done in the dungeon: The Drowned City (rubbings of the tablets); this one is the turn-in (Discord 22.11.2026)
             requires = 30,
@@ -30,11 +31,11 @@ FLT.DUNGEON_REGISTRY["The Drowned City"] = {
                 {270312, "Translated Tale of I'lalai", 1},
                 {270313, "Tale of I'lalai in Zandali", 1},
             },
-            rewardSummary = "35s",
+            rewardSummary = "2,350 XP · 35s",
         },
         {
             id = 95776,
-            liveXPFallback = 3550,
+            liveXPFallback = 9500,
             name = "The Only Good Brinescale...",
             level = 38,
             requires = 30,
@@ -44,12 +45,12 @@ FLT.DUNGEON_REGISTRY["The Drowned City"] = {
             turnin = "Commander Aggro'gosh, Stranglethorn Vale",
             rewardItems = {{279888, "Tidesoaked Leggings", 2}, {279889, "Naga Priestess's Mantle", 2}},
             rewardChoice = true,
-            rewardSummary = "1g 30s",
+            rewardSummary = "9,500 XP · 1g 30s",
             note = "The quest text mentions Kin'weelay, the troll scholar at Grom'gol Base Camp.",
         },
         {
             id = 96774,
-            liveXPFallback = 3900,
+            liveXPFallback = 8800,
             name = "Ancient Gurubashi Idol",
             level = 40,
             requires = 30,
@@ -57,12 +58,13 @@ FLT.DUNGEON_REGISTRY["The Drowned City"] = {
             pickup = "Mazu'kon, Mulgore (32.4, 20.4)",
             objective = "Recover an Ancient Gurubashi Idol from the Drowned City.",
             turnin = "Mazu'kon, Mulgore",
-            rewardSummary = "1g",
+            rewardSummary = "8,800 XP · 1g · +150 Darkspear Trolls · +300 Earthen Ring",
             note = "The idol is carried by the strongest priest in the city.",
         },
         {
             level = 40,
             id = 95789,
+            liveXPFallback = 10450,
             name = "Shady Saltseers",
             requires = 34,
             faction = "Both",
@@ -73,10 +75,12 @@ FLT.DUNGEON_REGISTRY["The Drowned City"] = {
                 {279882, "Rusted Troll War Belt", 2},
                 {279930, "Saltseer's Helm", 2},
             },
+            rewardSummary = "10,450 XP · 1g · +100 Booty Bay · +50 Everlook · +50 Gadgetzan · +50 Ratchet",
         },
         {
             level = 40,
             id = 95791,
+            liveXPFallback = 10450,
             name = "The Saltseer Captain",
             requires = 34,
             faction = "Both",
@@ -88,10 +92,12 @@ FLT.DUNGEON_REGISTRY["The Drowned City"] = {
                 {279883, "Mutinous Cuffs", 2},
                 {279884, "South Seas Shroud", 2},
             },
+            rewardSummary = "10,450 XP · +100 Booty Bay · +50 Everlook · +50 Gadgetzan · +50 Ratchet",
         },
         {
             level = 40,
             id = 95798,
+            liveXPFallback = 2350,
             name = "The Web of Magic",
             requires = 30,
             faction = "Alliance",
@@ -103,10 +109,12 @@ FLT.DUNGEON_REGISTRY["The Drowned City"] = {
                 {279879, "Rune-Etched Epaulets", 3},
                 {279878, "Apprentice Sorcerer's Slacks", 3},
             },
+            rewardSummary = "2,350 XP · 35s · +75 Stormwind",
         },
         {
             level = 40,
             id = 95799,
+            liveXPFallback = 2350,
             name = "Findings for the Explorer's League",
             requires = 30,
             faction = "Alliance",
@@ -121,10 +129,12 @@ FLT.DUNGEON_REGISTRY["The Drowned City"] = {
             rewardAlso = {
                 {272124, "Translated Tale of I'lalai", 1},
             },
+            rewardSummary = "2,350 XP · 35s · +50 Ironforge · +75 Stormwind",
         },
         {
             level = 40,
             id = 97130,
+            liveXPFallback = 10450,
             name = "Ancient Gurubashi Secrets",
             requires = 34,
             faction = "Alliance",
@@ -132,12 +142,15 @@ FLT.DUNGEON_REGISTRY["The Drowned City"] = {
             objective = "Recover an Ancient Gurubashi Idol from the Drowned City.",
             rewardItems = {
             },
+            rewardSummary = "10,450 XP · 50s · +300 Kirin Tor · +150 Stormwind",
         },
     },
+    -- boss NPC IDs: the dungeon's own ones (6.2.16-beta4, user 23.11.2026: list of another AI citing Wowhead Forever / WoWCensus, matching
+    -- QuestieDB Forever); 270882-270888 were QuestieDB's "Staging Area" copies
     bosses = {
         {
             name = "Zul'Alai",
-            npcID = 270882,
+            npcID = 258905,
             displayID = 144475,
             loot = {
                 {274598, "Bloodslash Axe", "One-Hand, Axe", 3},
@@ -147,7 +160,7 @@ FLT.DUNGEON_REGISTRY["The Drowned City"] = {
         },
         {
             name = "Var'Taka",
-            npcID = 270883,
+            npcID = 258924,
             displayID = 144487,
             loot = {
                 {274601, "Harpoon of Command", "Two-Hand, Polearm", 3},
@@ -157,7 +170,7 @@ FLT.DUNGEON_REGISTRY["The Drowned City"] = {
         },
         {
             name = "Captain Dreadrise",
-            npcID = 270884,
+            npcID = 260042,
             displayID = 142144,
             loot = {
                 {274603, "Dreadfrost Saber", "Main Hand, Sword", 3},
@@ -167,7 +180,7 @@ FLT.DUNGEON_REGISTRY["The Drowned City"] = {
         },
         {
             name = "Deathless Marrow",
-            npcID = 270885,
+            npcID = 260202,
             displayID = 142245,
             loot = {
                 {274607, "Viscera Spaulders", "Shoulder, Mail", 3},
@@ -177,7 +190,7 @@ FLT.DUNGEON_REGISTRY["The Drowned City"] = {
         },
         {
             name = "Gill",
-            npcID = 270888,
+            npcID = 264177,
             displayID = 144023,
             rare = true,
             loot = {
@@ -187,7 +200,7 @@ FLT.DUNGEON_REGISTRY["The Drowned City"] = {
         },
         {
             name = "Primeval Elemental",
-            npcID = 270887,
+            npcID = 263886,
             displayID = 129945,
             loot = {
                 {274611, "Robe of the Drowned", "Chest, Cloth", 3},
@@ -197,19 +210,13 @@ FLT.DUNGEON_REGISTRY["The Drowned City"] = {
         },
         {
             name = "Min'loth the Serpent",
-            npcID = 270886,
+            npcID = 260243,
             displayID = 142286,
             loot = {
                 {274610, "Ritual-Binder's Gloves", "Hands, Leather", 3},
                 {274608, "Maw of Min'loth", "Off Hand, Shield", 3},
                 {274609, "Serpentbane Crown", "Head, Mail", 3},
             },
-        },
-        {
-            name = "Zin'aka",
-            npcID = 263742,
-            displayID = 143835,
-            loot = {},
         },
         {
             name = "Umbra",

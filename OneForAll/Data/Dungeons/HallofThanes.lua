@@ -89,6 +89,7 @@ FLT.DUNGEON_REGISTRY["Hall of Thanes"] = {
         {
             level = 16,
             id = 98423,
+            liveXPFallback = 2550,
             name = "The Treaty of Understanding",
             requires = 9,
             faction = "Alliance",
@@ -97,6 +98,7 @@ FLT.DUNGEON_REGISTRY["Hall of Thanes"] = {
             turnin = "King Magni Bronzebeard, Ironforge (39.1, 56.2)",
             rewardItems = {},
             note = "In Durgen Dirgehammer's room (Reliquary of Kings) the tablet sits in one of the vaults. Use it before leaving the dungeon.",
+            rewardSummary = "2,550 XP · 16s · +100 Gnomeregan Exiles · +100 Ironforge",
         },
     },
     bosses = {

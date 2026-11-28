@@ -74,6 +74,9 @@ function UI.CreateRunHistory(parent)
   det.lootHead = UI.SectionTitle(dchild, L["Loot"], 4, 0, -4)
   det.noLoot = text(dchild, "GameFontDisableSmall")
   det.bossRows, det.lootRows = {}, {}
+  -- the loot rolls of the run (6.2.17-beta10, UI/LootRolls.lua): item, winner with roll and choice; hover = every player's roll
+  det.rollHead = UI.SectionTitle(dchild, L["Loot rolls"], 4, 0, -4)
+  det.rollRows = {}
 
   local function bossRow(i)
     local r = det.bossRows[i]
@@ -108,11 +111,41 @@ function UI.CreateRunHistory(parent)
     return r
   end
 
+  local function rollRow(i)
+    local r = det.rollRows[i]
+    if r then return r end
+    r = CreateFrame("Button", nil, dchild); r:SetHeight(24)
+    r.icon = r:CreateTexture(nil, "ARTWORK"); r.icon:SetSize(20, 20); r.icon:SetPoint("LEFT", 4, 0); r.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+    r.choice = r:CreateTexture(nil, "ARTWORK"); r.choice:SetSize(16, 16); r.choice:SetPoint("RIGHT", -10, 0)
+    r.win = text(r, "GameFontHighlightSmall"); r.win:SetPoint("RIGHT", r.choice, "LEFT", -4, 0)
+    r.name = text(r, "GameFontHighlight"); r.name:SetPoint("LEFT", r.icon, "RIGHT", 8, 0); r.name:SetPoint("RIGHT", r.win, "LEFT", -8, 0)
+    r.name:SetJustifyH("LEFT"); r.name:SetWordWrap(false)
+    local hl = r:CreateTexture(nil, "HIGHLIGHT"); hl:SetAllPoints(); hl:SetColorTexture(1, 0.82, 0.3, 0.07)
+    r:SetScript("OnEnter", function(self)
+      local e, LR = self.e, FLT.LootRolls
+      if not (e and LR) then return end
+      GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+      if e.link then pcall(GameTooltip.SetHyperlink, GameTooltip, e.link) else GameTooltip:SetHyperlink("item:" .. e.id) end
+      GameTooltip:AddLine(" ")
+      for _, p in ipairs(e.p or {}) do
+        if not p.c and LR.ClassOf then p.c = LR.ClassOf(p.n) end -- the class colour, also for rolls noted before it was known
+        local cc = p.c and RAID_CLASS_COLORS and RAID_CLASS_COLORS[p.c]
+        GameTooltip:AddDoubleLine((p.n == e.winner and "> " or "") .. p.n, LR.ChoiceText(p.k) .. (p.r and ("  " .. p.r) or ""),
+          cc and cc.r or 0.85, cc and cc.g or 0.85, cc and cc.b or 0.85, 0.9, 0.9, 0.9)
+      end
+      GameTooltip:Show()
+    end)
+    r:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    det.rollRows[i] = r
+    return r
+  end
+
   local function showRun(c)
     selected = c
     for _, r in ipairs(rows) do if r.card then r.card:SetSelected(r.run == c) end end
     local visible = c ~= nil
     for _, o in ipairs({ det.title, det.chip, det.when, det.state, det.bossHead, det.lootHead, det.noLoot }) do o:SetShown(visible) end
+    if not c then det.rollHead:Hide(); for _, r in ipairs(det.rollRows) do r:Hide() end end
     for _, o in ipairs(det.cards) do o:SetShown(visible) end
     if not c then for _, r in ipairs(det.bossRows) do r:Hide() end; for _, r in ipairs(det.lootRows) do r:Hide() end; return end
     local name, d = dname(c)
@@ -129,7 +162,9 @@ function UI.CreateRunHistory(parent)
       { L["Deaths"], tostring(c.deaths or 0), "" },
       { L["Mobs killed"], tostring(c.trash or 0), "" },
       { L["XP from mobs"], tostring(c.xp or 0), "" },
-      { L["Gold earned"], FLT.QoL and FLT.QoL.Money and FLT.QoL.Money(c.gold or 0) or tostring(c.gold or 0), "" },
+      { L["Gold earned"], FLT.QoL and FLT.QoL.Money and FLT.QoL.Money(c.gold or 0) or tostring(c.gold or 0),
+        -- the loot's value when the tracker adds it (6.2.17-beta4)
+        (RT.LootValue and RT.LootValue(c) or 0) > 0 and string.format(L["Loot value %s"], FLT.QoL and FLT.QoL.Money and FLT.QoL.Money(RT.LootValue(c)) or tostring(RT.LootValue(c))) or "" },
       { L["Runs of this dungeon"], tostring(n), avg and string.format(L["Average %s"], RT.Clock(avg)) or "" },
     }
     local y = -56
@@ -140,16 +175,18 @@ function UI.CreateRunHistory(parent)
     end
     y = y - math.ceil(#items / 2) * (CARD_H + 8) - 6
     det.bossHead:ClearAllPoints(); det.bossHead:SetPoint("TOPLEFT", 4, y); y = y - 24
-    -- the fixed bosses first, then the rare ones (marked "Rare"; user 23.11.)
+    -- the fixed bosses first, then the rare / optional ones (marked "Rare" / "Optional"; user 23.11.)
     local bosses = {}
-    for _, b in ipairs(d and d.bosses or {}) do if not b.rare then bosses[#bosses + 1] = b end end
-    for _, b in ipairs(d and d.bosses or {}) do if b.rare then bosses[#bosses + 1] = b end end
+    -- bosses only the other faction can fight are left out unless killed (6.2.17)
+    local function mine(b) return not FLT.BossForMe or FLT.BossForMe(b) or (c.kills and c.kills[b.name]) end
+    for _, b in ipairs(d and d.bosses or {}) do if not b.rare and mine(b) then bosses[#bosses + 1] = b end end
+    for _, b in ipairs(d and d.bosses or {}) do if b.rare and mine(b) then bosses[#bosses + 1] = b end end
     for i, b in ipairs(bosses) do
       local r = bossRow(i)
       r.d, r.boss = d, b
       r:ClearAllPoints(); r:SetPoint("TOPLEFT", 4, y); r:SetPoint("RIGHT", dchild, "RIGHT", -4, 0); y = y - 37
       if r.forBoss ~= b and UI.setBossPortrait then UI.setBossPortrait(r.f.portrait, d, b); r.forBoss = b end
-      r.name:SetText(NM(b.name) .. (b.rare and ("  |cffc7ccd8" .. L["Rare"] .. "|r") or ""))
+      r.name:SetText(NM(b.name) .. (b.rare and ("  |cffc7ccd8" .. (b.optional and L["Optional"] or L["Rare"]) .. "|r") or ""))
       local k = c.kills and c.kills[b.name]
       r.when:SetText(k and RT.Clock(k) or L["not killed"])
       r.when:SetTextColor(FLT.TextC(k and 0.35 or 0.62, k and 1 or 0.60, k and 0.45 or 0.56))
@@ -185,6 +222,26 @@ function UI.CreateRunHistory(parent)
       r:Show()
     end
     for i = #loot + 1, #det.lootRows do det.lootRows[i]:Hide() end
+    local rolls, LR = c.rolls or {}, FLT.LootRolls
+    det.rollHead:SetShown(#rolls > 0 and LR and true or false)
+    if #rolls > 0 and LR then
+      y = y - 6
+      det.rollHead:ClearAllPoints(); det.rollHead:SetPoint("TOPLEFT", 4, y); y = y - 24
+      for i, e in ipairs(rolls) do
+        local r = rollRow(i)
+        r.e = e
+        r:ClearAllPoints(); r:SetPoint("TOPLEFT", 4, y); r:SetPoint("RIGHT", dchild, "RIGHT", -4, 0); y = y - 26
+        r.icon:SetTexture((C_Item and C_Item.GetItemIconByID and C_Item.GetItemIconByID(e.id)) or "Interface\\Icons\\INV_Misc_QuestionMark")
+        local nm, q = LR.ItemName(e)
+        r.name:SetText(nm); r.name:SetTextColor(qualityColor(q))
+        r.win:SetText(LR.WinnerText(e))
+        local wp = LR.Winner(e)
+        local tex = LR.ChoiceTex((wp and wp.k) or (e.done and not e.winner and "pass") or "")
+        r.choice:SetShown(tex and true or false); if tex then r.choice:SetTexture(tex) end
+        r:Show()
+      end
+    end
+    for i = (LR and #rolls or 0) + 1, #det.rollRows do det.rollRows[i]:Hide() end
     dchild:SetHeight(math.max(1, -y + 8))
     -- item names the client does not know yet: draw again when they came (at most 3 times a second apart)
     if det.nameFor ~= c then det.nameFor, det.nameTries = c, 0 end

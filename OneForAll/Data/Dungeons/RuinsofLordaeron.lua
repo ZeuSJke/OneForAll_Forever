@@ -177,39 +177,17 @@ FLT.DUNGEON_REGISTRY["Ruins of Lordaeron"] = {
             rewardSummary = "4,600 XP · +150 Undercity",
         },
         {
-            level = 21,
-            id = 97289,
-            name = "Unending Torment",
+            level = 22,
+            id = 95161,
+            name = "Remember That I Love You",
             requires = 15,
-            faction = "Horde",
-            pickup = "Master Apothecary Faranell, Undercity (48.8, 69.3)",
-            objective = "Bring the Head of the Baron to the body of Othmar in the Undercity.",
-            turnin = "Unfinished Abomination, Undercity",
+            faction = "Alliance",
+            pickup = "Orphan Matron Nightingale, Stormwind City (56.3, 54.0)",
+            objective = "Deliver the Blood-Stained Letter to Avette Fellwood in Duskwood.",
+            note = "Follow-up of the first quest of the same name.",
+            turnin = "Avette Fellwood, Duskwood (73.0, 44.4)",
             rewardItems = {
-            },
-        },
-        {
-            level = 21,
-            id = 97291,
-            name = "Unending Torment",
-            requires = 15,
-            faction = "Horde",
-            pickup = "Master Apothecary Faranell, Undercity (48.8, 69.3)",
-            objective = "Collect a Toxic Skullcap from Tawny Grisette in the Trade Quarter, Blisterweed near the Herbalism Trainer, and Essence of Agony from the poison vendor in the Rogues' Quarter for Master Apothecary Faranell in Undercity.",
-            turnin = "Master Apothecary Faranell, Undercity",
-            rewardItems = {
-            },
-        },
-        {
-            level = 21,
-            id = 97292,
-            name = "Unending Torment",
-            requires = 15,
-            faction = "Horde",
-            pickup = "Master Apothecary Faranell, Undercity (48.8, 69.3)",
-            objective = "Inject the Hissing Serum into the system above Othmar's body for Master Apothecary Faranell.",
-            turnin = "Master Apothecary Faranell, Undercity",
-            rewardItems = {
+                {279870, "Tarnished Locket", 2},
             },
         },
     },
@@ -264,6 +242,7 @@ FLT.DUNGEON_REGISTRY["Ruins of Lordaeron"] = {
             displayID = 144175,
             aliases = {"Rath'mael", "Rath’mael"},
             loot = {
+                {273085, "Blueprint: Fermenter", "Blueprint", 2}, -- Dungeon Journal (user 25.11.2026)
                 {271213, "Mirror of Rath'mael", "Off Hand, Shield", 3},
                 {271214, "Rotmender's Treads", "Feet, Cloth", 3},
                 {271215, "Coldspire Staff", "Two-Hand, Staff", 3},
@@ -283,6 +262,8 @@ FLT.DUNGEON_REGISTRY["Ruins of Lordaeron"] = {
         {
             description = "Rare. Does not always spawn.",
             name = "Lordaeron Captain",
+            npcID = 255699, -- QuestieDB Forever
+            factionOnly = "Horde", -- friendly to the Alliance (6.2.17)
             displayID = 139050,
             rare = true,
             aliases = {"Lordaeron Captain"},

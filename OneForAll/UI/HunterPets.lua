@@ -1,4 +1,6 @@
 local _, FLT = ...
+-- a readable text from the game or nil (FLT.Str in Core.lua; the same here for the mock tests, no extra local)
+FLT.Str = FLT.Str or function(v) if type(v) ~= "string" or (issecretvalue and issecretvalue(v)) then return nil end return v end
 local L = FLT.L or setmetatable({}, { __index = function(_, k) return k end }) -- (tests without Locales)
 local function N(s) return s end -- marks an English text translated where it is shown (tools/locale/extract.py)
 local UI = FLT.UI
@@ -632,11 +634,11 @@ local function checkTeacher(unit)
   alerted[npcID] = now
   local e = best.e
   local guid = UnitGUID and UnitGUID(unit)
-  local beastName = (UnitName and UnitName(unit)) or e.beast.name
+  local beastName = (UnitName and FLT.Str((UnitName(unit)))) or e.beast.name
   FLT:ShowAlert({
     eyebrow = L["PET ABILITY NEARBY"],
     icon = "Interface\\Icons\\" .. (e.ability.icon or "INV_Misc_QuestionMark"),
-    title = string.format(L["%s teaches %s %d"], (UnitName and UnitName(unit)) or e.beast.name or "?", L[e.ability.name], e.rank.rank or 1),
+    title = string.format(L["%s teaches %s %d"], beastName or "?", L[e.ability.name], e.rank.rank or 1),
     where = string.format(L["You know %s. For: %s"],
       best.known > 0 and string.format(L["rank %s"], best.known) or L["no rank yet"], table.concat(best.fits, ", ")),
     buttons = {

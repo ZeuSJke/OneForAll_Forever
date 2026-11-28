@@ -1,4 +1,7 @@
 local _, FLT = ...
+FLT.DOT = FLT.DOT or "·" -- separator dot (Locales/Locale.lua; another one on Russian clients)
+-- a readable text from the game or nil (FLT.Str in Core.lua; the same here for the mock tests, no extra local)
+FLT.Str = FLT.Str or function(v) if type(v) ~= "string" or (issecretvalue and issecretvalue(v)) then return nil end return v end
 local L = FLT.L or setmetatable({}, { __index = function(_, k) return k end })
 local function N(s) return s end
 
@@ -200,13 +203,13 @@ end
 local trade = {}
 local function tradeEvent(event, a, b)
   if event == "TRADE_SHOW" then
-    trade = { who = UnitName and UnitName("NPC") }
+    trade = { who = UnitName and FLT.Str(UnitName("NPC")) }
   elseif event == "TRADE_MONEY_CHANGED" or event == "TRADE_ACCEPT_UPDATE" then
     trade.give = GetPlayerTradeMoney and GetPlayerTradeMoney() or 0
     trade.get = GetTargetTradeMoney and GetTargetTradeMoney() or 0
-    trade.who = trade.who or (UnitName and UnitName("NPC"))
+    trade.who = trade.who or (UnitName and FLT.Str(UnitName("NPC")))
   elseif event == "UI_INFO_MESSAGE" then
-    local msgText = b or a
+    local msgText = FLT.Str(b) or FLT.Str(a)
     if msgText ~= (ERR_TRADE_COMPLETE or "Trade complete.") or not trade.who then return end
     local name, d = short(trade.who), debts()
     local c = d[name] or 0
@@ -546,6 +549,7 @@ function GG.ParseRoll(text)
   return f[1], f[2], f[3], f[4]
 end
 rollEvents:SetScript("OnEvent", function(_, _, text)
+  text = FLT.Str(text)
   if not (pendingRoll and text) then return end
   local who, v, lo, hi = GG.ParseRoll(text)
   if not who or short(who) ~= short(me()) then return end
@@ -839,6 +843,7 @@ local ev = CreateFrame("Frame")
 local registered
 ev:SetScript("OnEvent", function(_, event, a, b, c, d)
   if event == "CHAT_MSG_ADDON" then
+    if FLT.IsSecret and FLT.IsSecret(a, b, c, d) then return end
     if a == PREFIX then GG.Receive(b, d, c) end
   elseif event == "GUILD_ROSTER_UPDATE" then
     if not rosterPending then rosterPending = true; C_Timer.After(2, readRoster) end
@@ -924,7 +929,7 @@ local function unitFor(name)
   if UnitName and UnitName("player") == name then return "player" end
   local n = IsInRaid and IsInRaid() and 40 or 4
   local kind = IsInRaid and IsInRaid() and "raid" or "party"
-  for i = 1, n do local u = kind .. i; if UnitName and UnitName(u) == name then return u end end
+  for i = 1, n do local u = kind .. i; if UnitName and FLT.Str(UnitName(u)) == name then return u end end
   -- gg32 (user 17.11. 23:25: "es wird nicht das tatsaechliche gesicht uebertragen"): the real face also when he is our
   -- target, under the mouse, our focus or has a nameplate near us (only players; names can be secret on plates)
   local function is(u)
@@ -1001,7 +1006,7 @@ local function classFor(name)
 end
 local function levelFor(name)
   if UnitName and UnitName("player") == name then return UnitLevel and UnitLevel("player") end
-  local u = unitFor(name); if u and UnitLevel then return UnitLevel(u) end
+  local u = unitFor(name); if u and UnitLevel then local lv = UnitLevel(u); if not (FLT.IsSecret and FLT.IsSecret(lv)) then return lv end end
   local info = infoFor(name); return info and tonumber(info.level)
 end
 
@@ -1405,7 +1410,7 @@ function GG.Refresh()
       local tb, g = e.tb, GAME[e.tb.game]
       local r = row(i); r:SetSize(rw - 10, 50); r.card:SetSelected(false); r:SetScript("OnClick", nil)
       r.name:SetWidth(rw - 120); r.name:SetTextColor(FLT.TextC(unpack(WHITE))); r.right:SetText("")
-      r.name:SetText(L[g.name] .. ((tb.stake or 0) > 0 and ("  ·  " .. coins(tb.stake, tb.unit)) or "") .. "\n|cff9d9d9d" ..
+      r.name:SetText(L[g.name] .. ((tb.stake or 0) > 0 and ("  " .. FLT.DOT .. "  " .. coins(tb.stake, tb.unit)) or "") .. "\n|cff9d9d9d" ..
         string.format(L["%s's table, %d seated"], short(e.host), tb.n) .. "\n" ..
         (tb.phase == "play" and L["Game running"] or L["Waiting for players"]) .. "|r")
       r.btn:SetLabel(L["Join"]); r.btn:SetWidth(80); r.btn:Show()
@@ -1507,7 +1512,7 @@ function GG.Refresh()
     place(f.stakeLabel, RW - 280, -2); f.stake:Show(); f.unit:Show(); f.setStake:Show()
     if not f.stake:HasFocus() then f.stake:SetText(tostring(room.stake or 0)) end
   end
-  f.head:SetText(L[g.name] .. ((room.stake or 0) > 0 and ("  ·  " .. string.format(L["Stake: %s"], coins(room.stake, room.unit))) or ""))
+  f.head:SetText(L[g.name] .. ((room.stake or 0) > 0 and ("  " .. FLT.DOT .. "  " .. string.format(L["Stake: %s"], coins(room.stake, room.unit))) or ""))
   f.tbl:Show()
   layoutSeats()
   drawPay()

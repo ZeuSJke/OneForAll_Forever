@@ -506,13 +506,19 @@ local function Plate(b, h)
   local normal = Nine(b, b, normalTex, c, 0, "BACKGROUND", 0)
   local active = Nine(b, b, activeTex, c, 0, "BACKGROUND", 1); active:SetShown(false)
   local hover = Nine(b, b, activeTex, c, 0, "HIGHLIGHT", 0); hover:SetAlpha(0.28)
-  local p = {}
+  local p = { baseA = 1 }
   function p:SetActive(on)
     on = on and true or false
     active:SetShown(on); glow:SetShown(on); normal:SetShown(not on)
   end
   function p:SetEnabledLook(on)
-    normal:SetDesaturated(not on); normal:SetAlpha(on and 1 or 0.6); hover:SetShown(on and true or false)
+    p.enabled = on and true or false
+    normal:SetDesaturated(not on); normal:SetAlpha((on and 1 or 0.6) * p.baseA); hover:SetShown(on and true or false)
+  end
+  -- p:SetBaseAlpha(a): a see-through plate, e.g. over a picture (6.2.17-beta21, the dungeon banner); 1 = solid
+  function p:SetBaseAlpha(a)
+    p.baseA = a or 1
+    normal:SetAlpha(((p.enabled == false) and 0.6 or 1) * p.baseA); active:SetAlpha(p.baseA)
   end
   -- a coloured plate (6.2.12-beta17, user 18.11.: "Open guide ... den Button gruen hinterlegen"): nil = the normal one
   function p:SetTint(r, g, b)
@@ -586,6 +592,7 @@ local function GoldButton(parent, text, w, h, icon, fontSize, plain)
     if b.icon then FLT.Desat(b.icon, not enabled); b.icon:SetAlpha(enabled and 1 or 0.5) end
   end
   function b:SetLabel(t) label:SetText(t); fit(); place(0, 0) end
+  function b:SetPlateAlpha(a) plate:SetBaseAlpha(a) end
   -- b:SetGreen(on): a green plate for the one button that should catch the eye (6.2.12-beta17); off while disabled
   function b:SetGreen(on)
     b.green = on and true or nil

@@ -86,6 +86,7 @@ local function ejDisplay(dungeon, boss)
   return found
 end
 
+local askCreature -- below
 local function setBossPortrait(tex, dungeon, boss)
   if not tex then return false end
   tex:SetTexCoord(0.04, 0.96, 0.04, 0.96)
@@ -110,6 +111,7 @@ local function setBossPortrait(tex, dungeon, boss)
     tex._ofaNpc = npc
     waiting[npc] = waiting[npc] or setmetatable({}, { __mode = "k" })
     waiting[npc][tex] = { dungeon = dungeon, boss = boss }
+    askCreature(npc)
   end
   note(dungeon, boss, "unknown")
   return false
@@ -123,6 +125,39 @@ local function portraitLearned(npc, displayID)
   for tex, info in pairs(list) do
     if tex._ofaNpc == npc then setBossPortrait(tex, info.dungeon, info.boss) end
   end
+end
+
+-- 6.2.16 (user 23.11.2026, Sabella No-Eyes had no portrait): ask the game for a boss's model by its NPC ID -
+-- PlayerModel:SetCreature makes the client ask the server for a creature it does not know yet. Once per boss and session,
+-- one at a time; a model found is remembered like one seen in game (OneForAllDB.bossInfo).
+local cprobe, cqueue, ctried, cbusy = nil, {}, {}, false
+local function creatureNext()
+  local npc = table.remove(cqueue, 1)
+  if not npc then cbusy = false; if cprobe then cprobe:Hide() end return end
+  cbusy = true
+  if learned(npc, "displayID") then return creatureNext() end
+  cprobe = cprobe or CreateFrame("PlayerModel", nil, UIParent)
+  cprobe:SetSize(1, 1); cprobe:SetPoint("TOPLEFT", UIParent, "BOTTOMRIGHT", 10, -10); cprobe:Show()
+  if cprobe.ClearModel then pcall(cprobe.ClearModel, cprobe) end
+  if not (cprobe.SetCreature and pcall(cprobe.SetCreature, cprobe, npc)) then return creatureNext() end
+  local tries = 0
+  local function check()
+    tries = tries + 1
+    local ok, display = pcall(cprobe.GetDisplayInfo, cprobe)
+    if ok and type(display) == "number" and display > 0 then
+      remember(npc, "displayID", display)
+      portraitLearned(npc, display)
+      return creatureNext()
+    end
+    if tries < 15 then C_Timer.After(0.2, check) else creatureNext() end
+  end
+  check()
+end
+askCreature = function(npc)
+  if ctried[npc] or not (C_Timer and C_Timer.After) then return end
+  ctried[npc] = true
+  cqueue[#cqueue + 1] = npc
+  if not cbusy then cbusy = true; C_Timer.After(0, creatureNext) end
 end
 
 -- Boss level: learned in game (what the game itself shows, 6.2.7-beta8) or the static table (QuestieDB and others).
@@ -143,6 +178,8 @@ function FLT:GetBossType(boss)
 end
 function FLT:GetBossRank(boss)
   if not boss then return nil end
+  if boss.factionOnly == "Horde" then return N"Horde only" elseif boss.factionOnly == "Alliance" then return N"Alliance only" end
+  if boss.optional then return N"Optional" end
   if boss.rare then return N"Rare" end
   if boss.npcID and FLT.BOSS_SUMMONED and FLT.BOSS_SUMMONED[boss.npcID] then return N"Summoned" end
   return N"Elite"

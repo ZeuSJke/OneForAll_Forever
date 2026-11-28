@@ -143,10 +143,13 @@ local function num(v)
 end
 -- shown? A secret answer (BlizzThreatPlates' own frames, Discord grumpymuppet 18.11.: "attempt to perform boolean test on a
 -- secret boolean value") counts as not shown (6.2.12-beta22)
+-- forbidden frames (Blizzard's own nameplate auras, Discord sylahm 24.11.: "calling 'IsVisible' on bad self (Attempt to access
+-- forbidden object from code tainted by an AddOn)", Blizzard_AuraContainerFrameProviders) count as not shown (6.2.17-beta14)
 local function shown(f)
   if not (f and f.IsVisible) then return false end
-  local v = f:IsVisible()
-  if FLT.IsSecret(v) then return false end
+  if f.IsForbidden and f:IsForbidden() then return false end
+  local ok, v = pcall(f.IsVisible, f)
+  if not ok or FLT.IsSecret(v) then return false end
   return v and true or false
 end
 local function addonBar(f, skip, depth, best, bestA)
@@ -172,6 +175,7 @@ local function visibleBar(plate, uf)
   if c then return c, false end
   return bar or plate, true
 end
+local badBar = setmetatable({}, { __mode = "k" }) -- other addons' bars we may not anchor to
 local function place(plate, m)
   local uf = plate.UnitFrame
   local bar, blizz = visibleBar(plate, uf)
@@ -194,12 +198,26 @@ local function place(plate, m)
   local x, y = at.x * size, at.y * size
   local over = (plate:GetFrameLevel() or 1) + 30 -- above the plate's art (box, border); the plate's own level is safe to read
   if m:GetFrameLevel() < over then m:SetFrameLevel(over) end
-  if at.z == "L" then
-    m:SetPoint("CENTER", bar, "LEFT", x, y)
-  elseif at.z == "R" then
-    m:SetPoint("CENTER", bar, "RIGHT", extra + x, y)
-  else -- across the bar and the level box (sizes only, no positions)
-    m:SetPoint("CENTER", bar, "LEFT", at.x * ((bar.GetWidth and num(bar:GetWidth()) or 120) + extra), y) -- 120: secret width
+  local w = bar.GetWidth and num(bar:GetWidth()) or 120 -- 120: secret width
+  -- 6.2.17-beta3 (Discord Ar-Kane / Knova 24.11.): another addon's bar may forbid anchoring ("Anchoring disallowed as dependent
+  -- object would inherit forbidden aspects: UntrustedLayoutScriptExecution", RogueAuras' bar on a friendly plate) - then the
+  -- plate itself, same side (its centre; sizes from the bar); remembered per bar so it is tried once
+  local to = bar
+  if not blizz and badBar[bar] then to = nil end
+  for _ = 1, 2 do
+    local ok
+    if to then
+      if at.z == "L" then ok = pcall(m.SetPoint, m, "CENTER", to, "LEFT", x, y)
+      elseif at.z == "R" then ok = pcall(m.SetPoint, m, "CENTER", to, "RIGHT", extra + x, y)
+      else ok = pcall(m.SetPoint, m, "CENTER", to, "LEFT", at.x * (w + extra), y) end -- across the bar and the level box
+    else
+      local half = w / 2
+      if at.z == "L" then ok = pcall(m.SetPoint, m, "CENTER", plate, "CENTER", x - half, y)
+      elseif at.z == "R" then ok = pcall(m.SetPoint, m, "CENTER", plate, "CENTER", half + extra + x, y)
+      else ok = pcall(m.SetPoint, m, "CENTER", plate, "CENTER", at.x * (w + extra) - half, y) end
+    end
+    if ok or not to then break end
+    badBar[bar] = true; to = nil; m:ClearAllPoints()
   end
   -- the progress on the outer side: left of the mark when it sits left of the plate
   if at.z == "L" then m.text:SetPoint("RIGHT", m, "LEFT", -1, 0) else m.text:SetPoint("LEFT", m, "RIGHT", 2, 0) end

@@ -1,4 +1,6 @@
 local _, FLT = ...
+-- a readable text from the game or nil (FLT.Str in Core.lua; the same here for the mock tests, no extra local)
+FLT.Str = FLT.Str or function(v) if type(v) ~= "string" or (issecretvalue and issecretvalue(v)) then return nil end return v end
 local L = FLT.L or setmetatable({}, { __index = function(_, k) return k end }) -- (tests without Locales)
 local UI = FLT.UI
 
@@ -308,7 +310,7 @@ ev:SetScript("OnEvent", function(_, event, prefix, msg, dist, sender)
   if event == "PLAYER_LOGOUT" then P.Save()
   elseif event == "PLAYER_LOGIN" then
     if C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix then pcall(C_ChatInfo.RegisterAddonMessagePrefix, PREFIX) end
-  elseif prefix == PREFIX and dist == "WHISPER" and type(msg) == "string" and type(sender) == "string" then
+  elseif not (FLT.IsSecret and FLT.IsSecret(prefix, msg, dist, sender)) and prefix == PREFIX and dist == "WHISPER" and type(msg) == "string" and type(sender) == "string" then
     onMessage(msg, sender)
   end
 end)
@@ -440,7 +442,7 @@ end
 function P.SendDialog()
   local name = P.Active()
   popup(L["Send profile"], string.format(L["Sends the profile \"%s\" to a player who also uses OneForAll and has \"Receive shared profiles\" switched on. They are asked first and only get a copy."], name),
-    { input = (UnitExists and UnitExists("target") and UnitIsPlayer("target") and UnitName("target")) or "", okLabel = L["Send"],
+    { input = (UnitExists and UnitExists("target") and UnitIsPlayer("target") and FLT.Str(UnitName("target"))) or "", okLabel = L["Send"],
       onOK = function(target)
         target = clean(target)
         if target == "" then FLT.Msg(L["Please enter a player name."]); return false end

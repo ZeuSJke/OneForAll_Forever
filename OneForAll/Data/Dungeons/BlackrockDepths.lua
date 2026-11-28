@@ -9,7 +9,7 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
     quests = {
         {
             id = 4081,
-            liveXPFallback = 5100,
+            liveXPFallback = 9950,
             name = "KILL ON SIGHT: Dark Iron Dwarves",
             level = 52,
             requires = 48,
@@ -17,10 +17,11 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             pickup = "WANTED, inside Blackrock Depths",
             objective = "Venture to Blackrock Depths and destroy the vile aggressors!  Warlord Goretooth wants you to kill 15 Anvilrage Guardsmen, 10 Anvilrage Wardens and 5 Anvilrage Footmen. Return to him once your task is complete.  ",
             turnin = "Warlord Goretooth, Badlands (5.8, 47.5)",
+            rewardSummary = "9,950 XP",
         },
         {
             id = 4082,
-            liveXPFallback = 5450,
+            liveXPFallback = 10650,
             name = "KILL ON SIGHT: High Ranking Dark Iron Officials",
             level = 54,
             requires = 50,
@@ -28,10 +29,11 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             pickup = "KILL ON SIGHT, inside Blackrock Depths",
             objective = "Venture to Blackrock Depths and destroy the vile aggressors!  Warlord Goretooth wants you to kill 10 Anvilrage Medics, 10 Anvilrage Soldiers and 10 Anvilrage Officers. Return to him once your task is complete.",
             turnin = "Warlord Goretooth, Badlands (5.8, 47.5)",
+            rewardSummary = "10,650 XP",
         },
         {
             id = 4134,
-            liveXPFallback = 5650,
+            liveXPFallback = 11300,
             name = "Lost Thunderbrew Recipe",
             level = 55,
             requires = 50,
@@ -49,10 +51,11 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
                 {3928, "Superior Healing Potion", 1},
                 {6149, "Greater Mana Potion", 1},
             },
+            rewardSummary = "11,300 XP · 85s",
         },
         {
             id = 4063,
-            liveXPFallback = 6200,
+            liveXPFallback = 12400,
             name = "The Rise of the Machines",
             level = 58,
             requires = 52,
@@ -62,21 +65,11 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             turnin = "Lotwil Veriatus, Badlands",
             rewardItems = {{12108, "Basaltscale Armor", 2}, {12109, "Azure Moon Amice", 2}, {12110, "Raincaster Drape", 2}, {12111, "Lavaplate Gauntlets", 2}},
             rewardChoice = true,
-        },
-        {
-            id = 3906,
-            liveXPFallback = 5100,
-            name = "Disharmony of Flame",
-            level = 52,
-            requires = 48,
-            faction = "Horde",
-            pickup = "Thunderheart, Badlands (3.3, 48.3)",
-            objective = "Travel to the quarry in Blackrock Mountain and slay Overmaster Pyron. Return to Thunderheart when you have completed this assignment. ",
-            turnin = "Thunderheart, Badlands",
+            rewardSummary = "12,400 XP",
         },
         {
             id = 3907,
-            liveXPFallback = 7300,
+            liveXPFallback = 13500,
             name = "Disharmony of Fire",
             level = 56,
             requires = 48,
@@ -86,21 +79,11 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             turnin = "Thunderheart, Badlands",
             rewardItems = {{12112, "Crypt Demon Bracers", 2}, {12113, "Sunborne Cape", 2}, {12114, "Nightfall Gloves", 2}, {12115, "Stalwart Clutch", 2}},
             rewardChoice = true,
-        },
-        {
-            id = 3981,
-            liveXPFallback = 5100,
-            name = "Commander Gor'shak",
-            level = 52,
-            requires = 48,
-            faction = "Horde",
-            pickup = "Galamav the Marksman, Badlands (6.0, 47.7)",
-            objective = "Find Commander Gor'shak in Blackrock Depths.  You recall that the crudely drawn picture of the orc included bars drawn over the portrait. Perhaps you should search for a prison of some sort.",
-            turnin = "Commander Gor'shak, inside Blackrock Depths",
+            rewardSummary = "13,500 XP · 2g 55s",
         },
         {
             id = 7201,
-            liveXPFallback = 5450,
+            liveXPFallback = 10100,
             name = "The Last Element",
             level = 54,
             requires = 48,
@@ -113,10 +96,11 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
                 {12038, "Lagrave's Seal", 2},
                 {270119, "Dark Iron Signet", 2},
             },
+            rewardSummary = "10,100 XP · 2g 45s",
         },
         {
             id = 4132,
-            liveXPFallback = 7750,
+            liveXPFallback = 15500,
             name = "Operation: Death to Angerforge",
             level = 58,
             requires = 52,
@@ -125,10 +109,11 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             objective = "Travel to Blackrock Depths and slay General Angerforge! Return to Warlord Goretooth when the task is complete.",
             turnin = "Warlord Goretooth, Badlands",
             rewardItems = {{12059, "Conqueror's Medallion", 3}},
+            rewardSummary = "15,500 XP · 2g 65s · +150 Orgrimmar",
         },
         {
             id = 4003,
-            liveXPFallback = 8050,
+            liveXPFallback = 16100,
             name = "The Royal Rescue",
             level = 59,
             requires = 48,
@@ -137,21 +122,11 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             objective = "Slay Emperor Dagran Thaurissan and free Princess Moira Bronzebeard from his evil spell.  ",
             turnin = "Princess Moira Bronzebeard, inside Blackrock Depths",
             note = "Princess Moira must survive the fight against the Emperor.",
-        },
-        {
-            id = 4262,
-            liveXPFallback = 5100,
-            name = "Overmaster Pyron",
-            level = 52,
-            requires = 48,
-            faction = "Alliance",
-            pickup = "Jalinda Sprig, Burning Steppes (85.4, 70.1)",
-            objective = "Slay Overmaster Pyron and return to Jalinda Sprig.  You recall Jalinda talking about Pyron guarding the quarry. Perhaps you should search there?",
-            turnin = "Jalinda Sprig, Burning Steppes",
+            rewardSummary = "16,100 XP · 2g 70s",
         },
         {
             id = 4263,
-            liveXPFallback = 5800,
+            liveXPFallback = 10450,
             name = "Incendius!",
             level = 56,
             requires = 48,
@@ -161,10 +136,11 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             turnin = "Jalinda Sprig, Burning Steppes",
             rewardItems = {{12112, "Crypt Demon Bracers", 2}, {12113, "Sunborne Cape", 2}, {12114, "Nightfall Gloves", 2}, {12115, "Stalwart Clutch", 2}},
             rewardChoice = true,
+            rewardSummary = "10,450 XP",
         },
         {
             id = 4286,
-            liveXPFallback = 5800,
+            liveXPFallback = 10450,
             name = "The Good Stuff",
             level = 56,
             requires = 50,
@@ -175,10 +151,11 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             rewardItems = {
                 {11883, "A Dingy Fanny Pack", 1},
             },
+            rewardSummary = "10,450 XP · 85s",
         },
         {
             id = 4126,
-            liveXPFallback = 5650,
+            liveXPFallback = 14800,
             name = "Hurley Blackbreath",
             level = 55,
             requires = 50,
@@ -195,21 +172,11 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             rewardAlso = {
                 {12003, "Dark Dwarven Lager", 1},
             },
-        },
-        {
-            id = 4341,
-            liveXPFallback = 6400,
-            name = "Kharan Mighthammer",
-            level = 59,
-            requires = 50,
-            faction = "Alliance",
-            pickup = "King Magni Bronzebeard, Ironforge (39.1, 56.2)",
-            objective = "Travel to Blackrock Depths and find Kharan Mighthammer.  The King mentioned that Kharan was being held prisoner there - perhaps you should try looking for a prison.",
-            turnin = "Kharan Mighthammer, inside Blackrock Depths",
+            rewardSummary = "14,800 XP · 1g 65s",
         },
         {
             id = 4362,
-            liveXPFallback = 8050,
+            liveXPFallback = 16900,
             name = "The Fate of the Kingdom",
             level = 59,
             requires = 50,
@@ -218,21 +185,11 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             objective = "Return to Blackrock Depths and rescue Princess Moira Bronzebeard from the evil clutches of Emperor Dagran Thaurissan. ",
             turnin = "Princess Moira Bronzebeard, inside Blackrock Depths",
             note = "Princess Moira must survive the fight against the Emperor.",
-        },
-        {
-            id = 4241,
-            liveXPFallback = 5450,
-            name = "Marshal Windsor",
-            level = 54,
-            requires = 48,
-            faction = "Alliance",
-            pickup = "Marshal Maxwell, Burning Steppes (84.7, 69.0)",
-            objective = "Travel to Blackrock Mountain in the northwest and enter Blackrock Depths. Find out what became of Marshal Windsor.  You recall Ragged John talking about Windsor being dragged off to a prison.",
-            turnin = "Marshal Windsor, inside Blackrock Depths",
+            rewardSummary = "16,900 XP · 2g 65s",
         },
         {
             id = 4322,
-            liveXPFallback = 7750,
+            liveXPFallback = 13950,
             name = "Jail Break!",
             level = 58,
             requires = 50,
@@ -248,10 +205,11 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             rewardAlso = {
                 {12065, "Ward of the Elements", 2},
             },
+            rewardSummary = "13,950 XP · 1g 75s · +150 Stormwind",
         },
         {
             id = 4136,
-            liveXPFallback = 2650,
+            liveXPFallback = 5550,
             name = "Ribbly Screwspigot",
             level = 53,
             requires = 48,
@@ -260,16 +218,18 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             turnin = "Yuka Screwspigot, Burning Steppes",
             rewardItems = {{11865, "Rancor Boots", 3}, {11963, "Penance Spaulders", 3}, {12049, "Splintsteel Armor", 3}},
             rewardChoice = true,
+            rewardSummary = "5,550 XP",
         },
         {
             id = 4123,
-            liveXPFallback = 5650,
+            liveXPFallback = 10450,
             name = "The Heart of the Mountain",
             level = 55,
             requires = 50,
             pickup = "Maxwort Uberglint, Burning Steppes (65.2, 23.9)",
             objective = "Bring the Heart of the Mountain to Maxwort Uberglint in the Burning Steppes.",
             turnin = "Maxwort Uberglint, Burning Steppes",
+            rewardSummary = "10,450 XP",
         },
         {
             id = 7848,
@@ -281,10 +241,11 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             objective = "Venture to the Molten Core entry portal in Blackrock Depths and recover a Core Fragment. Return to Lothos Riftwaker in Blackrock Mountain when you have recovered the Core Fragment.",
             turnin = "Lothos Riftwaker, inside Blackrock Depths",
             note = "Opens the way to Molten Core: the Core Fragment lies at the Molten Core portal in Blackrock Depths.",
+            rewardSummary = "6,600 XP",
         },
         {
             id = 3802,
-            liveXPFallback = 5100,
+            liveXPFallback = 9450,
             name = "Dark Iron Legacy",
             level = 52,
             requires = 48,
@@ -294,10 +255,11 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             rewardItems = {
                 {11000, "Shadowforge Key", 1},
             },
+            rewardSummary = "9,450 XP",
         },
         {
             id = 4201,
-            liveXPFallback = 5450,
+            liveXPFallback = 10900,
             name = "The Love Potion",
             level = 54,
             requires = 50,
@@ -311,19 +273,21 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
                 {270120, "Boots of Requite", 3},
                 {270121, "Private Rocknot's Spare Bracers", 3},
             },
+            rewardSummary = "10,900 XP",
         },
         {
             id = 4083,
-            liveXPFallback = 560,
+            liveXPFallback = 5650,
             name = "The Spectral Chalice",
             level = 55,
             requires = 40,
             pickup = "Spectral Chalice, inside Blackrock Depths",
             turnin = "Spectral Chalice, inside Blackrock Depths",
+            rewardSummary = "5,650 XP",
         },
         {
             id = 4024,
-            liveXPFallback = 6200,
+            liveXPFallback = 11450,
             name = "A Taste of Flame",
             level = 58,
             requires = 52,
@@ -332,6 +296,7 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             turnin = "Cyrus Therepentous, Burning Steppes",
             rewardItems = {{12066, "Shaleskin Cape", 2}, {12082, "Wyrmhide Spaulders", 2}, {12083, "Valconian Sash", 2}},
             rewardChoice = true,
+            rewardSummary = "11,450 XP · 2g 65s",
         },
         {
             level = 1,
@@ -347,6 +312,7 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
         {
             level = 60,
             id = 7604,
+            liveXPFallback = 6600,
             name = "A Binding Contract",
             requires = 60,
             faction = "Both",
@@ -356,10 +322,12 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             rewardItems = {
                 {18592, "Plans: Sulfuron Hammer", 4},
             },
+            rewardSummary = "6,600 XP",
         },
         {
             level = 55,
             id = 97197,
+            liveXPFallback = 14800,
             name = "Fragment of the Firelands",
             requires = 46,
             faction = "Horde",
@@ -367,6 +335,40 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             objective = "Recover a Fragment of the Firelands from Blackrock Depths for Alaana Stormwalker in Mulgore.",
             turnin = "Alaana Stormwalker, Mulgore",
             rewardItems = {
+            },
+            rewardSummary = "14,800 XP · 85s · +300 Cenarion Circle",
+        },
+        {
+            level = 56,
+            id = 82062,
+            liveXPFallback = 8400,
+            name = "Ever After",
+            requires = 48,
+            faction = "Both",
+            pickup = "Rugged Traveler, inside Blackrock Depths (a hidden ledge above the lava)",
+            objective = "Speak with the Rugged Traveler.",
+            turnin = "Rugged Traveler, inside Blackrock Depths",
+            rewardChoice = true,
+            rewardItems = {
+                {216619, "Student Fodder", 2},
+                {221316, "Premo's Poise-Demanding Uniform", 1},
+            },
+            rewardSummary = "8,400 XP · 85s",
+        },
+        {
+            level = 54,
+            id = 4242,
+            name = "Abandoned Hope",
+            requires = 48,
+            faction = "Alliance",
+            pickup = "Marshal Windsor, inside Blackrock Depths",
+            objective = "Give Marshal Maxwell the bad news.",
+            turnin = "Marshal Maxwell, Burning Steppes",
+            rewardChoice = true,
+            rewardItems = {
+                {12018, "Conservator Helm", 3},
+                {12021, "Shieldplate Sabatons", 3},
+                {12041, "Windshear Leggings", 3},
             },
         },
     },
@@ -376,6 +378,7 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             npcID = 9025,
             displayID = 5781,
             loot = {
+                {11630, "Rockshard Pellets", "Projectile, Bullet", 3}, -- Dungeon Journal (user 25.11.2026)
                 {11631, "Stoneshell Guard", "Off Hand, Shield", 3},
                 {11632, "Earthslag Shoulders", "Shoulder, Plate", 3},
                 {22234, "Mantle of Lost Hope", "Shoulder, Cloth", 3},
@@ -481,7 +484,6 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             name = "Pyromancer Loregrain",
             npcID = 9024,
             displayID = 8762,
-            rare = true,
             loot = {
                 {11747, "Flamestrider Robes", "Chest, Leather", 3},
                 {11748, "Pyric Caduceus", "Ranged, Wand", 3},
@@ -506,20 +508,13 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             npcID = 9041,
             displayID = 9089,
             loot = {
+                {11755, "Verek's Collar", "Neck", 3}, -- Dungeon Journal (user 25.11.2026)
+                {22242, "Verek's Leash", "Waist, Mail", 3}, -- Dungeon Journal (user 25.11.2026)
+                {276884, "Verek's Loyal Wraps", "Wrist, Cloth", 3}, -- wowtbc.gg (user 27.11.2026)
                 {11782, "Boreal Mantle", "Shoulder, Cloth", 3},
                 {11783, "Chillsteel Girdle", "Waist, Mail", 3},
                 {11784, "Arbiter's Blade", "Main Hand, Sword", 3},
                 {22241, "Dark Warder's Pauldrons", "Shoulder, Leather", 3},
-            },
-        },
-        {
-            name = "Verek",
-            npcID = 9042,
-            displayID = 9019,
-            loot = {
-                {11755, "Verek's Collar", "Neck", 3},
-                {22242, "Verek's Leash", "Waist, Mail", 3},
-                {276884, "Verek's Loyal Wraps", "Wrist, Cloth", 3},
             },
         },
         {
@@ -561,6 +556,7 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             npcID = 8983,
             displayID = 8759,
             loot = {
+                {273113, "Blueprint: Master Forge", "Blueprint", 2}, -- Dungeon Journal (user 25.11.2026)
                 {11669, "Naglering", "Finger", 3},
                 {11819, "Second Wind", "Trinket", 3},
                 {11822, "Omnicast Boots", "Feet, Cloth", 3},
@@ -583,6 +579,7 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             npcID = 9502,
             displayID = 8177,
             loot = {
+                {11746, "Golem Skull Helm", "Head, Plate", 3}, -- Dungeon Journal (user 25.11.2026)
                 {11743, "Rockfist", "One-Hand, Fist Weapon", 2},
                 {11744, "Bloodfist", "One-Hand, Fist Weapon", 3},
                 {11745, "Fists of Phalanx", "Hands, Plate", 3},
@@ -605,6 +602,7 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             npcID = 9156,
             displayID = 8329,
             loot = {
+                {273122, "Blueprint: Molten Foundry", "Blueprint", 2}, -- Dungeon Journal (user 25.11.2026)
                 {11808, "Circle of Flame", "Head, Cloth", 4},
                 {11809, "Flame Wrath", "Two-Hand, Polearm", 3},
                 {11812, "Cape of the Fire Salamander", "Back", 3},
@@ -630,6 +628,12 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             displayID = 8687, -- CMaNGOS classic-db creature_template (user 23.11.2026)
             description = "Leader of the Seven; the Chest of The Seven opens after the fight.",
             loot = {
+                {11920, "Wraith Scythe", "Main Hand, Axe", 3}, -- Dungeon Journal (user 25.11.2026)
+                {11921, "Impervious Giant", "Two-Hand, Mace", 3}, -- Dungeon Journal (user 25.11.2026)
+                {11922, "Blood-etched Blade", "One-Hand, Dagger", 3}, -- Dungeon Journal (user 25.11.2026)
+                {11923, "The Hammer of Grace", "Main Hand, Mace", 3}, -- Dungeon Journal (user 25.11.2026)
+                {11925, "Ghostshroud", "Head, Leather", 3}, -- Dungeon Journal (user 25.11.2026)
+                {11929, "Haunting Specter Leggings", "Legs, Cloth", 3}, -- Dungeon Journal (user 25.11.2026)
                 {11926, "Deathdealer Breastplate", "Chest, Mail", 3},
                 {11927, "Legplates of the Eternal Guardian", "Legs, Plate", 3},
             },
@@ -649,6 +653,7 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
             npcID = 9938,
             displayID = 12162,
             loot = {
+                {11746, "Golem Skull Helm", "Head, Plate", 3}, -- Dungeon Journal (user 25.11.2026)
                 {11935, "Magmus Stone", "Held In Off-Hand", 3},
                 {22208, "Lavastone Hammer", "Two-Hand, Mace", 3},
                 {22395, "Totem of Rage", "Relic, Totem", 3},
@@ -658,6 +663,7 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
         {
             name = "Princess Moira Bronzebeard",
             npcID = 8929,
+            optional = true,
             displayID = 8705,
             loot = {
                 {12553, "Swiftwalker Boots", "Feet, Leather", 3},
@@ -682,6 +688,32 @@ FLT.DUNGEON_REGISTRY["Blackrock Depths"] = {
                 {11934, "Emperor's Seal", "Finger", 3},
                 {22204, "Wristguards of Renown", "Wrist, Leather", 3},
                 {22207, "Sash of the Grand Hunt", "Waist, Mail", 3},
+            },
+        },
+        {
+            name = "Theldren",
+            npcID = 16059,
+            optional = true,
+            displayID = 15981, -- CMaNGOS classic-db creature_template
+            description = "Summoned in the Ring of Law with the Banner of Provocation (Tier 0.5 set quests); the loot is in the Arena Spoils.",
+            loot = { -- loot: CMaNGOS classic-db (user 23.11.2026)
+                {22305, "Ironweave Mantle", "Shoulder, Cloth", 3},
+                {22317, "Lefty's Brass Knuckle", "One-Hand, Fist Weapon", 3},
+                {22318, "Malgen's Long Bow", "Ranged, Bow", 3},
+                {22330, "Shroud of Arcane Mastery", "Back", 3},
+            },
+        },
+        {
+            name = "Ribbly Screwspigot",
+            npcID = 9543,
+            optional = true,
+            displayID = 8667, -- CMaNGOS classic-db creature_template
+            description = "Optional: his head is wanted for the quest Ribbly Screwspigot (in the Grim Guzzler).",
+            loot = { -- loot: CMaNGOS classic-db (user 23.11.2026)
+                {11742, "Wayfarer's Knapsack", "Bag", 2}, -- Dungeon Journal (user 25.11.2026)
+                {2662, "Ribbly's Quiver", "Quiver", 2}, -- Dungeon Journal (user 25.11.2026)
+                {2663, "Ribbly's Bandolier", "Ammo Pouch", 2}, -- Dungeon Journal (user 25.11.2026)
+                {11612, "Plans: Dark Iron Plate", "Blueprint", 3},
             },
         },
     },

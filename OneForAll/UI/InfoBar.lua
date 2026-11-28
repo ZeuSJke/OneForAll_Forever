@@ -136,10 +136,17 @@ add({ key = "gold", label = N"Gold", icon = "Interface\\Icons\\INV_Misc_Coin_02"
       diff < 0 and 1 or 0.3, diff < 0 and 0.3 or 1, 0.3)
     local all, total, realm = {}, 0, GetRealmName and GetRealmName() or "?"
     local t = type(OneForAllDB) == "table" and OneForAllDB.infoGold or {}
+    -- 6.2.18 (Discord leyssa 26.11.: RP and normal rule set characters were listed together): realms of both rule sets carry
+    -- the same name, the server number in the GUID ("Player-<server>-<id>") tells them apart; old name keys stay in the list
+    local server = tostring(FLT.CharKey and FLT.CharKey() or ""):match("^Player%-(%d+)%-")
     for k, v in pairs(t) do
       local _, r, cls = FLT.CharOf(k, v)
-      if r == realm and type(v) == "table" then
-        all[#all + 1] = { FLT.CharLabel(t, k, v), v[1] or 0, cls }; total = total + (v[1] or 0)
+      local ks = tostring(k):match("^Player%-(%d+)%-")
+      if r == realm and type(v) == "table" and not (server and ks and ks ~= server) then
+        -- the full name with the surname when we know it (Discord leyssa 26.11.)
+        local full = type(v.full) == "string" and v.full:gsub("%-.*$", "") or nil
+        local label = (full and full:find(" ", 1, true)) and full or FLT.CharLabel(t, k, v)
+        all[#all + 1] = { label, v[1] or 0, cls }; total = total + (v[1] or 0)
       end
     end
     if #all > 1 then
@@ -524,6 +531,8 @@ local open = false -- the band is shown (pinned, or the mouse is on it)
 local textOf, dirty, allDirty, drawQueued = {}, {}, true, false
 local iconOf = {} -- element -> its current icon (iconFn)
 local widthOf = {} -- the widest each element was this session: the band does not jump with changing numbers (user 08.11.)
+-- ... only while just the numbers change (6.2.18, Discord flikera 25.11.: a gap after Experience once the rested part was gone)
+local shapeOf = {}
 local byEvent = {} -- event -> { element keys }
 local H, PAD, ICON = 24, 10, 14
 
@@ -592,6 +601,8 @@ local function layout()
     local tex = e.iconFn and iconOf[k] or e.icon -- elements with their own icon (the ammo you have)
     if c.tex ~= tex then c.tex = tex; FLT.SetTex(c.icon, tex) end
     c.text:SetText(textOf[k])
+    local shape = tostring(textOf[k]):gsub("%d+", "0")
+    if shapeOf[k] ~= shape then shapeOf[k] = shape; widthOf[k] = nil end
     local w = (e.noIcon and 0 or ICON + 4) + math.ceil(c.text:GetStringWidth() or 20)
     w = math.max(w, widthOf[k] or 0); widthOf[k] = w
     c:SetWidth(w); c:ClearAllPoints(); c:SetPoint("LEFT", band, "LEFT", x, y)

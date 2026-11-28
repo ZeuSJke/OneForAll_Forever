@@ -1,4 +1,6 @@
 local _, FLT = ...
+-- a readable text from the game or nil (FLT.Str in Core.lua; the same here for the mock tests, no extra local)
+FLT.Str = FLT.Str or function(v) if type(v) ~= "string" or (issecretvalue and issecretvalue(v)) then return nil end return v end
 local L = FLT.L or setmetatable({}, { __index = function(_, k) return k end }) -- (tests without Locales)
 
 -- Gear Planner "Value" (5.6.3): sum of the item's stats x the stat weights of the active spec (the talent tree
@@ -149,8 +151,9 @@ local function weaponSpeed(id)
   s = false
   local data = type(C_TooltipInfo) == "table" and C_TooltipInfo.GetItemByID and C_TooltipInfo.GetItemByID(id)
   for _, line in ipairs(data and data.lines or {}) do
-    local v = (line.rightText or ""):match("(%d+[%.,]%d+)")
-    if v and (line.rightText or ""):find(SPEED or "Speed", 1, true) then s = tonumber((v:gsub(",", "."))); break end
+    local rt = FLT.Str(line.rightText) or ""
+    local v = rt:match("(%d+[%.,]%d+)")
+    if v and rt:find(SPEED or "Speed", 1, true) then s = tonumber((v:gsub(",", "."))); break end
   end
   speeds[id] = s
   return s or nil
@@ -166,7 +169,7 @@ local function forMyClass(id)
   classPat = classPat or ("^" .. (type(ITEM_CLASSES_ALLOWED) == "string" and ITEM_CLASSES_ALLOWED or "Classes: %s"):gsub("[%^%$%(%)%.%[%]%*%+%-%?]", "%%%0"):gsub("%%s", "(.+)") .. "$")
   ok = true
   for _, line in ipairs(data.lines) do
-    local list = (line.leftText or ""):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):match(classPat)
+    local list = (FLT.Str(line.leftText) or ""):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):match(classPat)
     if list then
       local _, cls = UnitClass("player")
       local m = LOCALIZED_CLASS_NAMES_MALE and LOCALIZED_CLASS_NAMES_MALE[cls] or UnitClass("player")
@@ -366,6 +369,9 @@ function GV.Upgrade(id, link)
   local _, _, _, loc, _, cid, sub = GetItemInfoInstant(id)
   local slots = loc and FLT.GEAR_LOC_SLOTS and FLT.GEAR_LOC_SLOTS[loc]
   if not slots then return nil end
+  -- gear the class cannot use has no Value (6.2.17, Discord djmarscomet 24.11.: the tracker marked a two-handed mace as an
+  -- upgrade for a hunter - the tooltip and the bag marks checked it, the tracker / History did not)
+  if FLT.GearCanUse and not FLT.GearCanUse(loc, cid, sub) then return nil end
   local slot = slotFor(loc, slots)
   link = link and tonumber(link:match("item:(%d+)")) == id and bare(link) or nil
   local v = itemValue(id, slot, link)
@@ -528,7 +534,7 @@ end
 function GV.Debug(itemString)
   local say = FLT.Msg or print
   local link = itemString
-  if not link and GameTooltip and GameTooltip:IsShown() and GameTooltip.GetItem then link = select(2, GameTooltip:GetItem()) end
+  if not link and GameTooltip and GameTooltip:IsShown() and GameTooltip.GetItem then link = FLT.Str((select(2, GameTooltip:GetItem()))) end
   local id = link and tonumber(link:match("item:(%d+)"))
   if not id then say(L["Point at an item (or shift-click it into the line), then type /ofa gv."]) return end
   if not W then buildWeights() end

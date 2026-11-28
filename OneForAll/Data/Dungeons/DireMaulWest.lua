@@ -9,7 +9,7 @@ FLT.DUNGEON_REGISTRY["Dire Maul: West"] = {
     quests = {
         {
             id = 7461,
-            liveXPFallback = 9950,
+            liveXPFallback = 23650,
             name = "The Madness Within",
             level = 60,
             requires = 56,
@@ -17,6 +17,7 @@ FLT.DUNGEON_REGISTRY["Dire Maul: West"] = {
             objective = "You must destroy the guardians surrounding the 5 Pylons that power the Prison of Immol'thar. Once the Pylons have powered down, the force field surrounding Immol'thar will have dissipated.  Enter the Prison of Immol'thar and eradicate the foul demon that stands at its heart. Finally, confront Prince Tortheldrin in Athenaeum.  Return to the Shen'dralar Ancient in the courtyard should you complete this quest.",
             turnin = "Shen'dralar Ancient, inside Dire Maul",
             note = "Destroy the five pylons around the Gardens to bring down Immol'thar's shield.",
+            rewardSummary = "23,650 XP · 2g 70s",
         },
         {
             id = 7462,
@@ -46,13 +47,14 @@ FLT.DUNGEON_REGISTRY["Dire Maul: West"] = {
         },
         {
             id = 7507,
-            liveXPFallback = 6600,
+            liveXPFallback = 19900,
             name = "Nostro's Compendium",
             level = 60,
             requires = 60,
             pickup = "Nostro's Compendium of Dragon Slaying, a drop inside Dire Maul",
             objective = "Return Nostro's Compendium of Dragon Slaying to the Athenaeum.",
             turnin = "Lorekeeper Lydros, inside Dire Maul",
+            rewardSummary = "19,900 XP",
         },
         {
             id = 7508,
@@ -67,6 +69,7 @@ FLT.DUNGEON_REGISTRY["Dire Maul: West"] = {
         {
             level = 60,
             id = 7631,
+            liveXPFallback = 13200,
             name = "Dreadsteed of Xoroth",
             requires = 60,
             faction = "Both",
@@ -76,6 +79,69 @@ FLT.DUNGEON_REGISTRY["Dire Maul: West"] = {
             turnin = "Dreadsteed Spirit, inside Dire Maul: West",
             rewardItems = {
             },
+            rewardSummary = "13,200 XP",
+        },
+        {
+            level = 60,
+            id = 7481,
+            liveXPFallback = 19700,
+            name = "Elven Legends",
+            requires = 54,
+            faction = "Horde",
+            pickup = "Sage Korolusk, Feralas (74.4, 44.0)",
+            objective = "Search Dire Maul for Telmius Dreamseeker. Report back to Sage Korolusk at Camp Mojache with whatever information that you may find.",
+            turnin = "Sage Korolusk, Feralas",
+            rewardItems = {
+            },
+            rewardSummary = "19,700 XP · 1g 80s",
+        },
+        {
+            level = 60,
+            id = 7482,
+            liveXPFallback = 19700,
+            name = "Elven Legends",
+            requires = 54,
+            faction = "Alliance",
+            pickup = "Scholar Runethorn, Feralas (31.6, 43.5)",
+            objective = "Search Dire Maul for Telmius Dreamseeker. Report back to Scholar Runethorn at Feathermoon with whatever information that you may find.",
+            turnin = "Scholar Runethorn, Feralas",
+            rewardItems = {
+            },
+            rewardSummary = "19,700 XP · 1g 80s",
+        },
+        {
+            level = 60,
+            id = 7643,
+            liveXPFallback = 4950,
+            name = "Ancient Equine Spirit",
+            requires = 60,
+            faction = "Alliance",
+            class = "PALADIN",
+            pickup = "Lord Grayson Shadowbreaker, Stormwind City (48.4, 50.2)",
+            objective = "Acquire special horse feed used for feeding a spirit horse. Merideth Carlson in Southshore apparently is the source for such food.  Travel to the Dire Maul dungeon in Feralas and slay Tendris Warpwood. Doing so will free the Ancient Equine Spirit. Feed it the special horse feed, thereby soothing the spirit. Finally, give it the Arcanite Barding so it may bless it.",
+            turnin = "Ancient Equine Spirit, inside Dire Maul: West",
+            rewardItems = {
+            },
+            rewardSummary = "4,950 XP",
+        },
+        {
+            level = 60,
+            id = 7703,
+            liveXPFallback = 22200,
+            name = "Unfinished Gordok Business",
+            requires = 56,
+            faction = "Both",
+            pickup = "Captain Kromcrush, inside Dire Maul: West",
+            objective = "Find the Gauntlet of Gordok Might and return it to Captain Kromcrush in Dire Maul.  According to Kromcrush, the \"old timey story\" says that Tortheldrin - a \"creepy\" elf who called himself a prince - stole it from one of the Gordok kings.",
+            turnin = "Captain Kromcrush, inside Dire Maul: West",
+            rewardChoice = true,
+            rewardItems = {
+                {18366, "Gordok's Handguards", 3},
+                {18367, "Gordok's Gauntlets", 3},
+                {18368, "Gordok's Gloves", 3},
+                {18369, "Gordok's Handwraps", 3},
+            },
+            rewardSummary = "22,200 XP",
         },
     },
     bosses = {
@@ -84,6 +150,7 @@ FLT.DUNGEON_REGISTRY["Dire Maul: West"] = {
             npcID = 11489,
             displayID = 14383,
             loot = {
+                {273120, "Blueprint: Seed Hybridizer", "Blueprint", 2}, -- Dungeon Journal (user 25.11.2026)
                 {18352, "Petrified Bark Shield", "Off Hand, Shield", 2},
                 {18353, "Stoneflower Staff", "Two-Hand, Staff", 2},
                 {18390, "Tanglemoss Leggings", "Legs, Leather", 3},
@@ -161,6 +228,7 @@ FLT.DUNGEON_REGISTRY["Dire Maul: West"] = {
         {
             name = "Lord Hel'nurath",
             npcID = 14506,
+            optional = true,
             displayID = 14556,
             description = "Summoned by warlocks with the Dreadsteed quest.",
             loot = {
@@ -168,17 +236,6 @@ FLT.DUNGEON_REGISTRY["Dire Maul: West"] = {
                 {18755, "Xorothian Firestick", "Ranged, Gun", 3},
                 {18756, "Dreadguard's Protector", "Off Hand, Shield", 3},
                 {18757, "Diabolic Mantle", "Shoulder, Cloth", 3},
-            },
-        },
-        {
-            name = "Revanchion",
-            npcID = 14690,
-            displayID = 14695, -- CMaNGOS classic-db creature_template (user 23.11.2026)
-            description = "Summoned with a brazier from the Tier 0.5 set quests.",
-            loot = {
-                {23127, "Cloak of Revanchion", "Back", 3},
-                {23128, "The Shadow's Grasp", "Hands, Cloth", 3},
-                {23129, "Bracers of Mending", "Wrist, Cloth", 3},
             },
         },
     },

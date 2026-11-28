@@ -19,6 +19,8 @@ local NEWS_AUTO = true -- set true (and a new NEWS_ID) for the next release with
 -- (Skill-Up changes, low level quests, walking routes) - shown automatically once.
 -- 6.2.13 (user 21.11.): BiS List, Cheap Upgrades with the Cheap Upgrade Scan, the new stat weights - shown automatically once.
 -- 6.2.14 (user 23.11.): the dungeon tracker and OneForAll in colour (own window colours) - shown automatically once.
+-- 6.3.0 (user 27.11.: "1. sollte mit rein, sollte aber nicht aufploppen beim start"): only the gathering professions with the
+-- Trainers page - NOT shown automatically (NEWS_ID stays "6.2.14", so players who saw those news get no popup).
 local NEWS_ID = "6.2.14"
 
 -- images (optional): pictures in a row under the lines, each { tex, shown width, shown height, texcoord right,
@@ -26,15 +28,10 @@ local NEWS_ID = "6.2.14"
 -- qol = the Quality of Life group the button opens; shot = a screenshot behind a "Show me" button (user 09.11.):
 -- { texture, shown width, shown height, texcoord right, texcoord bottom } (tools/art/proc_news.py)
 local NEWS = {
-  { icon = "Interface\\Icons\\INV_Misc_PocketWatch_01", title = N"Dungeon tracker", tab = "qol", qol = "iface", button = N"Open Quality of Life",
+  { icon = "Interface\\Icons\\Trade_Herbalism", title = N"Gathering professions and trainers", tab = "professions", button = N"Open Professions",
     lines = {
-      N"A small window in dungeons and raids: the run's time with your best time, the mobs' XP, the gold, the instances of this hour and every boss - crossed off when dead, with a green arrow when its loot has an upgrade for you.",
-      N"Left-click a boss: OneForAll on that boss, right-click: its loot. The cog sets what it shows; Quality of Life > Interface has the switch and a \"Test\" button.",
-    } },
-  { icon = "Interface\\Icons\\INV_Misc_Gem_Variety_02", title = N"OneForAll in colour", tab = "settings", button = N"Open Settings",
-    lines = {
-      N"Settings > Window: your own background colour and text colour for the OneForAll windows, with the game's colour picker.",
-      N"\"Default\" brings back the usual look at any time.",
+      N"Herbalism, Mining, Skinning and Fishing are in the Professions list (Lockpicking too, for rogues), each with a Skill-Up Helper: what you can gather from which skill, where to level each skill range with map buttons, and for Fishing what to cook along to level Cooking at the same time.",
+      N"New \"Trainers\" button on every profession: the four ranks with skill, level and cost, and which trainer of your faction teaches which rank.",
     } },
 }
 

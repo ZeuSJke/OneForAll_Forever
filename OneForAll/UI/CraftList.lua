@@ -189,11 +189,11 @@ local function forAlts(c, id, fn)
     end
   end
 end
-local function stock(id, noAlts)
+local function stock(id, noAlts, noBank)
   wipe(places)
   local c = me()
   local bags = CL.InBags(id)
-  local bank = c and c.bank[id] or 0
+  local bank = not noBank and c and c.bank[id] or 0
   local total = bags + bank
   if bags > 0 then places[#places + 1] = L["Bags"] .. " " .. bags end
   if bank > 0 then places[#places + 1] = L["Bank"] .. " " .. bank end
@@ -211,17 +211,23 @@ end
 -- short - "12 in bank, 5 on Smörgi Banklshofer"; nil when only in the bags / nowhere. Callers show it only while the bags
 -- hold less than needed, so it goes away once the materials are fetched (the bank is read again while it is open).
 local ew = {} -- reused
-function CL.Elsewhere(id)
+-- noAlts / noBank (6.2.18-beta4): leave those places out (the Crafting List's switches)
+function CL.Elsewhere(id, noAlts, noBank)
   index(); wipe(ew)
   local c = me()
-  local bank = c and c.bank[id] or 0
+  local bank = not noBank and c and c.bank[id] or 0
   if bank > 0 then ew[#ew + 1] = string.format(L["%d in bank"], bank) end
-  forAlts(c, id, function(inv, k, o, b, k2) ew[#ew + 1] = string.format(L["%d on %s"], b + k2, FLT.CharLabel(inv, k, o)) end)
+  if not noAlts then forAlts(c, id, function(inv, k, o, b, k2) ew[#ew + 1] = string.format(L["%d on %s"], b + k2, FLT.CharLabel(inv, k, o)) end) end
   return #ew > 0 and table.concat(ew, ", ") or nil
 end
 -- for the Skill-Up Helper (SkillUp.lua): total of an item over bags, bank and the other characters, and the places
 -- (a table reused by the next call); noAlts (6.2.7, Discord 13.11.: "a toggle"): without the other characters
 function CL.Stock(id, noAlts) index(); local n = stock(id, noAlts); return n, places end
+
+-- 6.2.18-beta4 (user 26.11.2026 22:28: "einen schalter oben ... keine bank und keine anderen charactere"): the Crafting List's
+-- two switches "Without bank" / "Without other characters" - OneForAllDB.craftNoBank / craftNoAlts, off = counted as before
+local function noBank() return type(OneForAllDB) == "table" and OneForAllDB.craftNoBank == true end
+local function noAlts() return type(OneForAllDB) == "table" and OneForAllDB.craftNoAlts == true end
 
 -- Materials -------------------------------------------------------------------------
 -- rows: { id, need, have, depth, maker = {r, prof}, who, craft = n (crafted), miss = n (to get), mode }
@@ -231,7 +237,7 @@ local function compute()
   wipe(rows); wipe(shop)
   local pool = {}
   local function take(id, need)
-    if pool[id] == nil then pool[id] = stock(id) end
+    if pool[id] == nil then pool[id] = stock(id, noAlts(), noBank()) end
     local use = math.min(pool[id], need); pool[id] = pool[id] - use
     return use
   end
@@ -520,7 +526,7 @@ refresh = function()
       b.craftBtn:ClearAllPoints(); b.craftBtn:SetPoint("RIGHT", b.c2, "LEFT", -2, 0); b.craftBtn:SetLabel(L["Craft"]); b.craftBtn:SetWidth(46); b.craftBtn:Show()
       b.craftBtn.target = { prof = row.maker.prof, r = row.maker.r, n = math.ceil(row.craft / (row.maker.r.c or 1)) }
     end
-    local where = CL.InBags(row.id) < row.need and CL.Elsewhere(row.id) -- 6.2.7-beta4: "(12 in bank)"
+    local where = CL.InBags(row.id) < row.need and CL.Elsewhere(row.id, noAlts(), noBank()) -- 6.2.7-beta4: "(12 in bank)"
     if where then
       b.tag:SetText("|cffffd060(" .. where .. ")|r"); b.tag:ClearAllPoints()
       local anchor = (row.craft and b.craftBtn:IsShown() and b.craftBtn) or (row.craft and b.c2) or b.c3
@@ -626,8 +632,27 @@ local function create()
   local close = UI.CloseButton(frame); close:SetPoint("TOPRIGHT", -12, -12) -- the only way to close it (user 24.10.)
   local title = FLT.NewFS(frame, nil, "OVERLAY", "GameFontNormal"); title:SetPoint("TOPLEFT", 18, -15)
   title:SetText(L["Crafting List"]); title:SetTextColor(FLT.TextC(unpack(GOLD)))
+  -- the two switches under the title (6.2.18-beta4): what counts as "have"
+  local prev
+  for _, sw in ipairs({ { "craftNoBank", L["Without bank"], L["Only your bags and other characters count; what lies in your bank is listed as missing."] },
+                        { "craftNoAlts", L["Without other characters"], L["Only your bags and bank count; what your other characters have is listed as missing."] } }) do
+    local cb = FLT.SkinBlizz(CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate")); cb:SetSize(22, 22)
+    if prev then cb:SetPoint("LEFT", prev, "RIGHT", 12, 0) else cb:SetPoint("TOPLEFT", 14, -32) end
+    local fs = FLT.NewFS(frame, nil, "OVERLAY", "GameFontHighlightSmall"); fs:SetPoint("LEFT", cb, "RIGHT", 1, 0); fs:SetText(sw[2])
+    cb:SetChecked(type(OneForAllDB) == "table" and OneForAllDB[sw[1]] == true)
+    cb:SetScript("OnClick", function(self)
+      if type(OneForAllDB) == "table" then OneForAllDB[sw[1]] = self:GetChecked() and true or nil end
+      changed()
+    end)
+    cb:SetScript("OnEnter", function(self)
+      GameTooltip:SetOwner(self, "ANCHOR_BOTTOM"); GameTooltip:AddLine(sw[2], GOLD[1], GOLD[2], GOLD[3])
+      GameTooltip:AddLine(sw[3], 1, 1, 1, true); GameTooltip:Show()
+    end)
+    cb:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    prev = fs
+  end
   sf = FLT.SkinBlizz(CreateFrame("ScrollFrame", nil, frame, "UIPanelScrollFrameTemplate"))
-  sf:SetPoint("TOPLEFT", 8, -34); sf:SetPoint("BOTTOMRIGHT", -30, 36)
+  sf:SetPoint("TOPLEFT", 8, -56); sf:SetPoint("BOTTOMRIGHT", -30, 36)
   child = CreateFrame("Frame", nil, sf); child:SetSize(W - 38, 10); sf:SetScrollChild(child)
   if UI.PlaceScrollBar then UI.PlaceScrollBar(sf) end
   emptyText = FLT.NewFS(frame, nil, "OVERLAY", "GameFontDisable"); emptyText:SetPoint("TOP", 0, -80); emptyText:SetWidth(W - 60)

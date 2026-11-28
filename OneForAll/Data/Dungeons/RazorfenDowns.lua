@@ -9,28 +9,18 @@ FLT.DUNGEON_REGISTRY["Razorfen Downs"] = {
     quests = {
         {
             id = 6626,
-            liveXPFallback = 3450,
+            liveXPFallback = 8200,
             name = "A Host of Evil",
             level = 35,
             requires = 28,
             pickup = "Myriam Moonsinger, The Barrens (49.0, 94.9)",
             objective = "Kill 8 Razorfen Battleguard, 8 Razorfen Thornweavers, and 8 Death's Head Cultists and return to Myriam Moonsinger near the entrance to Razorfen Downs.",
             turnin = "Myriam Moonsinger, The Barrens",
-            rewardSummary = "75s",
-        },
-        {
-            id = 3523,
-            liveXPFallback = 285,
-            name = "Scourge of the Downs",
-            level = 37,
-            requires = 32,
-            pickup = "Belnistrasz, inside Razorfen Downs",
-            objective = "If you agree to aid Belnistrasz, speak with him again and hand the Oathstone he gave you back to him.",
-            turnin = "Belnistrasz, inside Razorfen Downs",
+            rewardSummary = "8,200 XP · 75s",
         },
         {
             id = 3525,
-            liveXPFallback = 4250,
+            liveXPFallback = 10100,
             name = "Extinguishing the Idol",
             level = 37,
             requires = 32,
@@ -41,10 +31,11 @@ FLT.DUNGEON_REGISTRY["Razorfen Downs"] = {
                 {10710, "Dragonclaw Ring", 2},
             },
             note = "Escort quest: Belnistrasz must survive his ritual at the idol. Everyone in the group needs Scourge of the Downs done first.",
+            rewardSummary = "10,100 XP",
         },
         {
             id = 3341,
-            liveXPFallback = 4300,
+            liveXPFallback = 9050,
             name = "Bring the End",
             level = 42,
             requires = 37,
@@ -60,10 +51,11 @@ FLT.DUNGEON_REGISTRY["Razorfen Downs"] = {
             rewardAlso = {
                 {10823, "Vanquisher's Sword", 3},
             },
+            rewardSummary = "9,050 XP · +150 Undercity",
         },
         {
             id = 3636,
-            liveXPFallback = 4300,
+            liveXPFallback = 10200,
             name = "Bring the Light",
             level = 42,
             requires = 39,
@@ -79,10 +71,11 @@ FLT.DUNGEON_REGISTRY["Razorfen Downs"] = {
             rewardAlso = {
                 {10823, "Vanquisher's Sword", 3},
             },
+            rewardSummary = "10,200 XP · +150 Stormwind",
         },
         {
             id = 6521,
-            liveXPFallback = 3500,
+            liveXPFallback = 7350,
             name = "An Unholy Alliance",
             level = 36,
             requires = 28,
@@ -92,12 +85,13 @@ FLT.DUNGEON_REGISTRY["Razorfen Downs"] = {
             turnin = "Varimathras, Undercity",
             rewardItems = {{17039, "Skullbreaker", 2}, {17042, "Nail Spitter", 2}, {17043, "Zealot's Robe", 2}, {270054, "Cultist's Chestguard", 2}},
             rewardChoice = true,
-            rewardSummary = "20s",
+            rewardSummary = "7,350 XP · 20s",
             note = "Ambassador Malcin waits outside the entrance of Razorfen Downs. The quest also appears under Razorfen Kraul, where the Small Scroll that starts it drops.",
         },
         {
             level = 45,
             id = 93604,
+            liveXPFallback = 10200,
             name = "Agamaggan's Blood",
             requires = 45,
             faction = "Both",
@@ -106,10 +100,12 @@ FLT.DUNGEON_REGISTRY["Razorfen Downs"] = {
             turnin = "Kog'thug the Brave, Shen'dralas",
             rewardItems = {
             },
+            rewardSummary = "10,200 XP · 65s",
         },
         {
             level = 41,
             id = 96773,
+            liveXPFallback = 8600,
             name = "The Coldbringer's Eye",
             requires = 34,
             faction = "Alliance",
@@ -118,10 +114,12 @@ FLT.DUNGEON_REGISTRY["Razorfen Downs"] = {
             turnin = "Archmage Lan'dalock, Alterac Mountains",
             rewardItems = {
             },
+            rewardSummary = "8,600 XP · 55s · +300 Kirin Tor · +150 Stormwind",
         },
         {
             level = 41,
             id = 97196,
+            liveXPFallback = 8600,
             name = "The Coldbringer's Eye",
             requires = 34,
             faction = "Horde",
@@ -130,6 +128,7 @@ FLT.DUNGEON_REGISTRY["Razorfen Downs"] = {
             turnin = "Sutara Plainstalker, Mulgore",
             rewardItems = {
             },
+            rewardSummary = "8,600 XP · 55s · +300 Earthen Ring · +150 Thunder Bluff",
         },
     },
     bosses = {

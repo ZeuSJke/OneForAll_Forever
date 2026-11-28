@@ -319,7 +319,7 @@ end
 local ev = CreateFrame("Frame")
 ev:SetScript("OnEvent", function(_, event, prefix, msg, channel, sender)
   if event == "CHAT_MSG_ADDON" then
-    if channel ~= "GUILD" then return end
+    if channel ~= "GUILD" or (FLT.IsSecret and FLT.IsSecret(prefix, msg, sender)) then return end
     if prefix == PREFIX then GM.Receive(msg, sender)
     elseif prefix == OPENMAP_PREFIX then receiveOpenMap(msg, sender) end
   elseif event == "PLAYER_GUILD_UPDATE" or event == "PLAYER_ENTERING_WORLD" then

@@ -134,7 +134,7 @@ ev:SetScript("OnEvent", function(_, event, prefix, msg, channel, sender)
       -- after the recipe-sharing channel is joined (about 12 s after login)
       C_Timer.After(20, ask)
     end
-  elseif event == "CHAT_MSG_ADDON" and prefix == PREFIX and type(msg) == "string" then
+  elseif event == "CHAT_MSG_ADDON" and not (FLT.IsSecret and FLT.IsSecret(prefix, msg, channel)) and prefix == PREFIX and type(msg) == "string" then
     local kind, v = msg:match("^(%a)\t(.+)$")
     if not kind then return end
     local trusted = channel == "GUILD" or channel == "PARTY" or channel == "RAID"
